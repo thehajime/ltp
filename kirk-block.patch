@@ -1,0 +1,218 @@
+Submodule tools/kirk/kirk-src contains modified content
+diff --git a/tools/kirk/kirk-src/libkirk/channels/qemu.py b/tools/kirk/kirk-src/libkirk/channels/qemu.py
+index a8cc7dd..a631392 100644
+--- a/tools/kirk/kirk-src/libkirk/channels/qemu.py
++++ b/tools/kirk/kirk-src/libkirk/channels/qemu.py
+@@ -32,6 +32,7 @@ from libkirk.errors import (
+     KernelPanicError,
+ )
+ from libkirk.io import AsyncFile
++import subprocess
+ 
+ 
+ class QemuComChannel(ComChannel):
+@@ -86,7 +87,7 @@ class QemuComChannel(ComChannel):
+         transport_dev = ""
+ 
+         if self._serial_type == "isa":
+-            transport_dev = "/dev/ttyS1"
++            transport_dev = "/dev/ttyS0"
+         elif self._serial_type == "virtio":
+             transport_dev = "/dev/vport1p1"
+ 
+@@ -100,12 +101,19 @@ class QemuComChannel(ComChannel):
+         tty_log = os.path.join(self._tmpdir, f"ttyS0-{pid}.log")
+ 
+         params = []
+-        params.append("-enable-kvm")
++        #params.append("-enable-kvm")
+         params.append("-display none")
+         params.append(f"-m {self._ram}")
+-        params.append(f"-smp {self._smp}")
+-        params.append("-device virtio-rng-pci")
++        #params.append(f"-smp {self._smp}")
++        #params.append("-device virtio-rng-pci")
+         params.append(f"-chardev stdio,id=tty,logfile={tty_log}")
++        params.append("-M virt -bios none")
++        params.append("-device virtio-blk-device,drive=hd0")
++        params.append("-cpu rv64,mmu=off")
++        #params.append("-nographic")
++        params.append("-drive format=raw,file=//ltp-image.img,id=hd1,if=none")
++        params.append("-device virtio-blk-device,drive=hd1")
++        params.append("-netdev user,id=net0 -device virtio-net-device,netdev=net0")
+ 
+         if self._serial_type == "isa":
+             params.append("-serial chardev:tty")
+@@ -132,7 +140,7 @@ class QemuComChannel(ComChannel):
+             )
+ 
+         if self._image:
+-            params.append(f"-drive if=virtio,cache=unsafe,file={self._image}")
++            params.append(f"-drive id=hd0,if=none,file={self._image},format=raw")
+ 
+         if self._initrd:
+             params.append(f"-initrd {self._initrd}")
+@@ -142,7 +150,7 @@ class QemuComChannel(ComChannel):
+             if self._serial_type == "virtio":
+                 console = "hvc0"
+ 
+-            params.append(f"-append 'console={console} ignore_loglevel'")
++            params.append(f"-append 'console={console} console=ttyS1,115200n8 ignore_loglevel rootwait root=/dev/vda ro'")
+             params.append(f"-kernel {self._kernel}")
+ 
+         if self._opts:
+@@ -391,13 +399,15 @@ class QemuComChannel(ComChannel):
+                 if self._logged_in:
+                     self._logger.info("Poweroff virtual machine")
+ 
+-                    await self._write_stdin("poweroff; poweroff -f\n")
++                    #await self._write_stdin("poweroff; poweroff -f\n")
++                    await self._write_stdin("halt -f\n")
+ 
++                    raise(asyncio.TimeoutError)
+                     while await self.active():
+                         await self._read_stdout(1024, iobuffer)
+ 
+                     # pyrefly: ignore[missing-attribute]
+-                    await self._proc.wait()
++                    await self._proc.wait(timeout=5.0)
+         except asyncio.TimeoutError:
+             pass
+         finally:
+@@ -410,7 +420,12 @@ class QemuComChannel(ComChannel):
+ 
+                 await self._wait_lockers()
+                 # pyrefly: ignore[missing-attribute]
+-                await self._proc.wait()
++                try:
++                    await asyncio.wait_for(self._proc.wait(), timeout=5.0)
++                except asyncio.TimeoutError:
++                    self._proc.kill()
++                    subprocess.run(["pkill", 'qemu-system'])
++                    pass
+ 
+             self._stop = False
+ 
+@@ -557,6 +572,9 @@ class QemuComChannel(ComChannel):
+                     f"Can't send file to {transport_dev}: {stdout}"
+                 )
+ 
++            with open(transport_path, "w", encoding='utf-8') as f:
++                print(stdout, file=f)
++
+             # read back data and send it to the local file path
+             file_size = os.path.getsize(transport_path)
+ 
+diff --git a/tools/kirk/kirk-src/libkirk/channels/shell.py b/tools/kirk/kirk-src/libkirk/channels/shell.py
+index f2994a7..0b5f196 100644
+--- a/tools/kirk/kirk-src/libkirk/channels/shell.py
++++ b/tools/kirk/kirk-src/libkirk/channels/shell.py
+@@ -173,18 +173,30 @@ class ShellComChannel(ComChannel):
+             t_start = time.time()
+             panic = False
+ 
+-            while True:
+-                line = await proc.stdout.read(self.BUFFSIZE)
+-                sline = line.decode(encoding="utf-8", errors="ignore")
+-
+-                if iobuffer:
+-                    await iobuffer.write(sline)
+-
+-                stdout += sline
+-                panic = "Kernel panic" in stdout[-2 * self.BUFFSIZE :]
+-
+-                if not await self._process_alive(proc):
+-                    break
++            line, _ = await proc.communicate()
++            sline = line.decode(encoding="utf-8", errors="replace")
++            if iobuffer:
++                await iobuffer.write(sline)
++            stdout += sline
++
++#            while True:
++#                line = await proc.stdout.read(self.BUFFSIZE)
++#                sline = line.decode(encoding="utf-8", errors="ignore")
++#
++#                if iobuffer:
++#                    await iobuffer.write(sline)
++#                if command == "access01":
++#                    if iobuffer:
++#                        #print("w/ iobuffer")
++#                        sline = sline
++#                    else:
++#                        print("no iobuffer")
++#
++#                stdout += sline
++#                panic = "Kernel panic" in stdout[-2 * self.BUFFSIZE :]
++#
++#                if not await self._process_alive(proc):
++#                    break
+ 
+             await proc.wait()
+ 
+diff --git a/tools/kirk/kirk-src/libkirk/ltp.py b/tools/kirk/kirk-src/libkirk/ltp.py
+index 472de20..96e74bd 100644
+--- a/tools/kirk/kirk-src/libkirk/ltp.py
++++ b/tools/kirk/kirk-src/libkirk/ltp.py
+@@ -345,6 +345,11 @@ class LTPFramework(Framework):
+         if not name:
+             raise ValueError("name is empty")
+ 
++        # XXX: only for riscv
++        ret = await channel.run_command("mount -t ext2 /dev/vdb /opt")
++        if not ret or ret["returncode"] != 0:
++            print('skipping mount failure: expected only okay in riscv');
++
+         ret = await channel.run_command(f"test -d {self._root}")
+         if not ret or ret["returncode"] != 0:
+             raise FrameworkError(f"LTP folder doesn't exist: {self._root}")
+@@ -362,8 +367,14 @@ class LTPFramework(Framework):
+         metadata_path = os.path.join(self._root, "metadata", "ltp.json")
+         ret = await channel.run_command(f"test -f {metadata_path}")
+         if ret and ret["returncode"] == 0:
+-            metadata_dict = json.loads(await channel.fetch_file(metadata_path))
+-
++            jdata = await channel.fetch_file(metadata_path)
++            #jdata = jdata.json_string.replace('\r\n', '\n').replace('\r', '')
++            try:
++                metadata_dict = json.loads(jdata)
++            except json.JSONDecodeError as e:
++                print('error: ', e)
++
++        #print(metadata_dict)
+         return await self._read_runtest(channel, name, runtest_str, metadata_dict)
+ 
+     async def read_result(
+diff --git a/tools/kirk/kirk-src/libkirk/scheduler.py b/tools/kirk/kirk-src/libkirk/scheduler.py
+index 60d76bb..8f03dde 100644
+--- a/tools/kirk/kirk-src/libkirk/scheduler.py
++++ b/tools/kirk/kirk-src/libkirk/scheduler.py
+@@ -162,7 +162,7 @@ class TestScheduler(Scheduler):
+         for msg in messages:
+             if msg:
+                 self._logger.debug("Kernel tainted (%d): %s", code, msg)
+-                await libkirk.events.fire("kernel_tainted", msg)
++                #await libkirk.events.fire("kernel_tainted", msg)
+ 
+         return code, messages
+ 
+@@ -269,6 +269,7 @@ class TestScheduler(Scheduler):
+                 tainted_code2, tainted_msg2 = await self._get_tainted_status()
+                 if tainted_code2 != tainted_code1:
+                     self._logger.info("Recognised Kernel tainted: %s", tainted_msg2)
++                    await libkirk.events.fire("kernel_tainted", tainted_msg2)
+ 
+                     tainted_msg = tainted_msg2
+                     status = self.KERNEL_TAINTED
+diff --git a/tools/kirk/kirk-src/libkirk/sut.py b/tools/kirk/kirk-src/libkirk/sut.py
+index c8144df..004ea5c 100644
+--- a/tools/kirk/kirk-src/libkirk/sut.py
++++ b/tools/kirk/kirk-src/libkirk/sut.py
+@@ -52,6 +52,7 @@ class SUT(Plugin):
+         "kernel has been live patched",
+         "auxiliary taint, defined for and used by distros",
+         "kernel was built with the struct randomization plugin",
++        "unhandled signal",
+     ]
+ 
+     FAULT_INJECTION_FILES = [
