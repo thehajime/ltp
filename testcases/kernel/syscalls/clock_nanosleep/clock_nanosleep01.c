@@ -107,8 +107,6 @@ static struct tst_ts *rq;
 static struct tst_ts *rm;
 
 static struct time64_variants variants[] = {
-	{ .clock_nanosleep = libc_clock_nanosleep, .ts_type = TST_LIBC_TIMESPEC, .desc = "vDSO or syscall with libc spec"},
-
 #if (__NR_clock_nanosleep != __LTP__NR_INVALID_SYSCALL)
 	{ .clock_nanosleep = sys_clock_nanosleep, .ts_type = TST_KERN_OLD_TIMESPEC, .desc = "syscall with old kernel spec"},
 #endif
@@ -116,6 +114,8 @@ static struct time64_variants variants[] = {
 #if (__NR_clock_nanosleep_time64 != __LTP__NR_INVALID_SYSCALL)
 	{ .clock_nanosleep = sys_clock_nanosleep64, .ts_type = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec"},
 #endif
+	{ .clock_nanosleep = libc_clock_nanosleep, .ts_type = TST_LIBC_TIMESPEC, .desc = "vDSO or syscall with libc spec"},
+
 };
 
 void setup(void)
