@@ -97,6 +97,12 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.needs_root = 1,
+	.skip_filesystems = (const char*[]) {
+		"tmpfs",
+		"ramfs",
+		"vfat",
+		NULL
+	},
 };
 
 #else /* HAVE_SYS_XATTR_H */
