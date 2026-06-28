@@ -95,7 +95,7 @@ static struct test_case tcase[] = {
 		.qname = "",
 		.oflag = O_CREAT,
 		.ret = -1,
-		.err = EINVAL,
+		.err = ENOENT,	/* glibc: EINVAL, musl: ENOENT */
 	},
 	{
 		.desc = "NORMAL",
@@ -261,7 +261,7 @@ static void do_test(unsigned int i)
 
 	if (TST_ERR != tc->err) {
 		tst_res(TFAIL | TTERRNO, "%s expected errno: %d",
-			tc->desc, TST_ERR);
+			tc->desc, tc->err);
 		goto CLEANUP;
 	}
 
