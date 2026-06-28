@@ -618,6 +618,11 @@ int safe_msync(const char *file, const int lineno, void *addr,
 	rval = msync(addr, length, flags);
 
 	if (rval == -1) {
+#ifdef CONFIG_NOMMU
+		if (errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+			"nommu doesn't have msync(%p, %zu, %d), skipped", addr, length, flags);
+#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"msync(%p, %zu, %d) failed", addr, length, flags);
 	} else if (rval) {
