@@ -86,9 +86,7 @@ static inline int io_uring_setup_queue(struct io_uring_submit *s,
 	s->cq_ptr_size = p.cq_off.cqes +
 			 p.cq_entries * sizeof(struct io_uring_cqe);
 
-	s->cq_ptr = SAFE_MMAP(0, s->cq_ptr_size, PROT_READ | PROT_WRITE,
-			      MAP_SHARED | MAP_POPULATE, s->ring_fd,
-			      IORING_OFF_CQ_RING);
+	s->cq_ptr = s->sq_ptr;
 
 	/* Save completion queue pointers */
 	cring->head = s->cq_ptr + p.cq_off.head;
@@ -108,7 +106,7 @@ static inline void io_uring_cleanup_queue(struct io_uring_submit *s,
 {
 	if (s->sqes)
 		SAFE_MUNMAP(s->sqes, queue_depth * sizeof(struct io_uring_sqe));
-	if (s->cq_ptr)
+	if (s->cq_ptr && s->sq_ptr != s->cq_ptr)
 		SAFE_MUNMAP(s->cq_ptr, s->cq_ptr_size);
 	if (s->sq_ptr)
 		SAFE_MUNMAP(s->sq_ptr, s->sq_ptr_size);

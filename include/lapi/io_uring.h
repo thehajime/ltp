@@ -306,7 +306,9 @@ static inline int io_uring_enter(int fd, unsigned int to_submit,
 static inline void io_uring_setup_supported_by_kernel(void)
 {
 	long ret;
-	ret = syscall(__NR_io_uring_setup, NULL, 0);
+	struct io_uring_params params;
+
+	ret = syscall(__NR_io_uring_setup, 0, &params);
 	if (ret != -1) {
 		SAFE_CLOSE(ret);
 		return;

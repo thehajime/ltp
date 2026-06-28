@@ -50,9 +50,7 @@ int safe_io_uring_init(const char *file, const int lineno,
 	if (uring->sqr_entries == MAP_FAILED)
 		return -1;
 
-	uring->cqr_base = safe_mmap(file, lineno, NULL, uring->cqr_mapsize,
-		PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, uring->fd,
-		IORING_OFF_CQ_RING);
+	uring->cqr_base = uring->sqr_base;
 
 	if (uring->cqr_base == MAP_FAILED)
 		return -1;
@@ -77,7 +75,8 @@ int safe_io_uring_close(const char *file, const int lineno,
 {
 	int ret;
 
-	safe_munmap(file, lineno, NULL, uring->cqr_base, uring->cqr_mapsize);
+	if (uring->cqr_base != uring->sqr_base)
+		safe_munmap(file, lineno, NULL, uring->cqr_base, uring->cqr_mapsize);
 	safe_munmap(file, lineno, NULL, uring->sqr_entries,
 		uring->sqr_size * sizeof(struct io_uring_sqe));
 	safe_munmap(file, lineno, NULL, uring->sqr_base, uring->sqr_mapsize);
