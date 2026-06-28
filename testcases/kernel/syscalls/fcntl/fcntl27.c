@@ -42,4 +42,8 @@ static struct tst_test test = {
 	.test = verify_fcntl,
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_tmpdir = 1,
+	.skip_filesystems = (const char*[]) {
+		"ramfs",
+		NULL
+	},
 };
