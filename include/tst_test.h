@@ -11,6 +11,7 @@
 # error Oldlib test.h already included
 #endif /* __TEST_H__ */
 
+#define _GNU_SOURCE 1
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
@@ -155,8 +156,19 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
  * This call makes sure that output file streams are flushed and also handles
  * errors from fork(). Use this instead of fork() whenever possible!
  */
+#ifdef CONFIG_NOMMU
+#define SAFE_FORK() \
+	vfork()
+#else
 #define SAFE_FORK() \
 	safe_fork(__FILE__, __LINE__)
+#endif
+
+#ifdef CONFIG_NOMMU
+#define SAFE_EXIT(code) _exit(code)
+#else
+#define SAFE_EXIT(code) exit(code)
+#endif
 
 #define TST_TRACE(expr)	                                            \
 	({int ret = expr;                                           \

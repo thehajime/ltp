@@ -254,7 +254,11 @@ int tst_run_script(const char *script_name, char *const params[])
 
 	argv[params_len+1] = NULL;
 
-	pid = SAFE_FORK();
+#ifndef CONFIG_NOMMU
+	pid = fork();
+#else
+	pid = vfork();
+#endif
 	if (pid)
 		return pid;
 
@@ -440,7 +444,7 @@ void tst_vbrk_(const char *file, const int lineno, int ttype, const char *fmt,
 	 * library was initialized, just exit.
 	 */
 	if (!results || !context->lib_pid)
-		exit(TTYPE_RESULT(ttype));
+		SAFE_EXIT(TTYPE_RESULT(ttype));
 
 	update_results(TTYPE_RESULT(ttype));
 
@@ -480,7 +484,7 @@ void tst_vbrk_(const char *file, const int lineno, int ttype, const char *fmt,
 		}
 	}
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 void tst_res_(const char *file, const int lineno, int ttype,
@@ -1697,7 +1701,7 @@ static void run_tests(void)
 		tst_test->test_all();
 
 		if (tst_getpid() != context->main_pid)
-			exit(0);
+			SAFE_EXIT(0);
 
 		tst_reap_children();
 
@@ -1713,7 +1717,7 @@ static void run_tests(void)
 		tst_test->test(i);
 
 		if (tst_getpid() != context->main_pid)
-			exit(0);
+			SAFE_EXIT(0);
 
 		tst_reap_children();
 
@@ -1781,7 +1785,7 @@ static void testrun(void)
 	}
 
 	do_test_cleanup();
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static pid_t test_pid;
@@ -1905,7 +1909,11 @@ static void fork_testrun(void)
 
 	show_failure_hints = 1;
 
+#ifndef CONFIG_NOMMU
 	test_pid = fork();
+#else
+	test_pid = vfork();
+#endif
 	if (test_pid < 0)
 		tst_brk(TBROK | TERRNO, "fork()");
 
