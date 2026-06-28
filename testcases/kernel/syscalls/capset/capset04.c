@@ -54,5 +54,6 @@ static struct tst_test test = {
 		{&header, .size = sizeof(*header)},
 		{&data, .size = 2 * sizeof(*data)},
 		{},
-	}
+	},
+	.needs_mmu = 1,
 };

@@ -45,5 +45,6 @@ static struct tst_test test = {
 	.bufs = (struct tst_buffers[]) {
 		{&infop, .size = sizeof(*infop)},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

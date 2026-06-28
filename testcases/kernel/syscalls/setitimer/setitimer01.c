@@ -162,5 +162,6 @@ static struct tst_test test = {
 		{&value,  .size = sizeof(struct itimerval)},
 		{&ovalue, .size = sizeof(struct itimerval)},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

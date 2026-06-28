@@ -121,6 +121,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = verify_inotify,
+	.needs_mmu = 1,
 };
 
 #else

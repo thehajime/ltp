@@ -86,4 +86,5 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.forks_child = 1,
 	.needs_checkpoints = 1,
+	.needs_mmu = 1,
 };

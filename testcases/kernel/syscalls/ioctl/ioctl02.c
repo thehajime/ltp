@@ -251,5 +251,6 @@ static struct tst_test test = {
 	.options = (struct tst_option[]) {
 		{"d:", &device, "Tty device. For example, /dev/tty[0-9]"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

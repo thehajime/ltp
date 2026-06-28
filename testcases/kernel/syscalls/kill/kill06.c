@@ -46,4 +46,5 @@ static void verify_kill(void)
 static struct tst_test test = {
 	.forks_child = 1,
 	.test_all = verify_kill,
+	.needs_mmu = 1,
 };

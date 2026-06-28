@@ -44,4 +44,5 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_checkpoints = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

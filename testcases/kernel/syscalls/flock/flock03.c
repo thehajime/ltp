@@ -94,4 +94,5 @@ static struct tst_test test = {
 	.needs_checkpoints = 1,
 	.forks_child = 1,
 	.setup = setup,
+	.needs_mmu = 1,
 };

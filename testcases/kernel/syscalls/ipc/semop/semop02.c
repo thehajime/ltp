@@ -174,4 +174,5 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
 	.needs_root = 1,
+	.needs_mmu = 1,
 };

@@ -91,5 +91,6 @@ static struct tst_test test = {
 	.test = do_shmat,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
-	.cleanup = cleanup
+	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

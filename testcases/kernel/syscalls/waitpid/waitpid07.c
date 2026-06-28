@@ -65,4 +65,5 @@ static struct tst_test test = {
 	.setup = waitpid_setup,
 	.cleanup = waitpid_cleanup,
 	.test_all = waitpid_test,
+	.needs_mmu = 1,
 };

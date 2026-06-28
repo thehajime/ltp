@@ -42,4 +42,5 @@ static struct tst_test test = {
 		{&infop, .size = sizeof(*infop)},
 		{},
 	},
+	.needs_mmu = 1,
 };

@@ -194,4 +194,5 @@ static struct tst_test test = {
 	.test = verify_fcntl,
 	.needs_checkpoints = 1,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

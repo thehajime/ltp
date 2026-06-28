@@ -113,4 +113,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test_variants = TEST_VARIANTS,
 	.tcnt = ARRAY_SIZE(testcase_list),
+	.needs_mmu = 1,
 };

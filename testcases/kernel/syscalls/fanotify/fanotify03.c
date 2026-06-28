@@ -382,7 +382,8 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
-	.resource_files = resource_files
+	.resource_files = resource_files,
+	.needs_mmu = 1,
 };
 
 #else

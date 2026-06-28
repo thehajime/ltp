@@ -226,4 +226,5 @@ static struct tst_test test = {
 		"nfs",
 		NULL
 	},
+	.needs_mmu = 1, 	/* lease-break-time only exists in MMU */
 };

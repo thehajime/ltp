@@ -558,7 +558,8 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "28bba2c2935e2"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };
 
 #else

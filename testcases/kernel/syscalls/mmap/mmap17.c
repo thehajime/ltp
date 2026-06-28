@@ -68,5 +68,6 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = test_mmap,
 	.min_kver = "4.17",
-	.needs_tmpdir = 1
+	.needs_tmpdir = 1,
+	.needs_mmu = 1,		/* MAP_FIXED_NOREPLACE */
 };

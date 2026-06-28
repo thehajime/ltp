@@ -183,5 +183,6 @@ static struct tst_test test = {
 	.bufs = (struct tst_buffers []) {
 		{&args, .size = sizeof(*args)},
 		{},
-	}
+	},
+	.needs_mmu = 1,
 };

@@ -83,4 +83,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.needs_checkpoints = 1,
 	.test_all = verify_pipe,
+	.needs_mmu = 1,
 };

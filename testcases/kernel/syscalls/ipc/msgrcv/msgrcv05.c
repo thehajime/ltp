@@ -67,4 +67,5 @@ static struct tst_test test = {
 	.test_all = do_test,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };
