@@ -934,8 +934,11 @@ static void cleanup(void)
 
 	cleanup_fanotify_groups();
 
-	if (bind_mount_created)
+	if (bind_mount_created) {
 		SAFE_UMOUNT(MNT2_PATH);
+		/* nommu shares global variable btw/ parent/child */
+		bind_mount_created = 0;
+	}
 
 	for (i = 0; i < max_file_multi; i++) {
 		char path[PATH_MAX];

@@ -414,14 +414,22 @@ static void do_cleanup(void)
 		SAFE_CLOSE(nofid_fd);
 	if (fanotify_fd > 0)
 		SAFE_CLOSE(fanotify_fd);
-	if (ovl_bind_mounted)
+	if (ovl_bind_mounted) {
 		SAFE_UMOUNT(MOUNT_PATH);
+		/* nommu shares global variable btw/ parent/child */
+		ovl_bind_mounted = 0;
+	}
 	if (bind_mounted) {
 		SAFE_UMOUNT(MOUNT_PATH);
 		SAFE_RMDIR(MOUNT_PATH);
+		/* nommu shares global variable btw/ parent/child */
+		bind_mounted = 0;
 	}
-	if (ovl_mounted)
+	if (ovl_mounted) {
 		SAFE_UMOUNT(OVL_MNT);
+		/* nommu shares global variable btw/ parent/child */
+		ovl_mounted = 0;
+	}
 }
 
 static struct tst_test test = {
