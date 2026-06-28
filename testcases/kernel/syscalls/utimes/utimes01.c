@@ -66,6 +66,8 @@ static void utimes_verify(unsigned int i)
 	struct timeval tmp_tv[2];
 	struct tcase *tc = &tcases[i];
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_errno, 1, return);
+
 	if (tc->exp_errno == 0) {
 		SAFE_STAT(tc->pathname, &st);
 

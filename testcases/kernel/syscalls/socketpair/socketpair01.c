@@ -56,26 +56,12 @@ static void verify_socketpair(unsigned int n)
 {
 	struct test_case_t *tc = &tdat[n];
 
-	TEST(socketpair(tc->domain, tc->type, tc->proto, tc->sv));
+	TST_EXP_FAIL(socketpair(tc->domain, tc->type, tc->proto, tc->sv), tc->experrno);
 
 	if (TST_RET == 0) {
 		SAFE_CLOSE(fds[0]);
 		SAFE_CLOSE(fds[1]);
 	}
-
-	if (TST_RET != tc->retval) {
-		tst_res(TFAIL, "%s returned %ld (expected %d)",
-			tc->desc, TST_RET, tc->retval);
-		return;
-	}
-
-	if (TST_ERR != tc->experrno) {
-		tst_res(TFAIL | TTERRNO, "expected %s(%d)",
-		        tst_strerrno(tc->experrno), tc->experrno);
-		return;
-	}
-
-	tst_res(TPASS, "%s successful", tc->desc);
 }
 
 static struct tst_test test = {

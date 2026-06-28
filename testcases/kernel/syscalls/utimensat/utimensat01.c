@@ -233,6 +233,8 @@ static void run(unsigned int i)
 	void *tsp = NULL;
 	struct stat sb;
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_err, 1, return);
+
 	if (tc->dirfd != AT_FDCWD)
 		dfd = SAFE_OPEN(TEST_DIR, tc->oflags);
 

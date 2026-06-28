@@ -61,6 +61,8 @@ static void verify_read(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_error, 1, return);
+
 	if (tc->fd == &fd4 && *tc->fd == -1) {
 		tst_res(TCONF, "O_DIRECT not supported on %s filesystem",
 			tst_fs_type_name(fs_type));

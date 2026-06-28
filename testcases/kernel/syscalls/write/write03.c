@@ -31,6 +31,10 @@ static void verify_write(void)
 
 	SAFE_WRITE(SAFE_WRITE_ALL, fd, wbuf, 100);
 
+#ifdef CONFIG_NOMMU
+	tst_brk(TCONF, "no memory protection in NOMMU, skipping test");
+#endif
+
 	if (write(fd, bad_addr, 100) != -1) {
 		tst_res(TFAIL, "write() failed to fail");
 		SAFE_CLOSE(fd);

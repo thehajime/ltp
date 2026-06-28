@@ -66,23 +66,8 @@ static void verify_test(unsigned int n)
 		SAFE_SETEUID(ltpuser->pw_uid);
 	}
 
-	TEST(tst_syscall(__NR_sched_setaffinity,
-			*tc->pid, *tc->size, *tc->mask));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "sched_setaffinity() succeded unexpectedly");
-		kill_pid();
-		return;
-	}
-
-	if (TST_ERR != tc->exp_errno) {
-		tst_res(TFAIL | TTERRNO,
-			"sched_setaffinity() should fail with %s, got",
-			tst_strerrno(tc->exp_errno));
-	} else {
-		tst_res(TPASS | TTERRNO, "sched_setaffinity() failed");
-	}
-
+	TST_EXP_FAIL(tst_syscall(__NR_sched_setaffinity,
+				 *tc->pid, *tc->size, *tc->mask), tc->exp_errno);
 	if (tc->exp_errno == EPERM)
 		kill_pid();
 }

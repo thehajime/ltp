@@ -91,6 +91,8 @@ static void run(unsigned int n)
 
 	tst_res(TINFO, "Testing for %s:", descriptions[n]);
 
+	NOMMU_EFAULT_REQUIRED(&tc->error, 1, return);
+
 	for (i = 0; i < CLOCKS_DEFINED; ++i) {
 		clock_t clock = clock_list[i];
 

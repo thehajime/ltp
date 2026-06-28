@@ -82,22 +82,7 @@ static void verify_rmdir(unsigned int n)
 {
 	struct testcase *tc = &tcases[n];
 
-	TEST(rmdir(tc->dir));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "rmdir() succeeded unexpectedly (%li)",
-			TST_RET);
-		return;
-	}
-
-	if (TST_ERR == tc->exp_errno) {
-		tst_res(TPASS | TTERRNO, "rmdir() failed as expected");
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO,
-		"rmdir() failed unexpectedly; expected: %d - %s",
-		tc->exp_errno, tst_strerrno(tc->exp_errno));
+	TST_EXP_FAIL(rmdir(tc->dir), tc->exp_errno);
 }
 
 static struct tst_test test = {

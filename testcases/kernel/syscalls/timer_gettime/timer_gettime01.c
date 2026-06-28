@@ -69,11 +69,7 @@ static void verify(void)
 	else
 		tst_res(TFAIL | TTERRNO, "timer_gettime(-1) = %li", TST_RET);
 
-	TEST(tv->timer_gettime(timer, NULL));
-	if (TST_RET == -1 && TST_ERR == EFAULT)
-		tst_res(TPASS, "timer_gettime(NULL) Failed: EFAULT");
-	else
-		tst_res(TFAIL | TTERRNO, "timer_gettime(-1) = %li", TST_RET);
+	TST_EXP_FAIL(tv->timer_gettime(timer, NULL), EFAULT);
 }
 
 static struct tst_test test = {

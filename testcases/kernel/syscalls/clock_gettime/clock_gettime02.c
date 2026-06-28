@@ -126,6 +126,7 @@ static void verify_clock_gettime(unsigned int i)
 	/* bad pointer cases */
 	if (tc[i].exp_err == EFAULT) {
 		ts = bad_addr;
+		NOMMU_EFAULT_REQUIRED(&tc[i].exp_err, 1, return);
 	} else {
 		spec.type = tv->ts_type;
 		ts = tst_ts_get(&spec);

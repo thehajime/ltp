@@ -64,16 +64,7 @@ static void run(unsigned int n)
 {
 	struct testcase *tc = &tcases[n];
 
-	TEST(tst_syscall(__NR_timer_create, *tc->clock, tc->ev_ptr, tc->kt_ptr));
-
-	if (TST_RET != -1 || TST_ERR != tc->error) {
-		tst_res(TFAIL | TTERRNO,
-			"%s did not fail as expected (%s) - Got",
-			tc->desc, tst_strerrno(tc->error));
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "%s failed as expected", tc->desc);
+	TST_EXP_FAIL(tst_syscall(__NR_timer_create, *tc->clock, tc->ev_ptr, tc->kt_ptr), tc->error);
 }
 
 static void setup(void)

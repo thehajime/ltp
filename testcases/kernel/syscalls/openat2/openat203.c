@@ -55,22 +55,10 @@ static void run(unsigned int n)
 	myhow->mode = tc->mode;
 	myhow->resolve = tc->resolve;
 
-	TEST(openat2(tc->dfd, tc->pathname, myhow, tc->size));
+	TST_EXP_FAIL(openat2(tc->dfd, tc->pathname, myhow, tc->size), tc->exp_errno);
 
-	if (TST_RET >= 0) {
+	if (TST_RET >= 0)
 		SAFE_CLOSE(TST_RET);
-		tst_res(TFAIL, "%s: openat2() passed unexpectedly",
-			tc->name);
-		return;
-	}
-
-	if (tc->exp_errno != TST_ERR) {
-		tst_res(TFAIL | TTERRNO, "%s: openat2() should fail with %s",
-			tc->name, tst_strerrno(tc->exp_errno));
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "%s: openat2() failed as expected", tc->name);
 }
 
 static struct tst_test test = {

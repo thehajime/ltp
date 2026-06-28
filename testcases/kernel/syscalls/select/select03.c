@@ -57,23 +57,10 @@ static void verify_select(unsigned int n)
 {
 	struct tcases *tc = &tests[n];
 
-	TEST(do_select_faulty_to(*tc->nfds, *tc->readfds, *tc->writefds,
-				 *tc->exceptfds, *tc->timeout,
-				 tc->timeout == &invalid_to));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "%s: select() passed unexpectedly with %ld",
-		        tc->name, TST_RET);
-		return;
-	}
-
-	if (tc->exp_errno != TST_ERR) {
-		tst_res(TFAIL | TTERRNO, "%s: select()() should fail with %s",
-			tc->name, tst_strerrno(tc->exp_errno));
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "%s: select() failed as expected", tc->name);
+	TST_EXP_FAIL(do_select_faulty_to(*tc->nfds, *tc->readfds, *tc->writefds,
+					 *tc->exceptfds, *tc->timeout,
+					 tc->timeout == &invalid_to),
+		tc->exp_errno);
 
 	SAFE_EXIT(0);
 }

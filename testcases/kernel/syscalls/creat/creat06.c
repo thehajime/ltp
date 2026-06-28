@@ -74,23 +74,10 @@ static void verify_creat(unsigned int i)
 	if (tcases[i].setup != NULL)
 		tcases[i].setup(i);
 
-	TEST(creat(tcases[i].fname, tcases[i].mode));
+	TST_EXP_FAIL(creat(tcases[i].fname, tcases[i].mode), tcases[i].error);
 
 	if (tcases[i].cleanup != NULL)
 		tcases[i].cleanup();
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "call succeeded unexpectedly");
-		return;
-	}
-
-	if (TST_ERR == tcases[i].error) {
-		tst_res(TPASS | TTERRNO, "got expected failure");
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO, "expected %s",
-	         tst_strerrno(tcases[i].error));
 }
 
 

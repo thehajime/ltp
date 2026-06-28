@@ -138,6 +138,8 @@ static void do_test(unsigned int i)
 
 	tst_res(TINFO, "case %s", tc->desc);
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_err, 1, return);
+
 	if (tc->ttype & (BAD_TS_ADDR_REQ | BAD_TS_ADDR_REM) &&
 	    tv->clock_nanosleep == libc_clock_nanosleep) {
 		tst_res(TCONF,

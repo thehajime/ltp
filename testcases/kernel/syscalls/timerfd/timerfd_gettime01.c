@@ -72,6 +72,8 @@ static void run(unsigned int n)
 	struct test_case_t *test = &test_cases[n];
 	void *its;
 
+	NOMMU_EFAULT_REQUIRED(&test->exp_errno, 1, return);
+
 	if (test->exp_errno == EFAULT)
 		its = bad_addr;
 	else

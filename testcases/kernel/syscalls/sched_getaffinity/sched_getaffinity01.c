@@ -20,23 +20,7 @@ static void *bad_addr;
 
 static void errno_test(pid_t pid, size_t cpusize, void *mask, int exp_errno)
 {
-	TEST(sched_getaffinity(pid, cpusize, mask));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL,
-			"sched_getaffinity() returned %ld, expected -1",
-			TST_RET);
-		return;
-	}
-
-	if (TST_ERR != exp_errno) {
-		tst_res(TFAIL | TTERRNO,
-			"sched_getaffinity() should fail with %s",
-			tst_strerrno(exp_errno));
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "sched_getaffinity() failed");
+	TST_EXP_FAIL(sched_getaffinity(pid, cpusize, mask), exp_errno);
 }
 
 static void do_test(void)

@@ -91,20 +91,7 @@ static void verify_execve(unsigned int i)
 	struct tcase *tc = &tcases[i];
 	char *argv[2] = {tc->tname, NULL};
 
-	TEST(execve(tc->tname, argv, NULL));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "call succeeded unexpectedly");
-		return;
-	}
-
-	if (TST_ERR == tc->error) {
-		tst_res(TPASS | TTERRNO, "execve failed as expected");
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO, "execve failed unexpectedly; expected %s",
-		strerror(tc->error));
+	TST_EXP_FAIL(execve(tc->tname, argv, NULL), tc->error);
 }
 
 static struct tst_test test = {

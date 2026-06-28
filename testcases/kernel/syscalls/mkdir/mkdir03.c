@@ -64,20 +64,7 @@ static void verify_mkdir(unsigned int n)
 {
 	struct tcase *tc = TC + n;
 
-	TEST(mkdir(tc->pathname, MODE));
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "mkdir() returned %ld, expected -1, errno=%d",
-			TST_RET, tc->exp_errno);
-		return;
-	}
-
-	if (TST_ERR == tc->exp_errno) {
-		tst_res(TPASS | TTERRNO, "mkdir() failed as expected");
-	} else {
-		tst_res(TFAIL | TTERRNO,
-			"mkdir() failed unexpectedly; expected: %d - %s",
-			 tc->exp_errno, strerror(tc->exp_errno));
-	}
+	TST_EXP_FAIL(mkdir(tc->pathname, MODE), tc->exp_errno);
 }
 
 static void setup(void)

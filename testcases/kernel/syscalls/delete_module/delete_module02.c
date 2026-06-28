@@ -63,15 +63,7 @@ static void do_delete_module(unsigned int n)
 		SAFE_SETEUID(ltpuser->pw_uid);
 
 	tst_res(TINFO, "test %s", tc->desc);
-	TEST(tst_syscall(__NR_delete_module, tc->modname, 0));
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "delete_module() succeeded unexpectedly");
-	} else if (TST_ERR == tc->experrno) {
-		tst_res(TPASS | TTERRNO, "delete_module() failed as expected");
-	} else {
-		tst_res(TFAIL | TTERRNO, "delete_module() failed unexpectedly;"
-			" expected: %s", tst_strerrno(tc->experrno));
-	}
+	TST_EXP_FAIL(tst_syscall(__NR_delete_module, tc->modname, 0), tc->experrno);
 
 	if (tc->nobody_user)
 		SAFE_SETEUID(0);

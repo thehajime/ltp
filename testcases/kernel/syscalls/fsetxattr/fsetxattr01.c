@@ -174,6 +174,7 @@ static void verify_fsetxattr(unsigned int i)
 	/* error */
 
 	if (tc[i].exp_err != TST_ERR) {
+		NOMMU_EFAULT_REQUIRED(&tc[i].exp_err, 1, return);
 		tst_res(TFAIL | TTERRNO, "fsetxattr(2) should fail with %s",
 			tst_strerrno(tc[i].exp_err));
 		return;

@@ -65,23 +65,10 @@ void run(unsigned int i)
 	if (tc[i].setup)
 		tc[i].setup();
 
-	TEST(chmod(tc[i].pathname, tc[i].mode));
+	TST_EXP_FAIL(chmod(tc[i].pathname, tc[i].mode), tc[i].exp_errno);
 
 	if (tc[i].cleanup)
 		tc[i].cleanup();
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "chmod succeeded unexpectedly");
-		return;
-	}
-
-	if (TST_ERR == tc[i].exp_errno) {
-		tst_res(TPASS | TTERRNO, "chmod failed as expected");
-	} else {
-		tst_res(TFAIL | TTERRNO, "chmod failed unexpectedly; "
-		        "expected %d - %s", tc[i].exp_errno,
-			tst_strerrno(tc[i].exp_errno));
-	}
 }
 
 void set_root(void)

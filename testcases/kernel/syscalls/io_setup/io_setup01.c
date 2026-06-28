@@ -31,21 +31,7 @@ static void verify_failure(unsigned int nr, io_context_t *ctx, int init_val, lon
 	if (ctx)
 		memset(ctx, init_val, sizeof(*ctx));
 
-	TEST(io_setup(nr, ctx));
-	if (TST_RET == 0) {
-		tst_res(TFAIL, "io_setup() passed unexpectedly");
-		io_destroy(*ctx);
-		return;
-	}
-
-	if (TST_RET == -exp_err) {
-		tst_res(TPASS, "io_setup() failed as expected, returned -%s",
-			tst_strerrno(exp_err));
-	} else {
-		tst_res(TFAIL, "io_setup() failed unexpectedly, returned -%s "
-			"expected -%s", tst_strerrno(-TST_RET),
-			tst_strerrno(exp_err));
-	}
+	TST_EXP_FAIL(io_setup(nr, ctx), exp_err);
 }
 
 static void verify_success(unsigned int nr, io_context_t *ctx, int init_val)

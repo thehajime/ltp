@@ -62,24 +62,7 @@ struct test_case tc[] = {
 
 static void verify_fremovexattr(unsigned int i)
 {
-	TEST(fremovexattr(tc[i].fd, tc[i].key));
-
-	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP)
-		tst_brk(TCONF, "fremovexattr(2) not supported");
-
-	if (TST_RET == -1) {
-		if (tc[i].exp_err == TST_ERR) {
-			tst_res(TPASS | TTERRNO,
-				"fremovexattr(2) failed expectedly");
-		} else {
-			tst_res(TFAIL | TTERRNO,
-				"fremovexattr(2) should fail with %s",
-				tst_strerrno(tc[i].exp_err));
-		}
-		return;
-	}
-
-	tst_res(TFAIL, "fremovexattr(2) returned %li", TST_RET);
+	TST_EXP_FAIL(fremovexattr(tc[i].fd, tc[i].key), tc[i].exp_err);
 }
 
 static void cleanup(void)
