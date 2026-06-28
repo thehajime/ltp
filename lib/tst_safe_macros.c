@@ -712,6 +712,33 @@ int safe_mprotect(const char *file, const int lineno,
 	return rval;
 }
 
+int safe_madvise(const char *file, const int lineno,
+	char *addr, size_t len, int adv)
+{
+	int rval;
+
+	tst_res_(file, lineno, TDEBUG,
+		"madvise(%p, %zi, %d)", addr, len, adv);
+
+	rval = madvise(addr, len, adv);
+
+	if (rval == -1) {
+#ifdef CONFIG_NOMMU
+		if (errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+			"nommu doesn't have madvise(%p, %zu, %d), skipped", addr, len, adv);
+#endif
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"madvise(%p, %zi, %d)", addr, len, adv);
+	} else if (rval) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"madvise(%p, %zi, %d) return value %d",
+			addr, len, adv, rval);
+	}
+
+	return rval;
+}
+
 int safe_prctl(const char *file, const int lineno,
 	int option, unsigned long arg2, unsigned long arg3,
 	unsigned long arg4, unsigned long arg5)
