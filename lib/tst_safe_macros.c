@@ -711,6 +711,11 @@ int safe_mprotect(const char *file, const int lineno,
 	rval = mprotect(addr, len, prot);
 
 	if (rval == -1) {
+#ifdef CONFIG_NOMMU
+		if (errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+			"nommu doesn't have mprotect(%p, %zu, %d), skipped", addr, len, prot);
+#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mprotect(%p, %zi, %s(%x))", addr, len, prot_buf, prot);
 	} else if (rval) {
