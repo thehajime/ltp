@@ -90,5 +90,9 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test = verify_fallocate,
 	.needs_tmpdir = 1,
-	.tcnt = ARRAY_SIZE(test_cases)
+	.tcnt = ARRAY_SIZE(test_cases),
+	.skip_filesystems = (const char*[]) {
+		"ramfs",
+		NULL
+	},
 };
