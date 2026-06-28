@@ -151,6 +151,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.skip_filesystems = (const char *const []) {
 		"tmpfs",
+		"ramfs",
 		"overlayfs",
 		NULL
 	},
