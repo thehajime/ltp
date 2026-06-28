@@ -1388,6 +1388,11 @@ int safe_mincore(const char *file, const int lineno, void *start,
 	rval = mincore(start, length, vec);
 
 	if (rval == -1) {
+#ifdef CONFIG_NOMMU
+		if (errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+				 "nommu doesn't have mincore(), skipped");
+#endif
 		tst_brkm_(file, lineno, TBROK | TERRNO, NULL,
 			"mincore() failed");
 	} else if (rval) {
