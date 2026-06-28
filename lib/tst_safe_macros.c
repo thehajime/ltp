@@ -464,6 +464,11 @@ int safe_setns(const char *file, const int lineno, int fd, int nstype)
 	ret = setns(fd, nstype);
 
 	if (ret == -1) {
+#ifdef CONFIG_NOMMU
+		if (nstype == CLONE_NEWTIME && errno == EUSERS)
+			tst_brk_(file, lineno, TCONF,
+				 "nommu doesn't have setns(CLONE_NEWTIME), skipped");
+#endif
 		tst_brk_(file, lineno, TBROK | TERRNO, "setns(%i, %i) failed",
 			fd, nstype);
 	} else if (ret) {
