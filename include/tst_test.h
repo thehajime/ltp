@@ -170,6 +170,14 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
 #define SAFE_EXIT(code) exit(code)
 #endif
 
+#define NOMMU_EFAULT_REQUIRED(ERRNOS, ERRNOS_CNT, EXIT)			\
+	if (IS_NOMMU()) {						\
+		if (tst_errno_in_set(EFAULT, ERRNOS, ERRNOS_CNT)) {	\
+			tst_res(TCONF, "no memory protection in NOMMU, skipping test");	\
+			EXIT;						\
+		}							\
+	}
+
 #define TST_TRACE(expr)	                                            \
 	({int ret = expr;                                           \
 	  ret != 0 ? tst_res(TINFO, #expr " failed"), ret : ret; }) \
