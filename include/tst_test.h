@@ -178,6 +178,12 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
 		}							\
 	}
 
+#define NOMMU_PARENT_BLOCK_REQUIRED()						\
+	if (IS_NOMMU())							\
+		tst_brk(TCONF,							\
+			"nommu: parent requires children running in parallel.");
+
+
 #define TST_TRACE(expr)	                                            \
 	({int ret = expr;                                           \
 	  ret != 0 ? tst_res(TINFO, #expr " failed"), ret : ret; }) \
