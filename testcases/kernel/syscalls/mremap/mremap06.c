@@ -103,9 +103,11 @@ static void setup(void)
 
 	ret = fallocate(fd, 0, 0, mmap_size);
 	if (ret != 0) {
-		if (tst_fs_type(".") == TST_NFS_MAGIC && (errno == EOPNOTSUPP ||
-							  errno == ENOSYS)) {
-			tst_brk(TCONF, "fallocate system call is not implemented");
+		if (errno == EOPNOTSUPP || errno == ENOSYS) {
+			if (tst_fs_type(".") == TST_NFS_MAGIC ||
+			    tst_fs_type(".") == TST_RAMFS_MAGIC ||
+			    tst_fs_type(".") == TST_TMPFS_MAGIC)
+				tst_brk(TCONF, "fallocate system call is not implemented");
 		}
 		tst_brk(TBROK, "fallocate() failed");
 	}
