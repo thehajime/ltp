@@ -91,8 +91,20 @@ typedef struct {
 } option_t;
 
 /* lib/tst_parse_opts.c */
+#ifndef CONFIG_NOMMU
 void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
                     void (*user_help)(void));
+#else
+void tst_brk_(const char *file, const int lineno, int ttype,
+	      const char *fmt, ...);
+#define tst_parse_opts(argc, argv, user_optarg, user_help)		\
+	(void)(argc);							\
+	(void)(argv);							\
+	(void)(user_optarg);						\
+	(void)(user_help);						\
+	tst_brk_(__FILE__, __LINE__, TCONF,				\
+		 "nommu doesn't support old API tests. skipping.");
+#endif
 
 /* lib/tst_res.c */
 const char *strttype(int ttype);

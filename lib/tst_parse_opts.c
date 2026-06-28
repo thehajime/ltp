@@ -24,6 +24,7 @@
 #include "test.h"
 #include "tso_priv.h"
 
+#ifndef CONFIG_NOMMU
 void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
                     void (*user_help)(void))
 {
@@ -34,3 +35,4 @@ void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
 	if (msg)
 		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 }
+#endif
