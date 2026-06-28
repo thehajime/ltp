@@ -36,7 +36,7 @@ static struct tcase {
 	size_t bufsiz;
 	int exp_errno;
 } tcases[] = {
-	{&dir_fd, SYMLINK_FILE, 0, EINVAL},
+	{&dir_fd, SYMLINK_FILE, 0, EINVAL},         /* not working with musl */
 	{&dir_fd, TEST_FILE, BUFF_SIZE, EINVAL},
 	{&file_fd, SYMLINK_FILE, BUFF_SIZE, ENOTDIR},
 	{&dir_fd, "test_file/test_file", BUFF_SIZE, ENOTDIR},

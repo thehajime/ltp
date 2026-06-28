@@ -48,7 +48,7 @@ static struct tcase {
 	int exp_errno;
 } tcases[] = {
 	{SYM_FILE1, buffer, sizeof(buffer), EACCES},
-	{SYM_FILE2, buffer, 0, EINVAL},
+	{SYM_FILE2, buffer, 0, EINVAL},         /* not working with musl */
 	{TEST_FILE2, buffer, sizeof(buffer), EINVAL},
 	{longpathname, buffer, sizeof(buffer), ENAMETOOLONG},
 	{"", buffer, sizeof(buffer), ENOENT},
