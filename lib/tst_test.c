@@ -1613,6 +1613,12 @@ static void do_setup(int argc, char *argv[])
 		do_cgroup_requires();
 	else if (tst_test->needs_cgroup_ver)
 		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
+
+#ifdef CONFIG_NOMMU
+	if (tst_test->needs_mmu)
+		tst_brk(TCONF, "Test requires MMU, skipping");
+#endif
+
 }
 
 static void do_test_setup(void)

@@ -647,6 +647,7 @@ struct tst_fs {
 	const char *const *needs_cgroup_ctrls;
 
 	unsigned int needs_cgroup_nsdelegate:1;
+	unsigned int needs_mmu:1;
 };
 
 /**
