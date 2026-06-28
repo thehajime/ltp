@@ -24,6 +24,10 @@ vpath %.in		$(top_srcdir)/include
 vpath %.m4		$(top_srcdir)/m4
 vpath %.mk		$(top_srcdir)/mk:$(top_srcdir)/mk/include
 
+# nommu cross-compilation or not
+NOMMU			?= 0
+export NOMMU
+
 # CLEAN_TARGETS:	Targets which exist solely in clean.
 # COMMON_TARGETS:	Targets which exist in all, clean, and install.
 # INSTALL_TARGETS:	Targets which exist in clean and install (contains

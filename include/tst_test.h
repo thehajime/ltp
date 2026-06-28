@@ -52,6 +52,13 @@ void tst_res_(const char *file, const int lineno, int ttype,
               const char *fmt, ...)
               __attribute__ ((format (printf, 4, 5)));
 
+
+#ifndef CONFIG_NOMMU
+#define IS_NOMMU()  0
+#else
+#define IS_NOMMU()  1
+#endif
+
 /**
  * tst_res() - Reports a test result.
  *

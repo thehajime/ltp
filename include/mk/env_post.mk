@@ -22,6 +22,10 @@ CPPFLAGS			+= -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/
 
 LDFLAGS				+= -L$(top_builddir)/lib
 
+ifeq ($(NOMMU),1)
+CPPFLAGS			+= -DCONFIG_NOMMU
+endif
+
 ifeq ($(ANDROID),1)
 LDFLAGS				+= -L$(top_builddir)/lib/android_libpthread
 LDFLAGS				+= -L$(top_builddir)/lib/android_librt
