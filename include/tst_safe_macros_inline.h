@@ -243,6 +243,16 @@ static inline void *safe_mmap(const char *file, const int lineno,
 
 	rval = mmap(addr, length, prot, flags, fd, offset);
 	if (rval == MAP_FAILED) {
+#ifdef CONFIG_NOMMU
+		if ((flags & MAP_FIXED) && errno == EINVAL)
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				 "mmap(%p,%zu,%s(%x),%d,%d,%ld) MAP_FIXED isn't supported on nommu",
+				 addr, length, prot_buf, prot, flags, fd, (long) offset);
+		if ((flags & MAP_SHARED) && errno == ENODEV)
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				 "mmap(%p,%zu,%s(%x),%d,%d,%ld) MAP_SHARED isn't supported on nommu",
+				 addr, length, prot_buf, prot, flags, fd, (long) offset);
+#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mmap(%p,%zu,%s(%x),%d,%d,%ld) failed",
 			addr, length, prot_buf, prot, flags, fd, (long) offset);
