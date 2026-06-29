@@ -39,6 +39,8 @@ static void vmsplice_test(void)
 		    "vmsplice(..., SPLICE_F_NONBLOCK) wrote to a full pipe");
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = SAFE_FORK();
 	if (!pid) {
 		TEST(vmsplice(pipes[1], &iov, 1, 0));

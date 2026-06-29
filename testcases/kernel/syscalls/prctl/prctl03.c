@@ -77,6 +77,8 @@ static void verify_prctl(void)
 
 	tst_res(TPASS, "prctl(PR_SET_CHILD_SUBREAPER) succeeded");
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = SAFE_FORK();
 	if (!pid) {
 		pid_t cpid;

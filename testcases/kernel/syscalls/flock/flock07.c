@@ -56,6 +56,8 @@ static void verify_flock(void)
 
 	TST_EXP_PASS(flock(fd1, LOCK_EX));
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = SAFE_FORK();
 	if (!pid) {
 		child_do(fd2);

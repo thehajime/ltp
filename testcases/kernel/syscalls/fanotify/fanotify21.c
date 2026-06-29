@@ -105,6 +105,8 @@ static void do_fork(void)
 	int status;
 	pid_t child;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	child = SAFE_FORK();
 	if (child == 0) {
 		SAFE_CLOSE(fanotify_fd);

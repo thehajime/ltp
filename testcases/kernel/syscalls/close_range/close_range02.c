@@ -79,6 +79,8 @@ static void run(unsigned int n)
 			tst_res(TFAIL, "FD_CLOEXEC not set on %d", fd);
 		break;
 	case 5:
+		NOMMU_PARENT_BLOCK_REQUIRED();
+
 		fd = SAFE_OPEN("/", O_PATH);
 
 		if (!SAFE_CLONE(&args)) {

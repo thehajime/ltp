@@ -57,6 +57,8 @@ static void verify_test(unsigned int n)
 	struct tcase *tc = &tcases[n];
 
 	if (tc->exp_errno == EPERM) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
+
 		privileged_pid = SAFE_FORK();
 		if (privileged_pid == 0) {
 			pause();
