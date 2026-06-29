@@ -38,7 +38,7 @@ static void test_enomem1(void)
 	addr = SAFE_MMAP(NULL, len, PROT_READ,
 			 MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 	SAFE_MUNMAP(addr, len);
-	TST_EXP_FAIL(mlock(addr, len), ENOMEM, "mlock(%p, %lu)", addr, len);
+	TST_EXP_FAIL(SAFE_MLOCK(addr, len), ENOMEM, "mlock(%p, %lu)", addr, len);
 }
 
 static void test_enomem2(void)
@@ -52,7 +52,7 @@ static void test_enomem2(void)
 	addr = SAFE_MMAP(NULL, len, PROT_READ,
 			 MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 	SAFE_SETEUID(ltpuser->pw_uid);
-	TST_EXP_FAIL(mlock(addr, len), ENOMEM, "mlock(%p, %lu)", addr, len);
+	TST_EXP_FAIL(SAFE_MLOCK(addr, len), ENOMEM, "mlock(%p, %lu)", addr, len);
 	SAFE_SETEUID(0);
 	SAFE_MUNMAP(addr, len);
 	SAFE_SETRLIMIT(RLIMIT_MEMLOCK, &original);
@@ -69,7 +69,7 @@ static void test_eperm(void)
 	addr = SAFE_MMAP(NULL, len, PROT_READ,
 			 MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 	SAFE_SETEUID(ltpuser->pw_uid);
-	TST_EXP_FAIL(mlock(addr, len), EPERM, "mlock(%p, %lu)", addr, len);
+	TST_EXP_FAIL(SAFE_MLOCK(addr, len), EPERM, "mlock(%p, %lu)", addr, len);
 	SAFE_SETEUID(0);
 	SAFE_MUNMAP(addr, len);
 	SAFE_SETRLIMIT(RLIMIT_MEMLOCK, &original);

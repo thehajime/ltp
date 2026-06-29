@@ -28,6 +28,10 @@ static void verify_mlock2(void)
 {
 	unsigned long bsize, asize1, asize2;
 
+	if (IS_NOMMU())
+		tst_brk(TCONF,
+			"nommu doesn't have \"VmLck\" line in /proc/self/status, skipped");
+
 	SAFE_FILE_LINES_SCANF("/proc/self/status", "VmLck: %lu", &bsize);
 
 	TEST(tst_syscall(__NR_mlock2, addr, pgsz, MLOCK_ONFAULT));

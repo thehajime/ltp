@@ -92,6 +92,10 @@ static void verify_mlock2(unsigned int n)
 	size_t bsize, asize, act_vmlcks, act_pgs;
 	char *addr;
 
+	if (IS_NOMMU())
+		tst_brk(TCONF,
+			"nommu doesn't have \"VmLck\" line in /proc/self/status, skipped");
+
 	addr = SAFE_MMAP(NULL, PAGES * pgsz, PROT_WRITE,
 			 MAP_SHARED | MAP_ANONYMOUS, 0, 0);
 

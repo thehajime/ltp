@@ -34,7 +34,7 @@ static void verify_mlock(void)
 	char *buf;
 
 	buf = SAFE_MMAP(NULL, file_len, PROT_WRITE, MAP_SHARED, fd, 0);
-	TST_EXP_PASS(mlock(buf, file_len), "mlock(%p, %d)", buf, file_len);
+	TST_EXP_PASS(SAFE_MLOCK(buf, file_len), "mlock(%p, %d)", buf, file_len);
 	SAFE_MUNLOCK(buf, file_len);
 	SAFE_MUNMAP(buf, file_len);
 }

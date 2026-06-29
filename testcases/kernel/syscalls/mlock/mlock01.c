@@ -31,7 +31,7 @@ static void do_mlock(unsigned int i)
 
 	tst_res(TINFO, "%s", tc->msg);
 	addr = SAFE_MALLOC(tc->len);
-	TST_EXP_PASS(mlock(addr, tc->len), "mlock(%p, %d)", addr, tc->len);
+	TST_EXP_PASS(SAFE_MLOCK(addr, tc->len), "mlock(%p, %d)", addr, tc->len);
 	free(addr);
 	addr = NULL;
 }

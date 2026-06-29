@@ -52,7 +52,7 @@ static void verify_mlock(void)
 			first = (to - from) / TST_KB;
 
 		tst_res(TINFO, "mlock [%lx,%lx]", from, to);
-		if (mlock((const void *)from, to - from) == -1)
+		if (SAFE_MLOCK((const void *)from, to - from) == -1)
 			tst_res(TINFO | TERRNO, "mlock failed");
 
 		tst_res(TINFO, "munlock [%lx,%lx]", from, to);
