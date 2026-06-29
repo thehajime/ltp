@@ -54,7 +54,7 @@ static void test_mincore(unsigned int test_nr)
 	if (tc->mlock)
 		SAFE_MLOCK(ptr, size);
 
-	mincore_ret = mincore(ptr, size, vec);
+	mincore_ret = SAFE_MINCORE(ptr, size, vec);
 	if (mincore_ret == -1)
 		tst_brk(TBROK | TERRNO, "mincore failed");
 	locked_pages = 0;

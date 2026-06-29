@@ -68,7 +68,7 @@ static int count_pages_in_cache(void)
 
 	TST_CHECKPOINT_WAIT(0);
 
-	ret = mincore(ptr, size, vec);
+	ret = SAFE_MINCORE(ptr, size, vec);
 	if (ret == -1)
 		tst_brk(TBROK | TERRNO, "mincore failed");
 	for (count = 0; count < NUM_PAGES; count++) {
@@ -109,4 +109,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test_all = test_mincore,
 	.needs_checkpoints = 1,
+	.needs_mmu = 1,
 };
