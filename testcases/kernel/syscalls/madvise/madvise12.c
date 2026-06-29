@@ -35,14 +35,14 @@ static void run(void)
 
 	memset(addr, 0, MAP_SIZE);
 
-	TST_EXP_PASS(madvise(addr, MAP_SIZE, MADV_GUARD_INSTALL));
+	TST_EXP_PASS(SAFE_MADVISE(addr, MAP_SIZE, MADV_GUARD_INSTALL));
 
 	pid = SAFE_FORK();
 	if (!pid) {
 		tst_res(TINFO, "Modifying memory content");
 
 		memset(addr, 'a', MAP_SIZE);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);
@@ -52,7 +52,7 @@ static void run(void)
 	else
 		tst_res(TFAIL, "Child: %s", tst_strstatus(status));
 
-	TST_EXP_PASS(madvise(addr, MAP_SIZE, MADV_GUARD_REMOVE));
+	TST_EXP_PASS(SAFE_MADVISE(addr, MAP_SIZE, MADV_GUARD_REMOVE));
 
 	for (int i = 0; i < MAP_SIZE; i++) {
 		if (addr[i] == 'a') {
@@ -68,7 +68,7 @@ static void run(void)
 		tst_res(TINFO, "Modifying memory content");
 
 		memset(addr, 'b', MAP_SIZE);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);
@@ -100,4 +100,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.min_kver = "6.13",
+	.needs_mmu = 1,
 };

@@ -98,7 +98,7 @@ static void verify_madvise(unsigned int i)
 {
 	struct tcase *tc = &tcases[i];
 
-	TEST(madvise(*(tc->addr), st.st_size, tc->advice));
+	TEST(SAFE_MADVISE(*(tc->addr), st.st_size, tc->advice));
 
 	if (TST_RET == -1) {
 		if (TST_ERR == EINVAL) {
@@ -121,4 +121,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

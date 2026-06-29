@@ -21,7 +21,7 @@ static void run(void)
 
 	memset(addr, 1, MAP_SIZE);
 
-	TEST(madvise(addr, MAP_SIZE, MADV_DONTNEED));
+	TEST(SAFE_MADVISE(addr, MAP_SIZE, MADV_DONTNEED));
 	if (TST_RET == -1) {
 		tst_brk(TBROK | TTERRNO, "madvise(%p, %d, 0x%x) failed",
 			addr, MAP_SIZE, MADV_DONTNEED);
@@ -61,4 +61,5 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

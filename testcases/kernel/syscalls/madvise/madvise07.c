@@ -52,14 +52,14 @@ static void run_child(void)
 	memset(mem, 'L', msize);
 
 	tst_res(TINFO, "madvise(%p, %zu, MADV_HWPOISON)", mem, msize);
-	if (madvise(mem, msize, MADV_HWPOISON) == -1) {
+	if (SAFE_MADVISE(mem, msize, MADV_HWPOISON) == -1) {
 		if (errno == EINVAL) {
 			tst_res(TCONF | TERRNO,
 				"CONFIG_MEMORY_FAILURE probably not set in kconfig");
 		} else {
 			tst_res(TFAIL | TERRNO, "Could not poison memory");
 		}
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	*((char *)mem) = 'd';
@@ -75,7 +75,7 @@ static void run(void)
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		run_child();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);
@@ -93,6 +93,7 @@ static void run(void)
 static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
-	.forks_child = 1
+	.forks_child = 1,
+	.needs_mmu = 1,
 };
 

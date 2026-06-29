@@ -164,7 +164,7 @@ static void advice_test(unsigned int i)
 		return;
 	}
 
-	TEST(madvise(*(tc->addr), st.st_size, tc->advice));
+	TEST(SAFE_MADVISE(*(tc->addr), st.st_size, tc->advice));
 	if (TST_RET == -1) {
 		if (TST_ERR == tc->exp_errno) {
 			tst_res(TPASS | TTERRNO, "%s failed as expected", tc->name);
@@ -195,4 +195,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

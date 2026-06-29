@@ -177,7 +177,7 @@ static void test_advice_willneed(void)
 	SAFE_FILE_LINES_SCANF("/proc/meminfo", "SwapCached: %ld",
 		&swapcached_start);
 
-	TEST(madvise(target, MEM_LIMIT, MADV_WILLNEED));
+	TEST(SAFE_MADVISE(target, MEM_LIMIT, MADV_WILLNEED));
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "madvise failed");
 
@@ -198,7 +198,7 @@ static void test_advice_willneed(void)
 
 	loops = 100;
 	SAFE_FILE_LINES_SCANF("/proc/meminfo", "SwapCached: %ld", &swapcached_start);
-	TEST(madvise(target, pg_sz * 3, MADV_WILLNEED));
+	TEST(SAFE_MADVISE(target, pg_sz * 3, MADV_WILLNEED));
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "madvise failed");
 	do {
@@ -249,5 +249,6 @@ static struct tst_test test = {
 		{"linux-git", "8de15e920dc8"},
 		{"linux-git", "66383800df9c"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

@@ -90,7 +90,7 @@ static void cmp_area(char *addr, const struct test_case *tc)
 
 static int set_advice(char *addr, int size, int advise)
 {
-	TEST(madvise(addr, size, advise));
+	TEST(SAFE_MADVISE(addr, size, advise));
 
 	if (TST_RET == -1) {
 		if (TST_ERR == EINVAL) {
@@ -143,11 +143,11 @@ static void test_madvise(unsigned int test_nr)
 
 				if (!pid) {
 					cmp_area(addr, tc);
-					exit(0);
+					SAFE_EXIT(0);
 				}
 			} else {
 				cmp_area(addr, tc);
-				exit(0);
+				SAFE_EXIT(0);
 			}
 		}
 		tst_reap_children();
@@ -170,4 +170,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test = test_madvise,
 	.setup = setup,
+	.needs_mmu = 1,
 };

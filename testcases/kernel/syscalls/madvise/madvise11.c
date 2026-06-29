@@ -125,7 +125,7 @@ static int allocate_offline(int tnum)
 			if (ptrs[num_alloc] == NULL)
 				return -1;
 
-			if (madvise(ptrs[num_alloc], pagesize, MADV_SOFT_OFFLINE) == -1) {
+			if (SAFE_MADVISE(ptrs[num_alloc], pagesize, MADV_SOFT_OFFLINE) == -1) {
 				if (errno == EBUSY)
 					continue;
 				if (errno != EINVAL)
@@ -435,5 +435,6 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "d4ae9916ea29"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

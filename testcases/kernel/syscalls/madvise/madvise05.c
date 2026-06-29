@@ -28,10 +28,10 @@ static void verify_madvise(void)
 	p = SAFE_MMAP(NULL, ALLOC_SIZE, PROT_READ,
 			MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
 
-	TEST(mprotect(p, ALLOC_SIZE, PROT_NONE));
+	TEST(SAFE_MPROTECT(p, ALLOC_SIZE, PROT_NONE));
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "mprotect failed");
-	TEST(madvise(p, ALLOC_SIZE, MADV_WILLNEED));
+	TEST(SAFE_MADVISE(p, ALLOC_SIZE, MADV_WILLNEED));
 	SAFE_MUNMAP(p, ALLOC_SIZE);
 
 	if (TST_RET == 0) {
@@ -50,5 +50,6 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "ee53664bda16"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

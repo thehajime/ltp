@@ -159,13 +159,13 @@ static pid_t run_child(int advice)
 
 	pid = SAFE_FORK();
 	if (pid == 0) {
-		if (madvise(fmem, FMEMSIZE, advice) == -1) {
+		if (SAFE_MADVISE(fmem, FMEMSIZE, advice) == -1) {
 			tst_res(TFAIL | TERRNO,
 				"madvise(%p, %lu, %s) = -1",
 				fmem,
 				FMEMSIZE,
 				advstr);
-			exit(1);
+			SAFE_EXIT(1);
 		}
 		abort();
 	}
@@ -215,4 +215,5 @@ static struct tst_test test = {
 		{CORE_PATTERN, NULL, TST_SR_TCONF},
 		{}
 	},
+	.needs_mmu = 1,
 };

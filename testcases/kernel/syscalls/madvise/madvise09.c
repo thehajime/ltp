@@ -78,7 +78,7 @@ static void memory_pressure_child(void)
 			SAFE_FILE_LINES_SCANF("/proc/self/status", "VmSwap: %d", &swapped);
 
 			if (swapped > 100 * 1024)
-				exit(0);
+				SAFE_EXIT(0);
 		}
 
 	}
@@ -152,7 +152,7 @@ static void child(void)
 	for (i = 0; i < PAGES * page_size; i++)
 		ptr[i] = 'a';
 
-	if (madvise(ptr, PAGES * page_size, MADV_FREE)) {
+	if (SAFE_MADVISE(ptr, PAGES * page_size, MADV_FREE)) {
 		if (errno == EINVAL)
 			tst_brk(TCONF | TERRNO, "MADV_FREE is not supported");
 
@@ -235,7 +235,7 @@ static void child(void)
 
 	SAFE_MUNMAP(ptr, PAGES * page_size);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void run(void)
@@ -289,4 +289,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
+	.needs_mmu = 1,
 };
