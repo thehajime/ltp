@@ -7,6 +7,7 @@
 
 #include "tst_test.h"
 #include "tst_hugepage.h"
+#include "tst_kconfig.h"
 
 unsigned long tst_hugepages;
 char *nr_opt;
@@ -28,10 +29,17 @@ unsigned long tst_reserve_hugepages(struct tst_hugepage *hp)
 		.val = NULL,
 		.flags = TST_SR_SKIP_MISSING | TST_SR_TCONF_RO
 	};
+	static const char * const kconf_hugetlb[] = {"CONFIG_HUGETLBFS=y", NULL};
 
 	if (access(PATH_HUGEPAGES, F_OK)) {
 		if (hp->policy == TST_NEEDS)
 			tst_brk(TCONF, "hugetlbfs is not supported");
+		tst_hugepages = 0;
+		goto out;
+	}
+
+	if (tst_kconfig_check(kconf_hugetlb)) {
+		tst_brk(TCONF, "CONFIG_HUGETLBFS is not supported");
 		tst_hugepages = 0;
 		goto out;
 	}
@@ -47,7 +55,8 @@ unsigned long tst_reserve_hugepages(struct tst_hugepage *hp)
 	}
 
 	SAFE_FILE_PRINTF("/proc/sys/vm/drop_caches", "3");
-	SAFE_FILE_PRINTF("/proc/sys/vm/compact_memory", "1");
+	if (!IS_NOMMU())
+		SAFE_FILE_PRINTF("/proc/sys/vm/compact_memory", "1");
 	if (hp->policy == TST_NEEDS) {
 		tst_hugepages += SAFE_READ_MEMINFO("HugePages_Total:");
 		goto set_hugepages;
