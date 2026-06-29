@@ -15,6 +15,8 @@ pid_t create_sig_proc(int sig, int count, unsigned int usec)
 {
 	pid_t pid, cpid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = getpid();
 	cpid = SAFE_FORK();
 
@@ -24,7 +26,7 @@ pid_t create_sig_proc(int sig, int count, unsigned int usec)
 			if (kill(pid, sig) == -1)
 				break;
 		}
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	return cpid;

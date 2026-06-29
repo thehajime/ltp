@@ -43,7 +43,7 @@ static void run(void)
 {
 	char *ch;
 
-	addr = mmap(0, page_sz * 2, PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED, fd, 0);
+	addr = SAFE_MMAP(0, page_sz * 2, PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED, fd, 0);
 	if (addr == MAP_FAILED) {
 		tst_res(TFAIL | TERRNO, "mmap() of %s failed", TEMPFILE);
 		return;

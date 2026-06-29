@@ -84,7 +84,7 @@ static int do_child_newipc(void *arg)
 	void *p;
 	int ns_flag = *(int *)arg;
 
-	p = shmat(shmid, NULL, 0);
+	p = SAFE_SHMAT(shmid, NULL, 0);
 	if (p == (void *) -1) {
 		tst_res(TPASS|TERRNO, CP"shmat failed as expected");
 	} else {
@@ -99,7 +99,7 @@ static int do_child_newipc(void *arg)
 		return 2;
 	}
 
-	p = shmat(shmid, NULL, 0);
+	p = SAFE_SHMAT(shmid, NULL, 0);
 	if (p == (void *) -1) {
 		tst_res(TFAIL|TERRNO, CP"shmat failed after setns");
 		return 3;

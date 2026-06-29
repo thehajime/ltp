@@ -44,6 +44,10 @@ static void run(void)
 	unsigned int sz_after;
 	unsigned int sz_ch;
 
+	if (IS_NOMMU())
+		tst_brk(TCONF,
+			"nommu doesn't have \"VmLck\" line in /proc/self/status, skipped");
+
 	getvmlck(&sz_before);
 
 	addr = mmap(NULL, MMAPSIZE, PROT_READ | PROT_WRITE,

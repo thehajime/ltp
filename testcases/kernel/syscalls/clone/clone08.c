@@ -81,8 +81,13 @@ static long clone_child(const struct test_case *t)
 	if (TST_RET == -1 && TTERRNO == ENOSYS)
 		tst_brk(TCONF, "clone does not support 7 args");
 
+	if (t->flags & (CLONE_THREAD | CLONE_SETTLS | CLONE_CHILD_CLEARTID) &&
+		errno == EINVAL)
+		tst_brk(TCONF, "musl libc returns EINVAL for flags: CLONE_THREAD | CLONE_SETTLS | CLONE_CHILD_CLEARTID");
+
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "%s clone() failed", t->name);
+
 
 	return TST_RET;
 }

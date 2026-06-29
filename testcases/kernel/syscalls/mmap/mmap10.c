@@ -84,7 +84,9 @@ static void run(unsigned int i)
 	}
 
 	if (tc->add_ksm) {
-		if (madvise(memory, SIZE + SIZE - page_sz, MADV_MERGEABLE) == -1)
+#ifndef __UCLIBC__
+		if (SAFE_MADVISE(memory, SIZE + SIZE - page_sz, MADV_MERGEABLE) == -1)
+#endif
 			tst_brk(TBROK | TERRNO, "madvise error");
 	}
 
@@ -93,7 +95,7 @@ static void run(unsigned int i)
 	for (int i = 0; i < 3; i++) {
 		if (!SAFE_FORK()) {
 			SAFE_MUNMAP(memory + SIZE + page_sz, SIZE - page_sz * 2);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 	}
 

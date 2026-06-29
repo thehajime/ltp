@@ -16,6 +16,10 @@ static void verify_munlockall(void)
 {
 	unsigned long size = 0;
 
+	if (IS_NOMMU())
+		tst_brk(TCONF,
+			"nommu doesn't have \"VmLck\" line in /proc/self/status, skipped");
+
 	SAFE_FILE_LINES_SCANF("/proc/self/status", "VmLck: %ld", &size);
 
 	if (size != 0UL)

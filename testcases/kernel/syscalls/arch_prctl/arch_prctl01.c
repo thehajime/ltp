@@ -14,6 +14,7 @@
 #include "lapi/arch_prctl.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/utsname.h>
 
 static int arch_prctl_get(int code)
 {
@@ -50,6 +51,14 @@ static void setup(void)
 
 static void run(unsigned int index)
 {
+	struct utsname uval;
+	uname(&uval);
+
+	if (!strncmp((char *)&uval.machine, "um", 2)) {
+		tst_res(TCONF, "skipping ARCH=um test");
+		return;
+	}
+
 	if (tag)
 		TST_EXP_PASS(arch_prctl_set(ARCH_SET_CPUID, index));
 	else

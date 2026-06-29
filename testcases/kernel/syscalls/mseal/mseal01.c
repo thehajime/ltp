@@ -67,7 +67,11 @@ static void test_pkey_mprotect(void)
 
 static void test_madvise(void)
 {
-	TST_EXP_FAIL(madvise(mem_addr, mem_size, MADV_DONTNEED), EPERM);
+#ifndef __UCLIBC__
+	TST_EXP_FAIL(SAFE_MADVISE(mem_addr, mem_size, MADV_DONTNEED), EPERM);
+#else
+		tst_brk(TBROK, "uclibc doesn't have madvise");
+#endif
 }
 
 static void test_munmap(void)

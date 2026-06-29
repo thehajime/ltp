@@ -84,6 +84,11 @@ void verify_mmap(void)
 		return;
 	}
 
+	if (IS_NOMMU()) {
+		tst_res(TCONF, "no /proc/self/pagemap file in nommu, skipping");
+		goto unmap;
+	}
+
 	page_check();
 
 	for (i = 0; i < MMAPSIZE; i++) {

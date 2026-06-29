@@ -168,7 +168,7 @@ static void setup(void)
 
 	fd = SAFE_OPEN(PROC_MAP_PATH, O_RDONLY);
 
-	if (tst_kvercmp(6, 11, 0) < 0) {
+	if (tst_kvercmp(6, 11, 0) < 0 || IS_NOMMU()) {
 		TEST(ioctl(fd, PROCMAP_QUERY, q));
 
 		if ((TST_RET == -1) && (TST_ERR == ENOTTY))

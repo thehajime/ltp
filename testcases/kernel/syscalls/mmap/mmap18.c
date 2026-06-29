@@ -134,8 +134,10 @@ static void grow_stack(void *stack, size_t size)
 	if (ret)
 		tst_brk(TBROK, "pthread_attr_init failed during setup");
 
+#ifndef __UCLIBC__
 	ret = pthread_attr_setstack(&attr, stack, size);
 	if (ret)
+#endif
 		tst_brk(TBROK, "pthread_attr_setstack failed during setup");
 
 	SAFE_PTHREAD_CREATE(&test_thread, &attr, check_depth_recursive, limit);
@@ -185,6 +187,7 @@ static void grow_stack_fail(size_t stack_size, size_t mapped_size)
 		tst_res(TINFO, "mapped page at %p", stack);
 
 		grow_stack(stack, stack_size);
+		exit(0);
 	}
 
 	SAFE_WAIT(&wstatus);
@@ -209,4 +212,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = run_test,
 	.forks_child = 1,
+	.needs_mmu = 1, 	/* mmap(MAP_FIXED) */
 };

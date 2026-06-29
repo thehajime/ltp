@@ -99,7 +99,7 @@ static void *addr;
 
 static int do_soft_offline(int tpgs)
 {
-	if (madvise(addr, tpgs * hpsz, MADV_SOFT_OFFLINE) == -1) {
+	if (SAFE_MADVISE(addr, tpgs * hpsz, MADV_SOFT_OFFLINE) == -1) {
 		if (errno != EINVAL && errno != EBUSY && errno != ENOMEM)
 			tst_res(TFAIL | TERRNO, "madvise failed");
 		return errno;
@@ -142,7 +142,7 @@ static void do_child(int tpgs)
 		}
 	}
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void do_test(unsigned int n)
