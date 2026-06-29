@@ -9,5 +9,9 @@ ifneq ($(WITH_EXPECT),yes)
 FILTER_OUT_SUBDIRS	:= tpm-tools
 endif
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_DIRS		+= ldd
+endif
+
 include $(top_srcdir)/include/mk/env_pre.mk
 include $(top_srcdir)/include/mk/generic_trunk_target.mk

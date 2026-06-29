@@ -27,7 +27,7 @@ MAKE_TARGETS		:= lddfile.out
 CLEAN_TARGETS		+= *.obj $(LDD_SO_FILES)
 
 %.obj.so: %.o
-	$(CC) $(CFLAGS) -shared -o $@ $^
+	$(CC) -nostdlib $(CFLAGS) -shared -o $@ $^
 
 lddfile.out: main.o $(LDD_SO_FILES)
 	$(CC) $(CFLAGS) -O -o $@ $?

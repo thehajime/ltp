@@ -159,6 +159,9 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
 #ifdef CONFIG_NOMMU
 #define SAFE_FORK() \
 	vfork()
+#ifdef __riscv
+#define fork vfork
+#endif
 #else
 #define SAFE_FORK() \
 	safe_fork(__FILE__, __LINE__)

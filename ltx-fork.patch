@@ -1,0 +1,14 @@
+Submodule tools/ltx/ltx-src contains modified content
+diff --git a/tools/ltx/ltx-src/ltx.c b/tools/ltx/ltx-src/ltx.c
+index 0d46c46..d32ece0 100644
+--- a/tools/ltx/ltx-src/ltx.c
++++ b/tools/ltx/ltx-src/ltx.c
+@@ -727,7 +727,7 @@ static void ltx_handle_exec(struct ltx_session *session)
+ 	assert(!ltx_epoll_add(session, &exec_slot->event, EPOLLIN));
+ 
+ 	/* run the command */
+-	pid_t pid = fork();
++	pid_t pid = vfork();
+ 	if (pid == -1) {
+ 		LTX_HANDLE_ERROR(session, "fork() error", 1);
+ 		return;

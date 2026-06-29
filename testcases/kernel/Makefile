@@ -45,7 +45,7 @@ SUBDIRS			+= kvm
 
 endif
 
-ifeq ($(ANDROID),1)
+ifneq ($(filter 1, $(ANDROID) $(UCLIBC)),)
 FILTER_OUT_DIRS		+= containers controllers device-drivers fs io ipc mem \
 				sched security
 endif

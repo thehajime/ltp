@@ -22,7 +22,7 @@
 
 top_srcdir		?= ../../..
 
-ifeq ($(ANDROID),1)
+ifneq ($(filter 1, $(ANDROID) $(UCLIBC)),)
 FILTER_OUT_DIRS		:= abs float
 endif
 

@@ -45,6 +45,7 @@ int safe_pthread_join(const char *file, const int lineno,
 int safe_pthread_barrier_wait(const char *file, const int lineno,
 			      pthread_barrier_t *barrier)
 {
+#ifndef __UCLIBC__
 	int rval;
 
 	rval =  pthread_barrier_wait(barrier);
@@ -56,11 +57,15 @@ int safe_pthread_barrier_wait(const char *file, const int lineno,
 	}
 
 	return rval;
+#else
+	return -1;
+#endif
 }
 
 int safe_pthread_barrier_destroy(const char *file, const int lineno,
 				 pthread_barrier_t *barrier)
 {
+#ifndef __UCLIBC__
 	int rval;
 
 	rval = pthread_barrier_destroy(barrier);
@@ -72,6 +77,9 @@ int safe_pthread_barrier_destroy(const char *file, const int lineno,
 	}
 
 	return rval;
+#else
+	return -1;
+#endif
 }
 
 int safe_pthread_cancel(const char *file, const int lineno,
@@ -96,7 +104,11 @@ int safe_pthread_barrier_init(const char *file, const int lineno,
 {
 	int rval;
 
+#ifndef __UCLIBC__
 	rval = pthread_barrier_init(barrier, attr, count);
+#else
+	rval = -1;
+#endif
 
 	if (rval) {
 		tst_brk_(file, lineno, TBROK,

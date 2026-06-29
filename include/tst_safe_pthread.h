@@ -22,8 +22,14 @@
 int safe_pthread_create(const char *file, const int lineno,
 			pthread_t *thread_id, const pthread_attr_t *attr,
 			void *(*thread_fn)(void *), void *arg);
+#ifdef __riscv
+#define SAFE_PTHREAD_CREATE(thread_id, attr, thread_fn, arg) \
+	tst_brk(TCONF,							\
+		"riscv-nommu: pthread seems not working, skipped.");
+#else
 #define SAFE_PTHREAD_CREATE(thread_id, attr, thread_fn, arg) \
 	safe_pthread_create(__FILE__, __LINE__, thread_id, attr, thread_fn, arg)
+#endif
 
 int safe_pthread_join(const char *file, const int lineno,
 		      pthread_t thread_id, void **retval);

@@ -99,7 +99,7 @@ static void *fn_ofd_w(void *arg)
 		sched_yield();
 	} while (loop_flag);
 
-	pthread_barrier_wait(&barrier);
+	SAFE_PTHREAD_BARRIER_WAIT(&barrier);
 	SAFE_CLOSE(fd);
 	return NULL;
 }
@@ -138,7 +138,7 @@ static void *fn_posix_w(void *arg)
 		sched_yield();
 	} while (loop_flag);
 
-	pthread_barrier_wait(&barrier);
+	SAFE_PTHREAD_BARRIER_WAIT(&barrier);
 	SAFE_CLOSE(fd);
 	return NULL;
 }
@@ -199,7 +199,7 @@ static void *fn_ofd_r(void *arg)
 		sched_yield();
 	}
 
-	pthread_barrier_wait(&barrier);
+	SAFE_PTHREAD_BARRIER_WAIT(&barrier);
 	SAFE_CLOSE(fd);
 	return NULL;
 }
@@ -259,7 +259,7 @@ static void *fn_posix_r(void *arg)
 		sched_yield();
 	}
 
-	pthread_barrier_wait(&barrier);
+	SAFE_PTHREAD_BARRIER_WAIT(&barrier);
 	SAFE_CLOSE(fd);
 	return NULL;
 }
@@ -268,7 +268,7 @@ static void *fn_dummy(void *arg)
 {
 	arg = NULL;
 
-	pthread_barrier_wait(&barrier);
+	SAFE_PTHREAD_BARRIER_WAIT(&barrier);
 	return arg;
 }
 
@@ -290,8 +290,7 @@ static void test_fn(void *f0(void *), void *f1(void *),
 	if (tst_fill_file(fname, 1, write_size, thread_cnt + 1))
 		tst_brk(TBROK, "Failed to create tst file");
 
-	if (pthread_barrier_init(&barrier, NULL, thread_cnt*3) != 0)
-		tst_brk(TBROK, "Failed to init pthread barrier");
+	SAFE_PTHREAD_BARRIER_INIT(&barrier, NULL, thread_cnt*3);
 
 	for (i = 0; i < thread_cnt; i++) {
 
@@ -358,8 +357,7 @@ static void test_fn(void *f0(void *), void *f1(void *),
 		}
 	}
 
-	if (pthread_barrier_destroy(&barrier) != 0)
-		tst_brk(TBROK, "Failed to destroy pthread barrier");
+	SAFE_PTHREAD_BARRIER_DESTROY(&barrier);
 
 	SAFE_CLOSE(fd);
 	if (fail_flag == 0)

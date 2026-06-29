@@ -10,4 +10,8 @@ CPPFLAGS		+= -I$(abs_srcdir)/../utils
 sendmsg03:  CFLAGS += -pthread
 sendmsg03:  LDLIBS += -pthread -lrt
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_MAKE_TARGETS += sendmsg03
+endif
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

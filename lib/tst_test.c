@@ -1926,8 +1926,12 @@ static void fork_testrun(void)
 	if (!test_pid) {
 		tst_disable_oom_protection(0);
 		SAFE_SIGNAL(SIGALRM, SIG_DFL);
+		/* XXX: riscv uclibc failed if those are */
+#ifndef __riscv
+
 		SAFE_SIGNAL(SIGUSR1, SIG_DFL);
 		SAFE_SIGNAL(SIGTERM, SIG_DFL);
+#endif
 		SAFE_SIGNAL(SIGINT, SIG_DFL);
 		SAFE_SETPGID(0, 0);
 		testrun();

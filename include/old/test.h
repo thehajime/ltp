@@ -158,6 +158,11 @@ void tst_old_flush(void);
  */
 pid_t tst_fork(void);
 
+/* XXX */
+#ifdef __riscv
+#define fork() vfork()
+#endif
+
 /* lib/tst_res.c */
 /*
  * In case we need do real test work in child process parent process can use
