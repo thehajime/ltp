@@ -25,17 +25,17 @@ static int child_environ(void *arg LTP_ATTRIBUTE_UNUSED)
 	const char *env_val = getenv(ENV_ID);
 	if (!env_val) {
 		tst_res(TFAIL, "Variable " ENV_ID " not defined in child");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	if (strcmp(env_val, ENV_VAL)) {
 		tst_res(TFAIL, "Variable value is different");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_res(TPASS, "The environment variables of the child and the parent are the same ");
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_clone(void)

@@ -32,7 +32,7 @@ static void verify_fork(void)
 			fl1 = fl2 - fl2;
 			fl1 = fl2;
 		}
-		exit(!!pid1);
+		SAFE_EXIT(!!pid1);
 	}
 
 	tst_res(TINFO, "process id in parent of child from fork: %d", pid1);

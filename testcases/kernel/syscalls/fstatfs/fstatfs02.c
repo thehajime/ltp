@@ -36,7 +36,7 @@ static void fstatfs_verify(unsigned int n)
 	pid = SAFE_FORK();
 	if (!pid) {
 		TST_EXP_FAIL(fstatfs(*tests[n].fd, tests[n].sbuf), tests[n].error, "fstatfs()");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

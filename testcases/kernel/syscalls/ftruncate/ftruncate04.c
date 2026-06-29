@@ -126,7 +126,7 @@ void dochild(void)
 
 	tst_res(TINFO, "Child unlocks file");
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_ftruncate(void)

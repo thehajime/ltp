@@ -22,7 +22,7 @@ static void child_write(void)
 
 	fd = SAFE_CREAT(FNAME, 0666);
 	SAFE_WRITE(SAFE_WRITE_ALL, fd, FNAME, sizeof(FNAME));
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void check_file(void)

@@ -47,7 +47,7 @@ static void vmsplice_test(void)
 		else
 			tst_res(TFAIL,
 			    "vmsplice(..., 0) wrote to a full pipe");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	if (TST_PROCESS_STATE_WAIT(pid, 'S', 1000) < 0)

@@ -81,7 +81,7 @@ static void check_regs_loop(uint32_t initval)
 			"xmm registers corrupted!  initval=%08X, xmm0=%08X%08X%08X%08X\n",
 			initval, xmm0[0], xmm0[1], xmm0[2], xmm0[3]);
 	}
-	exit(status);
+	SAFE_EXIT(status);
 }
 
 static void do_test(void)

@@ -52,6 +52,7 @@ static void verify_pidfd_send_signal(void)
 		pid = SAFE_FORK();
 		if (pid == 0) {
 			TST_CHECKPOINT_WAIT(0);
+			SAFE_EXIT(0);
 			return;
 		}
 
@@ -69,6 +70,7 @@ static void verify_pidfd_send_signal(void)
 		new_pid = SAFE_FORK();
 		if (new_pid == 0) {
 			TST_CHECKPOINT_WAIT(0);
+			SAFE_EXIT(0);
 			return;
 		}
 

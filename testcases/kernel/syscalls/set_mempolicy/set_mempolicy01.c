@@ -101,6 +101,7 @@ static void verify_mempolicy(unsigned int node, int mode)
 			        prefix, i, nodes->counters[i]);
 		}
 	}
+	SAFE_EXIT(0);
 }
 
 static void verify_set_mempolicy(unsigned int n)

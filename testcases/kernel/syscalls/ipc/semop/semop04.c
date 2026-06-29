@@ -82,6 +82,7 @@ static void run(void)
 		TST_EXP_POSITIVE(semctl(semid, 0, IPC_RMID, semunion));
 	} else {
 		mainloop(semid);
+		SAFE_EXIT(0);
 	}
 }
 

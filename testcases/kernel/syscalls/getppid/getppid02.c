@@ -27,6 +27,7 @@ static void verify_getppid(void)
 				pproc_id, proc_id);
 		else
 			tst_res(TPASS, "getppid() returned parent pid (%d)", proc_id);
+		SAFE_EXIT(0);
 	}
 }
 

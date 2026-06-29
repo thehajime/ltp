@@ -176,7 +176,7 @@ static void test_update_setperm_race(void)
 			if (TST_RET != 0)
 				tst_brk(TBROK | TTERRNO, "setperm failed");
 		}
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_res(TINFO, "Try to update the 'user' key...");

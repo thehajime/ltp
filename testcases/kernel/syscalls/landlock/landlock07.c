@@ -31,7 +31,7 @@ static pid_t spawn_houdini(void)
 	if (!pid) {
 		SAFE_KEYCTL(KEYCTL_JOIN_SESSION_KEYRING, 0, 0, 0, 0);
 		SAFE_KEYCTL(KEYCTL_SESSION_TO_PARENT, 0, 0, 0, 0);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	return pid;
@@ -60,7 +60,7 @@ static void run(void)
 	if (TST_RET != -1)
 		SAFE_CLOSE(TST_RET);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

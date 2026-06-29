@@ -138,6 +138,7 @@ static void verify_recvmsg(void)
 	if (pid == 0) {
 		TST_CHECKPOINT_WAIT(0);
 		client();
+		SAFE_EXIT(0);
 	} else {
 		server();
 		tst_reap_children();

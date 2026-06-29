@@ -57,7 +57,7 @@ static void run(void)
 	pid = SAFE_FORK();
 	if (!pid) {
 		run_child();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

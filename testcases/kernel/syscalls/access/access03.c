@@ -43,6 +43,7 @@ static void verify_access(unsigned int n)
 		SAFE_SETUID(uid);
 		TST_EXP_FAIL(access(tc->addr, tc->mode), EFAULT,
 		             "invalid address as nobody");
+		SAFE_EXIT(0);
 	}
 }
 

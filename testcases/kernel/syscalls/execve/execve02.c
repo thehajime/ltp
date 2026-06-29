@@ -52,7 +52,7 @@ static void do_child(void)
 
 	tst_res(TPASS | TTERRNO, "execve() failed expectedly");
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_execve(void)

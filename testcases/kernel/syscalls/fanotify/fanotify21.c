@@ -109,7 +109,7 @@ static void do_fork(void)
 	if (child == 0) {
 		SAFE_CLOSE(fanotify_fd);
 		generate_event();
-		exit(EXIT_SUCCESS);
+		SAFE_EXIT(EXIT_SUCCESS);
 	}
 
 	SAFE_WAITPID(child, &status, 0);

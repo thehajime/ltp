@@ -60,7 +60,7 @@ static void verify_test(unsigned int n)
 		privileged_pid = SAFE_FORK();
 		if (privileged_pid == 0) {
 			pause();
-			exit(0);
+			SAFE_EXIT(0);
 		}
 
 		SAFE_SETEUID(ltpuser->pw_uid);

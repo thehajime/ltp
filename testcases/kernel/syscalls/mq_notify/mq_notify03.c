@@ -37,7 +37,7 @@ static void try_null_dereference_cb(union sigval sv)
 	            sizeof(buf));
 	TST_EXP_PASS(memcmp(buf, msg, sizeof(buf)));
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void try_null_dereference(void)

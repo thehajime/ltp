@@ -373,8 +373,10 @@ static void wrap_verify_membarrier(unsigned int i)
 
 	if (pid)
 		SAFE_WAITPID(pid, NULL, 0);
-	else
+	else {
 		verify_membarrier(i);
+		SAFE_EXIT(0);
+	}
 }
 
 static void setup(void)

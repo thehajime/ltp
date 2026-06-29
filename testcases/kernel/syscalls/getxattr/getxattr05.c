@@ -122,7 +122,7 @@ static void do_getxattr(unsigned int n)
 			do_unshare(tc->map_root);
 
 		verify_getxattr();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

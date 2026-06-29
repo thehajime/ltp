@@ -228,7 +228,7 @@ static void verify_uevent(void)
 	pid = SAFE_FORK();
 	if (!pid) {
 		wait_for_uevents(fd, uevents);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_CLOSE(fd);

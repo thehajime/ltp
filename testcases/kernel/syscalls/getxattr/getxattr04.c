@@ -63,7 +63,7 @@ static void loop_getxattr(void)
 	}
 
 	tst_res(TPASS, "getxattr() succeeded to get an existing attribute");
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_getxattr(void)
@@ -114,7 +114,8 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "5a93790d4e2d"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };
 
 #else /* HAVE_SYS_XATTR_H */

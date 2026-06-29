@@ -60,7 +60,7 @@ static void run(void)
 
 		/* Children have nothing to do... */
 		if (!children[i])
-			exit(0);
+			SAFE_EXIT(0);
 	}
 
 	/* Wait for one specific child */

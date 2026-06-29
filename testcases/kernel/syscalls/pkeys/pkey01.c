@@ -209,7 +209,7 @@ static int pkey_test(struct tcase *tc, struct mmap_param *mpa)
 			tst_res(TFAIL | TERRNO, "Execute buffer result = %ld", func());
 		break;
 		}
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

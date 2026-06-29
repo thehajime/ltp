@@ -105,7 +105,7 @@ static void check_filter_mode_inherit(void)
 	childpid = SAFE_FORK();
 	if (childpid == 0) {
 		tst_res(TPASS, "SECCOMP_MODE_FILTER permits fork(2)");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	wait4(childpid, &childstatus, 0, NULL);
@@ -193,7 +193,7 @@ static void check_filter_mode(int val)
 		tst_res(TPASS, "SECCOMP_MODE_FILTER permits close(2)");
 	break;
 	case 3:
-		exit(0);
+		SAFE_EXIT(0);
 	break;
 	case 4:
 		check_filter_mode_inherit();

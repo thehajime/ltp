@@ -152,7 +152,7 @@ static void try_corrupt(void)
 		SAFE_CLOSE(pipefd[1]);
 		SAFE_CLOSE(cli_fd);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	acc_fd = SAFE_ACCEPT(srv_fd, NULL, NULL);

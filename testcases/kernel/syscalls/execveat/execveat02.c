@@ -63,6 +63,7 @@ static void verify_execveat(unsigned int i)
 			tst_res(TPASS | TTERRNO,
 				"execveat() fails as expected");
 		}
+		SAFE_EXIT(0);
 	}
 }
 

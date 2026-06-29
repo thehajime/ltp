@@ -106,7 +106,7 @@ static void do_child(void)
 	for (i = 0; i < (int)ARRAY_SIZE(t); i++)
 		SAFE_PTHREAD_JOIN(t[i], NULL);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 /*

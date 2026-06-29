@@ -24,7 +24,7 @@ static void run(void)
 
 	if (!SAFE_FORK()) {
 		SAFE_WRITE(0, fd, &to_parent, sizeof(to_parent));
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

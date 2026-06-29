@@ -63,7 +63,7 @@ static void do_test(void)
 		if (TST_RET < 0)
 			tst_brk(TBROK | TTERRNO, "unable to create user key");
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);

@@ -45,7 +45,7 @@ static void run(void)
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		TST_EXP_FAIL2(open(TEMPFILE, O_RDWR), EACCES);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 

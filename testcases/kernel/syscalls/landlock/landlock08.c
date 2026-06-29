@@ -127,7 +127,7 @@ static void run(void)
 
 	if (!SAFE_FORK()) {
 		create_server(addr_family);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);
@@ -152,7 +152,7 @@ static void run(void)
 		test_bind(addr_family, addr_port, 0);
 		test_bind(addr_family, addr_port + 0x80, EACCES);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	/* verify connect() syscall accessibility */
@@ -177,7 +177,7 @@ static void run(void)
 
 		TST_CHECKPOINT_WAKE(0);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 }
 

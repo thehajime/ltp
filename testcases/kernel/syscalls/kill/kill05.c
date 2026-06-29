@@ -51,7 +51,7 @@ static void do_master_child(void)
 		*flag = 1;
 		wait_for_flag(2);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_SETREUID(test_users[1], test_users[1]);
@@ -77,7 +77,7 @@ static void verify_kill(void)
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		do_master_child();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

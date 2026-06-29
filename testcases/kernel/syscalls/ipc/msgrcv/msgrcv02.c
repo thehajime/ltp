@@ -80,7 +80,7 @@ static void do_test(unsigned int n)
 		if (tc->exp_user)
 			SAFE_SETUID(pw->pw_uid);
 		verify_msgrcv(tc);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 	SAFE_MSGCTL(queue_id, IPC_RMID, NULL);

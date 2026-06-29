@@ -91,7 +91,7 @@ static void verify_setpriority(unsigned int n)
 			SAFE_SETUID(uid);
 			SAFE_SETPGID(0, 0);
 			setpriority_test(tc);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 
 		tst_reap_children();

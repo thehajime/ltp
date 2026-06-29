@@ -42,7 +42,7 @@ static void run(void)
 
 	if (!SAFE_FORK()) {
 		SAFE_LSEEK(fd, DATASIZE, SEEK_SET);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);
@@ -60,7 +60,7 @@ static void run(void)
 		TST_EXP_EXPR(strncmp(buff, data, DATASIZE) == 0,
 			"read second part of data from child process");
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_CLOSE(fd);

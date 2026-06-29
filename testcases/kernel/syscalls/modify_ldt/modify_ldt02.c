@@ -44,7 +44,7 @@ void run(void)
 	pid = SAFE_FORK();
 	if (!pid) {
 		read_segment(0);
-		exit(1);
+		SAFE_EXIT(1);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

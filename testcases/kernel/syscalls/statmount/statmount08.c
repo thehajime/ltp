@@ -31,7 +31,7 @@ static void run(void)
 	TST_EXP_FAIL(statmount(root_id,	STATMOUNT_SB_BASIC, st_mount,
 		sizeof(struct statmount), 0), EPERM);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

@@ -67,7 +67,7 @@ static void verify_inotify(void)
 	if (pid == 0) {
 		SAFE_CLOSE(inotify_fd);
 		churn();
-		return;
+		SAFE_EXIT(0);
 	}
 
 	while (!opened && nevents < CHURN_FILES) {

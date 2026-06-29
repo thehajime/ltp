@@ -22,7 +22,7 @@ static void verify_wait(void)
 
 	fpid = SAFE_FORK();
 	if (fpid == 0)
-		exit(exit_child);
+		SAFE_EXIT(exit_child);
 
 	TST_EXP_PID_SILENT(wait(&status));
 

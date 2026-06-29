@@ -178,7 +178,7 @@ static void test_migrate_current_process(int node1, int node2, int cap_sys_nice)
 		/* child can migrate non-shared memory */
 		ret = check_addr_on_node(private, node1);
 
-		exit(ret);
+		SAFE_EXIT(ret);
 	}
 
 	SAFE_WAITPID(child, NULL, 0);
@@ -225,7 +225,7 @@ static void test_migrate_other_process(int node1, int node2, int cap_sys_nice)
 		/* child2 can migrate child1 process if it has same uid */
 		ret = check_addr_on_node(private, node2);
 
-		exit(ret);
+		SAFE_EXIT(ret);
 	}
 
 	fflush(stdout);
@@ -240,7 +240,7 @@ static void test_migrate_other_process(int node1, int node2, int cap_sys_nice)
 		migrate_to_node(child1, node2);
 		TST_CHECKPOINT_WAKE(1);
 
-		exit(TPASS);
+		SAFE_EXIT(TPASS);
 	}
 
 	SAFE_WAITPID(child1, NULL, 0);

@@ -37,7 +37,7 @@ static void verify_getpid(void)
 
 		*child_pid = getpid();
 
-		return;
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

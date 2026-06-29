@@ -95,8 +95,10 @@ static void verify_kcmp(unsigned int n)
 	pid1 = getpid();
 
 	pid2 = SAFE_FORK();
-	if (!pid2)
+	if (!pid2) {
 		do_child(tc);
+		SAFE_EXIT(0);
+	}
 }
 
 static struct tst_test test = {

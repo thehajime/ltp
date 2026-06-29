@@ -163,13 +163,13 @@ static void do_test(unsigned int n)
 	add_key_pid = SAFE_FORK();
 	if (add_key_pid == 0) {
 		run_child_add(tc->type, tc->payload, tc->effort);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	request_key_pid = SAFE_FORK();
 	if (request_key_pid == 0) {
 		run_child_request(tc->type, tc->effort);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	/*

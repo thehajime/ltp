@@ -28,8 +28,10 @@ static void verify_setuid(void)
 	pid_t pid;
 
 	pid = SAFE_FORK();
-	if (!pid)
+	if (!pid) {
 		dosetuid();
+		SAFE_EXIT(0);
+	}
 	else
 		dosetuid();
 }

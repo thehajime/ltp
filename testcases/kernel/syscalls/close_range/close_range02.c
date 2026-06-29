@@ -88,11 +88,11 @@ static void run(unsigned int n)
 				fd, fd);
 
 			if (res != TPASS)
-				exit(0);
+				SAFE_EXIT(0);
 
 			TST_EXP_FAIL(fcntl(fd, F_GETFD), EBADF,
 				     "fcntl(%d, F_GETFD)", fd);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 
 		tst_reap_children();

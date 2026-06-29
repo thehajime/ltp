@@ -87,7 +87,7 @@ static void verify_prctl(unsigned int n)
 		else
 			tst_res(TFAIL, "rdtsc works incorrectly, %lld ->%lld",
 				time1, time2);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	SAFE_WAITPID(pid, &status, 0);
 

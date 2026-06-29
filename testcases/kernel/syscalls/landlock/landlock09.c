@@ -96,12 +96,13 @@ static void run(void)
 
 	if (!SAFE_FORK()) {
 		run_client();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	run_server();
 
 	tst_reap_children();
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

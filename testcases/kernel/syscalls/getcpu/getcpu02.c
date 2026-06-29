@@ -44,7 +44,7 @@ static void check_getcpu(unsigned int n)
 	if (!pid) {
 		TST_EXP_FAIL(getcpu(tc->cpu_id, tc->node_id), EFAULT);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

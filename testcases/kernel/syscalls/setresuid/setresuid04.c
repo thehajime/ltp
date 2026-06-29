@@ -44,7 +44,7 @@ static void run(void)
 	pid = SAFE_FORK();
 	if (!pid) {
 		TST_EXP_FAIL2(open(TEMP_FILE, O_RDWR), EACCES);
-		return;
+		SAFE_EXIT(0);
 	}
 	SAFE_WAITPID(pid, &status, 0);
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)

@@ -49,7 +49,7 @@ static void run(void)
 
 		TST_CHECKPOINT_WAKE(0);
 		pause();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);
@@ -67,7 +67,7 @@ static void run(void)
 		else
 			TST_EXP_PASS(kill(paused_pid, SIGKILL));
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

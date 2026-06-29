@@ -48,6 +48,7 @@ static void run(unsigned int i)
 
 		TST_EXP_FAIL(unshare(tc[i].mode), tc[i].expected_error,
 			     "unshare(%s)", tc[i].desc);
+		SAFE_EXIT(0);
 	}
 }
 

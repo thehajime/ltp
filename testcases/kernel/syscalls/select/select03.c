@@ -75,7 +75,7 @@ static void verify_select(unsigned int n)
 
 	tst_res(TPASS | TTERRNO, "%s: select() failed as expected", tc->name);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void run(unsigned int n)

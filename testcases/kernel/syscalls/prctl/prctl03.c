@@ -87,15 +87,15 @@ static void verify_prctl(void)
 			if (getppid() != ppid) {
 				tst_res(TFAIL,
 					"PPID of orphaned process was not reparented");
-				exit(0);
+				SAFE_EXIT(0);
 			}
 
 			tst_res(TPASS, "PPID of orphaned process was reparented");
-			exit(0);
+			SAFE_EXIT(0);
 		}
 
 		check_get_subreaper(0);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, NULL, 0);

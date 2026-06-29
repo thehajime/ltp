@@ -143,7 +143,7 @@ static void run(unsigned int test_case)
 #else
 		tst_res(TCONF,
 			"System doesn't have POSIX capabilities support");
-		return;
+		goto end;
 #endif
 	}
 
@@ -155,7 +155,7 @@ static void run(unsigned int test_case)
 		else
 			tst_res(TPASS, "pivot_root succeeded");
 
-		return;
+		goto end;
 	}
 
 	if (TST_RET == 0) {
@@ -165,10 +165,12 @@ static void run(unsigned int test_case)
 
 	if (errno != test_cases[test_case].expected_error) {
 		tst_res(TFAIL | TERRNO,	"pivot_root failed with wrong errno");
-		return;
+		goto end;
 	}
 
 	tst_res(TPASS | TERRNO, "pivot_root failed as expectedly");
+end:
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

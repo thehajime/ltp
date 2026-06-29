@@ -58,7 +58,7 @@ static void verify_readlink(unsigned int n)
 		if (!pid) {
 			SAFE_SETUID(nobody_uid);
 			test_readlink();
-			return;
+			SAFE_EXIT(0);
 		}
 	} else {
 		tst_res(TINFO, "Running test as root");

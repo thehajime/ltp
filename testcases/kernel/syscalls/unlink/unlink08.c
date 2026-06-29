@@ -48,7 +48,7 @@ static void do_unlink(unsigned int n)
 		if (!pid) {
 			SAFE_SETUID(pw->pw_uid);
 			verify_unlink(cases);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 		SAFE_WAITPID(pid, NULL, 0);
 	} else {

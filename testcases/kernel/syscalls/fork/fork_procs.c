@@ -25,7 +25,7 @@ static void run(void)
 	for (int i = 0; i < numforks; i++) {
 		pid = SAFE_FORK();
 		if (!pid)
-			exit(0);
+			SAFE_EXIT(0);
 
 		if (SAFE_WAIT(&status) == pid)
 			counter++;

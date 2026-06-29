@@ -99,7 +99,7 @@ static void do_test(unsigned int n)
 		SAFE_SETUID(pw->pw_uid);
 		TST_EXP_FAIL2(shmget(*tc->shmkey, tc->size, tc->flags), tc->exp_err,
 			"shmget(%i, %lu, %i)", *tc->shmkey, tc->size, tc->flags);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 }

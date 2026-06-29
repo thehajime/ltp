@@ -65,7 +65,7 @@ static void do_test(unsigned int n)
 		} else {
 			SAFE_SETUID(pw->pw_uid);
 			verify_msgget(tc);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 	}
 }

@@ -44,6 +44,7 @@ static void run(void)
 
 		TST_EXP_PID(getpgid(1));
 		TST_EXP_EQ_LI(TST_RET, get_init_pgid());
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

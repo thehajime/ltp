@@ -95,7 +95,7 @@ static void run(void)
 	if (!SAFE_FORK()) {
 		do_child();
 		SAFE_CLOSE(fan_fd);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 }
 

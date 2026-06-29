@@ -724,7 +724,7 @@ static int generate_event(struct tcase *tc, unsigned long long expected_mask)
 			}
 		}
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(child_pid, &status, 0);

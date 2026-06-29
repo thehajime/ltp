@@ -31,6 +31,7 @@ static void run(void)
 			tst_res(TFAIL | TTERRNO, "vhangup() failed");
 		else
 			tst_res(TPASS, "vhangup() succeeded");
+		SAFE_EXIT(0);
 	}
 }
 

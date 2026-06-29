@@ -194,7 +194,7 @@ static void test_fanotify(unsigned int n)
 			}
 		}
 		verify_user_limits(tc->init_flags, groups, marks);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

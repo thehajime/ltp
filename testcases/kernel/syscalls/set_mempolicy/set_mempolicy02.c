@@ -66,6 +66,7 @@ static void alloc_and_check(size_t size, unsigned int *exp_alloc)
 			        exp_alloc[i]);
 		}
 	}
+	SAFE_EXIT(0);
 }
 
 static void verify_set_mempolicy(unsigned int n)

@@ -27,6 +27,7 @@ static void run(void)
 	if (!SAFE_FORK()) {
 		rd_cnt = SAFE_READ(1, fds[0], rdbuf, wr_cnt);
 		TST_EXP_EQ_LU(wr_cnt, rd_cnt);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

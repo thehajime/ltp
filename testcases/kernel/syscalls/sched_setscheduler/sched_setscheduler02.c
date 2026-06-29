@@ -46,7 +46,7 @@ static void run(void)
 		TST_EXP_FAIL(tv->sched_setscheduler(0, SCHED_FIFO, &p), EPERM,
 			     "sched_setscheduler(0, SCHED_FIFO, %d)",
 			     p.sched_priority);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 }

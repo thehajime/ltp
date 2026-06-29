@@ -43,8 +43,10 @@ static struct test_case_t {
 
 static void run(unsigned int i)
 {
-	if (!SAFE_FORK())
+	if (!SAFE_FORK()) {
 		TST_EXP_PASS(unshare(tc[i].mode), "unshare(%s)", tc[i].desc);
+		SAFE_EXIT(0);
+	}
 }
 
 static struct tst_test test = {

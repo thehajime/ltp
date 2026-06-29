@@ -35,6 +35,7 @@ static void run(void)
 
 		TST_EXP_EQ_LI(GETUID(), nobody_uid);
 		TST_EXP_EQ_LI(GETEUID(), nobody_uid);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 }

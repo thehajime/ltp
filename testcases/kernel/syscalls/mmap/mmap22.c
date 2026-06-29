@@ -40,6 +40,7 @@ static void stress_child(void)
 			exit(1);
 		memset(buf, 'B', page_size);
 	}
+	SAFE_EXIT(0);
 }
 
 static void test_mmap(void)

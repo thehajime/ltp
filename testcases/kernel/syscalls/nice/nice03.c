@@ -50,7 +50,7 @@ static void nice_test(void)
 
 	tst_res(TPASS, "nice(%d) passed", NICEINC);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_nice(void)

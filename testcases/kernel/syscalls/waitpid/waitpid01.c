@@ -47,13 +47,13 @@ static struct testcase {
 static void child_raise(int sig)
 {
 	raise(sig);
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void child_kill(int sig)
 {
 	kill(getpid(), sig);
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static struct testvariant {

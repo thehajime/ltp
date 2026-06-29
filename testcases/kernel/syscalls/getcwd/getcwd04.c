@@ -92,6 +92,7 @@ static void do_child(void)
 		SAFE_RENAME(c_name, n_name);
 		strncpy(c_name, n_name, PATH_MAX);
 	}
+	SAFE_EXIT(0);
 }
 
 static struct tst_test test = {

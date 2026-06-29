@@ -37,7 +37,7 @@ static void verify_sched_getparam(unsigned int n)
 		TST_EXP_PASS_SILENT(tv->sched_getparam(pids[n], &param),
 				   "sched_getparam(%d)", pids[n]);
 		if (!TST_PASS)
-			exit(0);
+			SAFE_EXIT(0);
 
 		/*
 		 * For normal process, scheduling policy is SCHED_OTHER.
@@ -50,7 +50,7 @@ static void verify_sched_getparam(unsigned int n)
 		else
 			tst_res(TPASS, "sched_getparam(%d) got expected sched_priority 0", pids[n]);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

@@ -33,7 +33,7 @@ static void verify_getpid(void)
 			else
 				tst_res(TFAIL,
 					"getpid() returns out of range: %d", pid);
-			exit(0);
+			SAFE_EXIT(0);
 		} else {
 			SAFE_WAIT(NULL);
 		}

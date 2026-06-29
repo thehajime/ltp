@@ -31,6 +31,7 @@ static void setpgid_test2(void)
 		pgid = TST_EXP_PID(getpid());
 		TST_EXP_PASS(setpgid(0, 0));
 		TST_EXP_EQ_LI(pgid, getpgrp());
+		SAFE_EXIT(0);
 	}
 }
 

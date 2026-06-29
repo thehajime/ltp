@@ -96,7 +96,7 @@ static void run(void)
 		for (int i = 0; i < num_tries; i++)
 			try_crash(i);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

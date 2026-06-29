@@ -59,7 +59,7 @@ static pid_t child_pid;
 static void child_main(void)
 {
 	raise(SIGSTOP);
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void ptrace_try_kern_addr(unsigned long kern_addr)

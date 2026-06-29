@@ -61,6 +61,7 @@ static void test_reset_on_fork(unsigned int i)
 			tst_res(TPASS, "Priority set to 0");
 		else
 			tst_res(TFAIL, "Priority not set to 0");
+		SAFE_EXIT(0);
 	}
 }
 

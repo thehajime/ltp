@@ -27,7 +27,7 @@ static void run(void)
 
 	if (!child_pid) {
 		TST_EXP_PASS_SILENT(tv->sched_setparam(getppid(), &p5));
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 

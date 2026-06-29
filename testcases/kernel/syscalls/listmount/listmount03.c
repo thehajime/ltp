@@ -31,7 +31,7 @@ static void run(void)
 
 	TST_EXP_FAIL(listmount(root_id, 0, list, LISTSIZE, 0), EPERM);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

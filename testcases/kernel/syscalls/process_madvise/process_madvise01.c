@@ -97,7 +97,7 @@ static void run(void)
 	pid_alloc = SAFE_FORK();
 	if (!pid_alloc) {
 		child_alloc();
-		return;
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

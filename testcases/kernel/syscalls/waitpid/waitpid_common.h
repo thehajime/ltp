@@ -59,7 +59,7 @@ static void do_exit(int stop)
 	if (stop)
 		kill(getpid(), SIGSTOP);
 
-	exit(3);
+	SAFE_EXIT(3);
 }
 
 static int waitpid_errno_check(int err, int exp_err)

@@ -95,7 +95,7 @@ end:
 	if (fds[1] > 0)
 		SAFE_CLOSE(fds[1]);
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void do_test(unsigned int n)

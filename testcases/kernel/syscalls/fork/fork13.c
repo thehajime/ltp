@@ -66,7 +66,7 @@ static void check(void)
 
 		pid = SAFE_FORK();
 		if (!pid)
-			exit(retval);
+			SAFE_EXIT(retval);
 
 		if (prev_pid) {
 			distance = pid_distance(prev_pid, pid);

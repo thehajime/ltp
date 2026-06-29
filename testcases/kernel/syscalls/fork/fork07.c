@@ -36,7 +36,7 @@ static void run(void)
 			if (buf != 'a')
 				tst_res(TFAIL, "%6d: read '%c' instead of 'a'",
 					getpid(), buf);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 	}
 	tst_reap_children();

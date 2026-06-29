@@ -21,7 +21,7 @@ static void run(void)
 
 	pidchild = SAFE_FORK();
 	if (!pidchild)
-		exit(123);
+		SAFE_EXIT(123);
 
 	TST_EXP_PASS(waitid(P_ALL, 0, infop, WEXITED));
 	TST_EXP_EQ_LI(infop->si_pid, pidchild);

@@ -49,7 +49,7 @@ static void run(void)
 	child_pid = SAFE_FORK();
 
 	if (!child_pid) {
-		exit(child_main());
+		SAFE_EXIT(child_main());
 	}
 
 	if (SAFE_WAITPID(child_pid, &status, 0) != child_pid)
