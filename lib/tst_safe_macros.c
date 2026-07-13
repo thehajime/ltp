@@ -464,7 +464,10 @@ int safe_setns(const char *file, const int lineno, int fd, int nstype)
 	ret = setns(fd, nstype);
 
 	if (ret == -1) {
-#ifdef CONFIG_NOMMU
+#ifdef __UCLIBC__
+		tst_brk_(file, lineno, TCONF,
+			 "nommu doesn't have setns(CLONE_NEWTIME), skipped");
+#elif CONFIG_NOMMU
 		if (nstype == CLONE_NEWTIME && errno == EUSERS)
 			tst_brk_(file, lineno, TCONF,
 				 "nommu doesn't have setns(CLONE_NEWTIME), skipped");
@@ -735,7 +738,12 @@ int safe_madvise(const char *file, const int lineno,
 	tst_res_(file, lineno, TDEBUG,
 		"madvise(%p, %zi, %d)", addr, len, adv);
 
+#ifndef __UCLIBC__
 	rval = madvise(addr, len, adv);
+#else
+	tst_brk_(file, lineno, TCONF,
+			"nommu/uclibc doesn't have madvise(%p, %zu, %d), skipped", addr, len, adv);
+#endif
 
 	if (rval == -1) {
 #ifdef CONFIG_NOMMU
