@@ -209,6 +209,12 @@ void check_munmap(const char *file, const int lineno, void *p, size_t length)
 
 void check_mfd_has_seals(const char *file, const int lineno, int fd, int seals)
 {
+	if (IS_NOMMU()) {
+		tst_res_(file, lineno, TCONF,
+			"nommu doesn't support seals on memfd");
+		return;
+	}
+
 	int ret = SAFE_FCNTL((fd), F_GET_SEALS);
 	if (ret	!= seals) {
 		tst_brk_(file, lineno, TFAIL,
@@ -235,6 +241,12 @@ void check_mprotect(const char *file, const int lineno, void *addr,
 void check_mfd_fail_add_seals(const char *filename, const int lineno,
 				int fd, int seals)
 {
+	if (IS_NOMMU()) {
+		tst_res_(filename, lineno, TCONF,
+			"nommu doesn't support seals on memfd");
+		return;
+	}
+
 	if (fcntl(fd, F_ADD_SEALS, seals) >= 0) {
 		tst_brk_(filename, lineno, TFAIL,
 			"fcntl(%d, F_ADD_SEALS) succeeded unexpectedly", fd);

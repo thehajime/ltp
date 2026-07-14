@@ -53,6 +53,10 @@
 	check_mfd_has_seals(__FILE__, __LINE__, (fd), (seals));
 
 #define CHECK_MFD_ADD_SEALS(fd, seals) \
+	if (IS_NOMMU()) {						\
+		tst_res(TCONF, "nommu doesn't support seals on memfd");	\
+		return;							\
+	}								\
 	({int r = SAFE_FCNTL((fd), F_ADD_SEALS, (seals)); \
 	tst_res(TPASS, "fcntl(%d, F_ADD_SEALS, %d) succeeded", \
 		(fd), (seals)); r; })
