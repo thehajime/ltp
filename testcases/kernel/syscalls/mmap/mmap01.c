@@ -109,7 +109,7 @@ static void run(void)
 	if (!SAFE_FORK()) {
 		check_file();
 		SAFE_MUNMAP(addr, page_sz);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_MUNMAP(addr, page_sz);
