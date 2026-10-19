@@ -54,11 +54,19 @@ void tst_res_(const char *file, const int lineno, int ttype,
               __attribute__ ((format (printf, 4, 5)));
 
 
-#ifndef CONFIG_NOMMU
-#define IS_NOMMU()  0
-#else
-#define IS_NOMMU()  1
-#endif
+/**
+ * tst_is_nommu() - Check whether the running kernel lacks an MMU.
+ *
+ * Return: 1 if NOMMU is detected, 0 otherwise.
+ */
+int tst_is_nommu(void);
+
+/**
+ * IS_NOMMU - Check whether the running kernel lacks an MMU.
+ *
+ * Return: 1 if NOMMU is detected, 0 otherwise.
+ */
+#define IS_NOMMU() tst_is_nommu()
 
 /**
  * tst_res() - Reports a test result.
@@ -154,24 +162,21 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
  * SAFE_FORK() - Forks a test child.
  *
  * This call makes sure that output file streams are flushed and also handles
- * errors from fork(). Use this instead of fork() whenever possible!
+ * errors from fork(). It uses vfork() when NOMMU is detected. Use this
+ * instead of fork() whenever possible!
  */
-#ifdef CONFIG_NOMMU
 #define SAFE_FORK() \
-	vfork()
+	(IS_NOMMU() ? vfork() : safe_fork(__FILE__, __LINE__))
 #ifdef __riscv
-#define fork vfork
-#endif
-#else
-#define SAFE_FORK() \
-	safe_fork(__FILE__, __LINE__)
+#define fork() (IS_NOMMU() ? vfork() : fork())
 #endif
 
-#ifdef CONFIG_NOMMU
-#define SAFE_EXIT(code) _exit(code)
-#else
-#define SAFE_EXIT(code) exit(code)
-#endif
+/**
+ * SAFE_EXIT - Exit using the NOMMU-safe function when needed.
+ * @code: Exit status.
+ */
+#define SAFE_EXIT(code) \
+	(IS_NOMMU() ? _exit(code) : exit(code))
 
 #define NOMMU_EFAULT_REQUIRED(ERRNOS, ERRNOS_CNT, EXIT)			\
 	if (IS_NOMMU()) {						\

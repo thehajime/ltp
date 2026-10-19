@@ -100,6 +100,33 @@ struct ipc_region {
 	futex_t futexes[];
 };
 
+static int is_nommu;
+
+int tst_is_nommu(void)
+{
+	return is_nommu;
+}
+
+static void detect_nommu(void)
+{
+	FILE *meminfo = fopen("/proc/meminfo", "r");
+	char *line = NULL;
+	size_t len = 0;
+
+	if (!meminfo)
+		return;
+
+	while (getline(&line, &len, meminfo) >= 0) {
+		if (!strncmp(line, "MmapCopy:", sizeof("MmapCopy:") - 1)) {
+			is_nommu = 1;
+			break;
+		}
+	}
+
+	free(line);
+	fclose(meminfo);
+}
+
 static struct ipc_region *ipc;
 static struct context *context;
 static struct results *results;
@@ -195,6 +222,8 @@ void tst_reinit(void)
 	size_t size = getpagesize();
 	int fd;
 
+	detect_nommu();
+
 	if (ipc)
 		tst_brk(TBROK, "Test library already initialized!");
 
@@ -254,11 +283,7 @@ int tst_run_script(const char *script_name, char *const params[])
 
 	argv[params_len+1] = NULL;
 
-#ifndef CONFIG_NOMMU
-	pid = fork();
-#else
-	pid = vfork();
-#endif
+	pid = IS_NOMMU() ? vfork() : fork();
 	if (pid)
 		return pid;
 
@@ -1614,10 +1639,8 @@ static void do_setup(int argc, char *argv[])
 	else if (tst_test->needs_cgroup_ver)
 		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
 
-#ifdef CONFIG_NOMMU
-	if (tst_test->needs_mmu)
+	if (IS_NOMMU() && tst_test->needs_mmu)
 		tst_brk(TCONF, "Test requires MMU, skipping");
-#endif
 
 }
 
@@ -1915,11 +1938,7 @@ static void fork_testrun(void)
 
 	show_failure_hints = 1;
 
-#ifndef CONFIG_NOMMU
-	test_pid = fork();
-#else
-	test_pid = vfork();
-#endif
+	test_pid = IS_NOMMU() ? vfork() : fork();
 	if (test_pid < 0)
 		tst_brk(TBROK | TERRNO, "fork()");
 
@@ -2050,6 +2069,7 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	struct utsname uval;
 
 	tst_test = self;
+	detect_nommu();
 
 	do_setup(argc, argv);
 	tst_enable_oom_protection(context->lib_pid);
