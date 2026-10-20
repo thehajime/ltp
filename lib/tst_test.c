@@ -1529,7 +1529,13 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->hugepages.number)
 		tst_reserve_hugepages(&tst_test->hugepages);
 
-	if (tst_test->bufs)
+	/*
+	 * A NOMMU vfork() child shares the parent's address space.  Allocating
+	 * guarded buffers here lets the first test variant unmap the parent's
+	 * buffers in do_test_cleanup(), leaving stale pointers for the next
+	 * variant.  Allocate them in each vfork child instead.
+	 */
+	if (tst_test->bufs && !IS_NOMMU())
 		tst_buffers_alloc(tst_test->bufs);
 
 	if (needs_tmpdir() && !tst_tmpdir_created())
@@ -1790,6 +1796,8 @@ static void testrun(void)
 
 	heartbeat();
 	add_paths();
+	if (tst_test->bufs && IS_NOMMU())
+		tst_buffers_alloc(tst_test->bufs);
 	do_test_setup();
 
 	if (duration > 0)
