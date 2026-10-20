@@ -168,9 +168,19 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
 #define SAFE_FORK() \
 	(IS_NOMMU() ? vfork() : safe_fork(__FILE__, __LINE__))
 #ifdef __riscv
+extern pid_t fork(void) __attribute__((weak));
+
 static inline pid_t tst_fork_or_vfork(void)
 {
-	return IS_NOMMU() ? vfork() : fork();
+	if (IS_NOMMU())
+		return vfork();
+
+	if (!fork) {
+		errno = ENOSYS;
+		return -1;
+	}
+
+	return fork();
 }
 #define fork() tst_fork_or_vfork()
 #endif
