@@ -1342,11 +1342,9 @@ int safe_mlock(const char *file, const int lineno, const void *addr,
 	rval = mlock(addr, len);
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 				 "nommu doesn't have mlock(), skipped");
-#endif
 		tst_brkm_(file, lineno, TBROK | TERRNO, NULL,
 			"mlock() failed");
 	} else if (rval) {
@@ -1365,11 +1363,9 @@ int safe_munlock(const char *file, const int lineno, const void *addr,
 	rval = munlock(addr, len);
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 				 "nommu doesn't have munlock(), skipped");
-#endif
 		tst_brkm_(file, lineno, TBROK | TERRNO, NULL,
 			"munlock() failed");
 	} else if (rval) {
@@ -1388,11 +1384,9 @@ int safe_mincore(const char *file, const int lineno, void *start,
 	rval = mincore(start, length, vec);
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 				 "nommu doesn't have mincore(), skipped");
-#endif
 		tst_brkm_(file, lineno, TBROK | TERRNO, NULL,
 			"mincore() failed");
 	} else if (rval) {

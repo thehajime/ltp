@@ -467,8 +467,8 @@ int safe_setns(const char *file, const int lineno, int fd, int nstype)
 #ifdef __UCLIBC__
 		tst_brk_(file, lineno, TCONF,
 			 "nommu doesn't have setns(CLONE_NEWTIME), skipped");
-#elif CONFIG_NOMMU
-		if (nstype == CLONE_NEWTIME && errno == EUSERS)
+#else
+		if (IS_NOMMU() && nstype == CLONE_NEWTIME && errno == EUSERS)
 			tst_brk_(file, lineno, TCONF,
 				 "nommu doesn't have setns(CLONE_NEWTIME), skipped");
 #endif
@@ -621,11 +621,9 @@ int safe_msync(const char *file, const int lineno, void *addr,
 	rval = msync(addr, length, flags);
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 			"nommu doesn't have msync(%p, %zu, %d), skipped", addr, length, flags);
-#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"msync(%p, %zu, %d) failed", addr, length, flags);
 	} else if (rval) {
@@ -714,11 +712,9 @@ int safe_mprotect(const char *file, const int lineno,
 	rval = mprotect(addr, len, prot);
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 			"nommu doesn't have mprotect(%p, %zu, %d), skipped", addr, len, prot);
-#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mprotect(%p, %zi, %s(%x))", addr, len, prot_buf, prot);
 	} else if (rval) {
@@ -746,11 +742,9 @@ int safe_madvise(const char *file, const int lineno,
 #endif
 
 	if (rval == -1) {
-#ifdef CONFIG_NOMMU
-		if (errno == ENOSYS)
+		if (IS_NOMMU() && errno == ENOSYS)
 			tst_brk_(file, lineno, TCONF,
 			"nommu doesn't have madvise(%p, %zu, %d), skipped", addr, len, adv);
-#endif
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"madvise(%p, %zi, %d)", addr, len, adv);
 	} else if (rval) {

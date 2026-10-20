@@ -24,35 +24,12 @@
 #include "test.h"
 #include "tso_priv.h"
 
-static int is_nommu(void)
-{
-	FILE *meminfo = fopen("/proc/meminfo", "r");
-	char *line = NULL;
-	size_t len = 0;
-	int nommu = 0;
-
-	if (!meminfo)
-		return 0;
-
-	while (getline(&line, &len, meminfo) >= 0) {
-		if (!strncmp(line, "MmapCopy:", sizeof("MmapCopy:") - 1)) {
-			nommu = 1;
-			break;
-		}
-	}
-
-	free(line);
-	fclose(meminfo);
-
-	return nommu;
-}
-
 void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
                     void (*user_help)(void))
 {
 	const char *msg;
 
-	if (is_nommu())
+	if (IS_NOMMU())
 		tst_brkm(TCONF, NULL,
 			  "nommu doesn't support old API tests. skipping.");
 

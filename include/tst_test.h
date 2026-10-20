@@ -48,25 +48,12 @@
 #include "tst_arch.h"
 #include "tst_fd.h"
 #include "tst_tmpdir.h"
+#include "tst_nommu.h"
 
 void tst_res_(const char *file, const int lineno, int ttype,
               const char *fmt, ...)
               __attribute__ ((format (printf, 4, 5)));
 
-
-/**
- * tst_is_nommu() - Check whether the running kernel lacks an MMU.
- *
- * Return: 1 if NOMMU is detected, 0 otherwise.
- */
-int tst_is_nommu(void);
-
-/**
- * IS_NOMMU - Check whether the running kernel lacks an MMU.
- *
- * Return: 1 if NOMMU is detected, 0 otherwise.
- */
-#define IS_NOMMU() tst_is_nommu()
 
 /**
  * tst_res() - Reports a test result.

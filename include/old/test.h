@@ -36,6 +36,7 @@
 #include "tst_minmax.h"
 #include "tst_get_bad_addr.h"
 #include "tst_path_has_mnt_flags.h"
+#include "tst_nommu.h"
 
 /*
  * Ensure that NUMSIGS is defined.
