@@ -37,7 +37,7 @@ static inline int epoll_pwait(int epfd, struct epoll_event *events,
 static inline void epoll_pwait2_supported(void)
 {
 	/* allow the tests to fail early */
-	tst_syscall(__NR_epoll_pwait2);
+	tst_syscall(__NR_epoll_pwait2, 0, NULL, 0, NULL, NULL, _NSIG / 8);
 }
 
 #ifndef HAVE_EPOLL_PWAIT2

@@ -29,6 +29,13 @@
 unsigned int tst_multiply_timeout(unsigned int timeout);
 
 /**
+ * tst_is_nommu() - Check whether the running kernel lacks an MMU.
+ *
+ * Return: 1 if NOMMU is detected, 0 otherwise.
+ */
+int tst_is_nommu(void);
+
+/**
  * TST_RETRY_FUNC() - Repeatedly retry a function with an increasing delay.
  *
  * @FUNC: The function which will be retried.

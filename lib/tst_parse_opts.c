@@ -29,6 +29,10 @@ void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
 {
 	const char *msg;
 
+	if (tst_is_nommu())
+		tst_brkm(TCONF, NULL,
+			 "NOMMU does not support old API tests, skipping");
+
 	msg = parse_opts(argc, argv, user_optarg, user_help);
 
 	if (msg)

@@ -288,6 +288,22 @@ int safe_mprotect(const char *file, const int lineno,
 #define SAFE_MPROTECT(addr, len, prot) \
 	safe_mprotect(__FILE__, __LINE__, (addr), (len), (prot))
 
+/**
+ * safe_madvise() - Call madvise() or abort the test on an unexpected error.
+ * @file: Source file name.
+ * @lineno: Source line number.
+ * @addr: Address range to advise.
+ * @len: Address range length.
+ * @adv: Advice to apply.
+ *
+ * Return: 0 on success; reports TCONF if madvise() is unavailable.
+ */
+int safe_madvise(const char *file, const int lineno,
+	void *addr, size_t len, int adv);
+
+#define SAFE_MADVISE(addr, len, adv) \
+	safe_madvise(__FILE__, __LINE__, (addr), (len), (adv))
+
 typedef void (*sighandler_t)(int);
 sighandler_t safe_signal(const char *file, const int lineno,
 	int signum, sighandler_t handler);

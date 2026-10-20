@@ -17,6 +17,7 @@
 #endif
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
+#include "lapi/sched.h"
 #include "lapi/setns.h"
 #include "tst_safe_macros.h"
 #include "lapi/personality.h"
@@ -464,6 +465,9 @@ int safe_setns(const char *file, const int lineno, int fd, int nstype)
 	ret = setns(fd, nstype);
 
 	if (ret == -1) {
+		if (tst_is_nommu() && nstype == CLONE_NEWTIME && errno == EUSERS)
+			tst_brk_(file, lineno, TCONF,
+				 "NOMMU does not support setns(CLONE_NEWTIME)");
 		tst_brk_(file, lineno, TBROK | TERRNO, "setns(%i, %i) failed",
 			fd, nstype);
 	} else if (ret) {
@@ -613,6 +617,9 @@ int safe_msync(const char *file, const int lineno, void *addr,
 	rval = msync(addr, length, flags);
 
 	if (rval == -1) {
+		if (tst_is_nommu() && errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+			"nommu doesn't have msync(%p, %zu, %d), skipped", addr, length, flags);
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"msync(%p, %zu, %d) failed", addr, length, flags);
 	} else if (rval) {
@@ -701,12 +708,40 @@ int safe_mprotect(const char *file, const int lineno,
 	rval = mprotect(addr, len, prot);
 
 	if (rval == -1) {
+		if (tst_is_nommu() && errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF,
+			"nommu doesn't have mprotect(%p, %zu, %d), skipped", addr, len, prot);
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mprotect(%p, %zi, %s(%x))", addr, len, prot_buf, prot);
 	} else if (rval) {
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mprotect(%p, %zi, %s(%x)) return value %d",
 			addr, len, prot_buf, prot, rval);
+	}
+
+	return rval;
+}
+
+int safe_madvise(const char *file, const int lineno,
+	void *addr, size_t len, int adv)
+{
+	int rval;
+
+	tst_res_(file, lineno, TDEBUG,
+		"madvise(%p, %zu, %d)", addr, len, adv);
+
+	rval = tst_syscall(__NR_madvise, addr, len, adv);
+
+	if (rval == -1) {
+		if (errno == ENOSYS)
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				 "madvise() not implemented");
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"madvise(%p, %zu, %d)", addr, len, adv);
+	} else if (rval) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"madvise(%p, %zu, %d) return value %d",
+			addr, len, adv, rval);
 	}
 
 	return rval;

@@ -6,6 +6,8 @@
 #ifndef TST_SAFE_MACROS_INLINE_H__
 #define TST_SAFE_MACROS_INLINE_H__
 
+#include "tst_common.h"
+
 /*
  * Following functions are inline because the behaviour may depend on
  * -D_FILE_OFFSET_BITS=64 compile flag (type off_t or structures containing
@@ -243,6 +245,14 @@ static inline void *safe_mmap(const char *file, const int lineno,
 
 	rval = mmap(addr, length, prot, flags, fd, offset);
 	if (rval == MAP_FAILED) {
+		if (tst_is_nommu() && (flags & MAP_FIXED) && errno == EINVAL)
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				 "mmap(%p,%zu,%s(%x),%d,%d,%ld) MAP_FIXED isn't supported on nommu",
+				 addr, length, prot_buf, prot, flags, fd, (long) offset);
+		if (tst_is_nommu() && (flags & MAP_SHARED) && errno == ENODEV)
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				 "mmap(%p,%zu,%s(%x),%d,%d,%ld) MAP_SHARED isn't supported on nommu",
+				 addr, length, prot_buf, prot, flags, fd, (long) offset);
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"mmap(%p,%zu,%s(%x),%d,%d,%ld) failed",
 			addr, length, prot_buf, prot, flags, fd, (long) offset);
