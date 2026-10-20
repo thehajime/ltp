@@ -115,7 +115,7 @@ static int allocate_offline(int tnum)
 	int loop;
 
 	for (loop = 0; loop < NUM_LOOPS; loop++) {
-		long *ptrs[NUM_PAGES];
+		void *ptrs[NUM_PAGES];
 		int num_alloc;
 		int i;
 
