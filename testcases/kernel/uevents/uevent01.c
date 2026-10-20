@@ -71,12 +71,13 @@ static void verify_uevent(void)
 		NULL
 	};
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (!pid) {
 		fd = open_uevent_netlink();
 		TST_CHECKPOINT_WAKE(0);
 		wait_for_uevents(fd, uevents);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

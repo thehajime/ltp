@@ -94,6 +94,7 @@ static void alloc_anon_in_child(const struct tst_cg_group *const cg,
 	size_t size, const int expect_oom)
 {
 	int status;
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	const pid_t pid = SAFE_FORK();
 	size_t cgmem;
 
@@ -133,6 +134,7 @@ static void alloc_anon_in_child(const struct tst_cg_group *const cg,
 static void alloc_pagecache_in_child(const struct tst_cg_group *const cg,
 	size_t size)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	const pid_t pid = SAFE_FORK();
 	size_t cgmem;
 

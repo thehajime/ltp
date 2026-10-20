@@ -27,6 +27,7 @@ static void run(void)
 
 	key = GETIPCKEY();
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		shmid = SAFE_SHMGET(key, SHMSIZE, IPC_CREAT | 0666);
 

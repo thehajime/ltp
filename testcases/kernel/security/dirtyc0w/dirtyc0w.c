@@ -65,6 +65,7 @@ void dirtyc0w_test(void)
 	SAFE_WRITE(SAFE_WRITE_ALL, fd, STR, sizeof(STR)-1);
 	SAFE_CLOSE(fd);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 
 	if (!pid) {

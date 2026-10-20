@@ -82,6 +82,7 @@ static void do_test(unsigned int n)
 
 static struct tst_test test = {
 	.forks_child = 1,
+	.needs_mmu = 1,
 	.test = do_test,
 	.tcnt = 7,
 	.bufs = (struct tst_buffers []) {

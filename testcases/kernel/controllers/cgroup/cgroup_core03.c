@@ -49,6 +49,7 @@ static int cg_run_nowait(const struct tst_cg_group *const cg)
 {
 	int pid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		SAFE_CG_PRINTF(cg, "cgroup.procs", "%d", getpid());

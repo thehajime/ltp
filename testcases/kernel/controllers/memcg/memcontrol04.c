@@ -90,6 +90,7 @@ static void cleanup_sub_groups(void)
 static void alloc_anon_in_child(const struct tst_cg_group *const cg,
 				const size_t size)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	const pid_t pid = SAFE_FORK();
 
 	if (pid) {
@@ -109,6 +110,7 @@ static void alloc_anon_in_child(const struct tst_cg_group *const cg,
 static void alloc_pagecache_in_child(const struct tst_cg_group *const cg,
 				     const size_t size)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	const pid_t pid = SAFE_FORK();
 
 	if (pid) {

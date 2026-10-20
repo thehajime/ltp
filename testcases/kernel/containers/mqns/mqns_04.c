@@ -75,6 +75,7 @@ static void run(void)
 	} else if (str_op && !strcmp(str_op, "unshare")) {
 		tst_res(TINFO, "Spawning unshared process");
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (!SAFE_FORK()) {
 			SAFE_UNSHARE(CLONE_NEWIPC);
 			check_mqueue();

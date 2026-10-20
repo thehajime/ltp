@@ -39,4 +39,5 @@ static void run(void)
 static struct tst_test test = {
 	.test_all = run,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

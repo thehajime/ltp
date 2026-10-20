@@ -115,5 +115,6 @@ static struct tst_test test = {
 		{"linux-git", "5535be3099717646781ce1540cf725965d680e7b"},
 		{"CVE", "2022-2590"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

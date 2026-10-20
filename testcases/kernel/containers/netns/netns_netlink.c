@@ -92,6 +92,7 @@ static void test_netns_netlink(void)
 	/* unshares the network namespace */
 	SAFE_UNSHARE(CLONE_NEWNET);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (SAFE_FORK() == 0)
 		child_func();
 

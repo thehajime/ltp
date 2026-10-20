@@ -34,5 +34,6 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.needs_checkpoints = 1,
 	.child_needs_reinit = 1,
+	.needs_mmu = 1,
 	.test_all = run,
 };

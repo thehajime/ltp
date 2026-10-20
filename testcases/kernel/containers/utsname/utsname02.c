@@ -28,6 +28,7 @@ static void run(void)
 	memset(hostname1, 0, HOST_NAME_MAX);
 	memset(hostname2, 0, HOST_NAME_MAX);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		SAFE_SETHOSTNAME(HOSTNAME, strlen(HOSTNAME));
 		SAFE_GETHOSTNAME(hostname1, HOST_NAME_MAX);
@@ -36,6 +37,7 @@ static void run(void)
 		return;
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		TST_CHECKPOINT_WAIT(0);
 

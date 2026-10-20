@@ -208,6 +208,7 @@ int main(int argc, char **argv)
 		pid_t pid;
 		int status;
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		pid = SAFE_FORK();
 		if (pid == 0) {
 			gen_event();

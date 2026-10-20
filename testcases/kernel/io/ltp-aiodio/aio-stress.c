@@ -903,6 +903,8 @@ static void aio_setup(io_context_t *io_ctx, int n)
 {
 	int res = io_queue_init(n, io_ctx);
 
+	if (tst_is_nommu() && res == -ENOMEM)
+		tst_brk(TCONF, "AIO ring allocation unsupported on NOMMU");
 	if (res != 0)
 		tst_brk(TBROK, "io_queue_setup(%d) returned %d (%s)", n, res, tst_strerrno(-res));
 }

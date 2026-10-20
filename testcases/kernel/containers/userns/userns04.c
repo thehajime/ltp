@@ -53,6 +53,7 @@ static void run(void)
 		return;
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	cpid3 = SAFE_FORK();
 	if (!cpid3) {
 		TST_EXP_PASS(setns(fd, CLONE_NEWUSER));

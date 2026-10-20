@@ -25,4 +25,5 @@ static void do_test(void)
 static struct tst_test test = {
 	.test_all = do_test,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

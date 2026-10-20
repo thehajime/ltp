@@ -322,4 +322,5 @@ static struct tst_test test = {
 			TST_TO_STR(MAXNREPS) ")"},
 		{},
 	},
+	.needs_mmu = 1,
 };

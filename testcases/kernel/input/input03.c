@@ -69,6 +69,7 @@ static void send_mouse_events(void)
 
 static void run(void)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		send_mouse_events();
 		exit(0);

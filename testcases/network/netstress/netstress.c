@@ -715,9 +715,10 @@ static void server_cleanup(void)
 
 static void move_to_background(void)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (SAFE_FORK()) {
 		TST_CHECKPOINT_WAIT(0);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_SETSID();

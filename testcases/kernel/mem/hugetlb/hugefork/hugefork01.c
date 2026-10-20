@@ -37,6 +37,7 @@ static void run_test(void)
 	p = SAFE_MMAP(NULL, hpage_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
 	*p = C1;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid != 0) {
 		*p = C2;
