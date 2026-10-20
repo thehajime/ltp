@@ -57,7 +57,7 @@ static void do_test(void)
 		SAFE_ADD_KEY("user", "userkey", payload, sizeof(PAYLOAD),
 			     KEY_SPEC_SESSION_KEYRING);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);

@@ -26,26 +26,14 @@
 #ifdef HAVE_LIBAIO
 #include <libaio.h>
 
-static void verify_failure(unsigned int nr, io_context_t *ctx, int init_val, long exp_err)
+static void verify_failure(unsigned int nr, io_context_t *ctx, int init_val, int exp_err)
 {
+	NOMMU_EFAULT_REQUIRED(&exp_err, 1, return);
+
 	if (ctx)
 		memset(ctx, init_val, sizeof(*ctx));
 
-	TEST(io_setup(nr, ctx));
-	if (TST_RET == 0) {
-		tst_res(TFAIL, "io_setup() passed unexpectedly");
-		io_destroy(*ctx);
-		return;
-	}
-
-	if (TST_RET == -exp_err) {
-		tst_res(TPASS, "io_setup() failed as expected, returned -%s",
-			tst_strerrno(exp_err));
-	} else {
-		tst_res(TFAIL, "io_setup() failed unexpectedly, returned -%s "
-			"expected -%s", tst_strerrno(-TST_RET),
-			tst_strerrno(exp_err));
-	}
+	TST_EXP_EQ_LI(io_setup(nr, ctx), -exp_err);
 }
 
 static void verify_success(unsigned int nr, io_context_t *ctx, int init_val)
@@ -55,6 +43,8 @@ static void verify_success(unsigned int nr, io_context_t *ctx, int init_val)
 	TEST(io_setup(nr, ctx));
 	if (TST_RET == -ENOSYS)
 		tst_brk(TCONF | TRERRNO, "io_setup(): AIO not supported by kernel");
+	if (tst_is_nommu() && TST_RET == -ENOMEM)
+		tst_brk(TCONF, "io_setup(): AIO ring allocation unsupported on NOMMU");
 	if (TST_RET != 0) {
 		tst_res(TFAIL, "io_setup() failed unexpectedly with %li (%s)",
 			TST_RET, tst_strerrno(-TST_RET));

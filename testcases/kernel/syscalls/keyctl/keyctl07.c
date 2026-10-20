@@ -80,7 +80,7 @@ static void do_test(void)
 
 	if (SAFE_FORK() == 0) {
 		try_to_read_negative_key();
-		return;
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);

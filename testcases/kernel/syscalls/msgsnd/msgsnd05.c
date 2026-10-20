@@ -64,6 +64,8 @@ static void do_test(unsigned int n)
 		return;
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = SAFE_FORK();
 	if (!pid) {
 		SAFE_SIGNAL(SIGHUP, sighandler);

@@ -42,7 +42,7 @@ void check_le_switch_supported(void)
 
 	if (SAFE_FORK() == 0) {
 		syscall(0x1ebe);
-		exit(errno);
+		SAFE_EXIT(errno);
 	}
 
 	if (!(getauxval(AT_HWCAP) & PPC_FEATURE_TRUE_LE))
@@ -73,7 +73,7 @@ void test_le_switch(void)
 				: "=&r" (r0)
 				: "0"(r0)
 				: "cr0", "r9", "r10", "r11", "r12");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);

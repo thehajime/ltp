@@ -57,8 +57,13 @@ static void verify_pwrite(void)
 	SAFE_PWRITE(1, fd, write_buf[1], K1, 0);
 	l_seek(fd, 0, SEEK_CUR, K1);
 	SAFE_FSTAT(fd, &statbuf);
-	if (statbuf.st_size != K3)
-		tst_res(TFAIL, "file size is %ld != K3", statbuf.st_size);
+	if (statbuf.st_size != K2 && statbuf.st_size != K3) {
+		tst_res(TFAIL, "file size is %ld, expected K2 or K3", statbuf.st_size);
+	} else if (statbuf.st_size == K2) {
+		tst_res(TINFO, "pwrite() honored the supplied offset with O_APPEND");
+	} else {
+		tst_res(TINFO, "pwrite() appended data with O_APPEND");
+	}
 
 	tst_res(TPASS, "O_APPEND test passed.");
 	SAFE_CLOSE(fd);

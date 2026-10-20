@@ -28,7 +28,7 @@ static void verify_alarm(void)
 
 	if (pid == 0) {
 		TST_EXP_EQ_LU(alarm_cnt, 0);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_EXP_EQ_LU(alarm_cnt, 1);

@@ -41,4 +41,5 @@ static void verify_munlockall(void)
 
 static struct tst_test test = {
 	.test_all = verify_munlockall,
+	.needs_mmu = 1,
 };

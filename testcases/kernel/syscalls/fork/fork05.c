@@ -96,7 +96,7 @@ static void run(void)
 
 		TST_EXP_EQ_LI(lo, 99);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

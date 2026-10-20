@@ -115,5 +115,6 @@ static struct tst_test test = {
 	.bufs = (struct tst_buffers []) {
 		{&sock_addr, .size = sizeof(struct sockaddr_un)},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

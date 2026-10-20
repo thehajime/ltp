@@ -68,6 +68,8 @@ static void setup(void)
 	TEST(io_setup(1, &ctx));
 	if (TST_RET == -ENOSYS)
 		tst_brk(TCONF | TRERRNO, "io_setup(): AIO not supported by kernel");
+	if (tst_is_nommu() && TST_RET == -ENOMEM)
+		tst_brk(TCONF, "io_setup(): AIO ring allocation unsupported on NOMMU");
 	if (TST_RET < 0)
 		tst_brk(TBROK | TRERRNO, "io_setup() failed");
 
@@ -95,6 +97,8 @@ static void run(unsigned int n)
 	struct tcase *tc = &tcases[n];
 	void *const to = tc->timeout ? tst_ts_get(tc->timeout) : bad_addr;
 	sigset_t *const sigmask = tc->sigmask ? tc->sigmask : bad_addr;
+
+	NOMMU_EFAULT_REQUIRED(&tc->exp_errno, 1, return);
 
 	TEST(tv->io_pgetevents(*tc->ctx, tc->min_nr, tc->max_nr, tc->events, to,
 			       sigmask));

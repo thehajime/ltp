@@ -209,4 +209,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = run_test,
 	.forks_child = 1,
+	.needs_mmu = 1, /* Stack-growth cases rely on MAP_FIXED mappings. */
 };

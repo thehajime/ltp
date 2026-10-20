@@ -144,5 +144,6 @@ static struct tst_test test = {
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_TIME_NS=y",
 		NULL
-	}
+	},
+	.needs_mmu = 1,
 };

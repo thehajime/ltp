@@ -107,4 +107,5 @@ static struct tst_test test = {
 		"CONFIG_PID_NS",
 		NULL,
 	},
+	.needs_mmu = 1,
 };

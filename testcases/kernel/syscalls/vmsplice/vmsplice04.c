@@ -39,6 +39,8 @@ static void vmsplice_test(void)
 		    "vmsplice(..., SPLICE_F_NONBLOCK) wrote to a full pipe");
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	pid = SAFE_FORK();
 	if (!pid) {
 		TEST(vmsplice(pipes[1], &iov, 1, 0));
@@ -47,7 +49,7 @@ static void vmsplice_test(void)
 		else
 			tst_res(TFAIL,
 			    "vmsplice(..., 0) wrote to a full pipe");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	if (TST_PROCESS_STATE_WAIT(pid, 'S', 1000) < 0)

@@ -94,10 +94,11 @@ static void test_bad_addr(unsigned int i)
 	pid_t pid;
 	int status;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (!pid) {
 		verify_recvmmsg(i, timeout);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

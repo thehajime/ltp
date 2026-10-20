@@ -101,6 +101,7 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test = verify_prctl,
 	.tcnt = ARRAY_SIZE(tcases),
+	.needs_mmu = 1,
 	.supported_archs = (const char *const []) {
 		"x86",
 		"x86_64",

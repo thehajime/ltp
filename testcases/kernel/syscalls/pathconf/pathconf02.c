@@ -64,6 +64,9 @@ static void verify_fpathconf(unsigned int i)
 
 static void setup(void)
 {
+#ifndef __GLIBC__
+	tst_brk(TCONF, "pathconf() error handling differs in this libc");
+#endif
 	user = SAFE_GETPWNAM("nobody");
 
 	SAFE_TOUCH("testfile", 0777, NULL);

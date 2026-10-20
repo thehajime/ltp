@@ -114,7 +114,8 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "5a93790d4e2df73e30c965ec6e49be82fc3ccfce"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };
 
 #else /* HAVE_SYS_XATTR_H */

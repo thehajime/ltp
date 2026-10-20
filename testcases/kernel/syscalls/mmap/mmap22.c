@@ -40,6 +40,7 @@ static void stress_child(void)
 			exit(1);
 		memset(buf, 'B', page_size);
 	}
+	SAFE_EXIT(0);
 }
 
 static void test_mmap(void)
@@ -63,6 +64,7 @@ static void test_mmap(void)
 
 	vec = SAFE_MALLOC(npages);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	child = SAFE_FORK();
 	if (!child)
 		stress_child();

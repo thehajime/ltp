@@ -115,6 +115,7 @@ static struct tst_test test = {
 	.test = run,
 	.setup = setup,
 	.needs_root = 1,
+	.needs_mmu = 1,
 	.forks_child = 1,
 	.tcnt = ARRAY_SIZE(tcases),
 };

@@ -23,7 +23,7 @@ static inline int ioctl_pidfd_get_info_supported(void)
 
 	pid = SAFE_FORK();
 	if (!pid)
-		exit(100);
+		SAFE_EXIT(100);
 
 	pidfd = SAFE_PIDFD_OPEN(pid, 0);
 
@@ -53,7 +53,7 @@ static inline int ioctl_pidfd_info_exit_supported(void)
 
 	pid = SAFE_FORK();
 	if (!pid)
-		exit(100);
+		SAFE_EXIT(100);
 
 	pidfd = SAFE_PIDFD_OPEN(pid, 0);
 	SAFE_WAITPID(pid, NULL, 0);

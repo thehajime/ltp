@@ -238,6 +238,8 @@ static void do_test(unsigned int i)
 	struct test_case *tc = &tcase[i];
 	struct tst_ts ts, *tsp = NULL;
 
+	NOMMU_EFAULT_REQUIRED(&tc->err, 1, return);
+
 	if (tc->ts) {
 		memcpy(&ts, tc->ts, sizeof(ts));
 		tsp = &ts;

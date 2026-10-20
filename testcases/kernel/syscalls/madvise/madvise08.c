@@ -214,4 +214,5 @@ static struct tst_test test = {
 		{PATH_KERN_CORE_PATTERN, NULL, TST_SR_TCONF},
 		{}
 	},
+	.needs_mmu = 1,
 };

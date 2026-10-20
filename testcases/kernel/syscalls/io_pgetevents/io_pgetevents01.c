@@ -48,6 +48,8 @@ static void run(void)
 	TEST(io_setup(1, &ctx));
 	if (TST_RET == -ENOSYS)
 		tst_brk(TCONF | TRERRNO, "io_setup(): AIO not supported by kernel");
+	if (tst_is_nommu() && TST_RET == -ENOMEM)
+		tst_brk(TCONF, "io_setup(): AIO ring allocation unsupported on NOMMU");
 	if (TST_RET < 0)
 		tst_brk(TBROK | TRERRNO, "io_setup() failed");
 

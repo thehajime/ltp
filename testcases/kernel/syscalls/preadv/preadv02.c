@@ -66,20 +66,7 @@ static void verify_preadv(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
-	TEST(preadv(*tc->fd, tc->name, tc->count, tc->offset));
-
-	if (TST_RET == 0) {
-		tst_res(TFAIL, "preadv() succeeded unexpectedly");
-		return;
-	}
-
-	if (TST_ERR == tc->exp_err) {
-		tst_res(TPASS | TTERRNO, "preadv() failed as expected");
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO, "preadv() failed unexpectedly, expected %s",
-		tst_strerrno(tc->exp_err));
+	TST_EXP_FAIL(preadv(*tc->fd, tc->name, tc->count, tc->offset), tc->exp_err);
 }
 
 static void setup(void)

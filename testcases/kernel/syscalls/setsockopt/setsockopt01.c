@@ -73,6 +73,8 @@ static void run(unsigned int n)
 
 	tst_res(TINFO, "Testing %s", tc->desc);
 
+	NOMMU_EFAULT_REQUIRED(&tc->experrno, 1, return);
+
 	if (tc->domain == -1) {
 		tmpfd = fd = SAFE_OPEN("/dev/null", O_WRONLY);
 	} else {

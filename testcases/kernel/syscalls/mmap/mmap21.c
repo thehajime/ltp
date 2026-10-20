@@ -40,7 +40,7 @@ static void run(void)
 		for (int i = 0; i < memory_size; i++)
 			memory_data[i] = (char)i;
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

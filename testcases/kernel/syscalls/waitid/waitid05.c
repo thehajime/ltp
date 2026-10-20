@@ -25,7 +25,7 @@ static void run(void)
 
 	pid_child = SAFE_FORK();
 	if (!pid_child)
-		exit(0);
+		SAFE_EXIT(0);
 
 	pid_group = getpgid(0);
 

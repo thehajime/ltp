@@ -200,6 +200,7 @@ static void do_test(unsigned int i)
 }
 
 static struct tst_test test = {
+	.needs_mmu = 1,
 	.tcnt = ARRAY_SIZE(tcase),
 	.test = do_test,
 	.setup = setup,

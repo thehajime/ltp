@@ -65,6 +65,7 @@ static void cleanup(void)
 
 static void run(void)
 {
+	setup();
 	SAFE_MOUNT(tst_device->dev, mntpoint_src, tst_device->fs_type, 0, NULL);
 	SAFE_FILE_PRINTF(tstfiles_src, "LTP TEST FILE");
 
@@ -89,7 +90,6 @@ static void run(void)
 }
 
 static struct tst_test test = {
-	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = run,
 	.needs_root = 1,

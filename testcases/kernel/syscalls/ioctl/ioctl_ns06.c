@@ -99,4 +99,5 @@ static struct tst_test test = {
 	.min_kver = "4.9",
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 };

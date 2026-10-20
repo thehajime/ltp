@@ -172,8 +172,8 @@ static void testfunc_noatime(void)
 	char path[PATH_MAX];
 	char *tmpdir;
 
-	tmpdir = tst_tmpdir_path();
-	snprintf(path, sizeof(path), "%s/%s", tmpdir, MOUNT_POINT);
+	tmpdir = tst_tmpdir_genpath("%s", MOUNT_POINT);
+	snprintf(path, sizeof(path), "%s", tmpdir);
 	ret = tst_path_has_mnt_flags(path, flags);
 	if (ret > 0) {
 		tst_res(TCONF, "test O_NOATIME flag for openat needs "

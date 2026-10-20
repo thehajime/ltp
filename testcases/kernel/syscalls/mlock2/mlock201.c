@@ -144,4 +144,5 @@ static struct tst_test test = {
 	.test = verify_mlock2,
 	.setup = setup,
 	.needs_root = 1,
+	.needs_mmu = 1,
 };

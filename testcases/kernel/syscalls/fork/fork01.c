@@ -29,7 +29,7 @@ static void verify_fork(void)
 	pid = SAFE_FORK();
 	if (!pid) {
 		SAFE_FILE_PRINTF(FILENAME, "%d", getpid());
-		exit(KIDEXIT);
+		SAFE_EXIT(KIDEXIT);
 	}
 
 	term_pid = SAFE_WAITPID(pid, &kid_status, 0);

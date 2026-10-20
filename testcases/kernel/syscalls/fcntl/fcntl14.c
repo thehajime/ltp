@@ -122,7 +122,7 @@ static void run_testcase(struct testcase *tc, const int file_mode)
 
 	if (!child_pid) {
 		dochild(tc, fd, parent_pid);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

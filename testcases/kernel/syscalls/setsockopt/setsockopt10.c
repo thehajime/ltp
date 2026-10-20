@@ -134,6 +134,7 @@ static void run(void)
 	tcp1_sk = SAFE_SOCKET(AF_INET, SOCK_STREAM, 0);
 	SAFE_BIND(tcp0_sk, (struct sockaddr *)&tcp0_addr, sizeof(tcp0_addr));
 	SAFE_BIND(tcp1_sk, (struct sockaddr *)&tcp1_addr, sizeof(tcp1_addr));
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	child_pid = SAFE_FORK();
 
 	if (child_pid == 0) {

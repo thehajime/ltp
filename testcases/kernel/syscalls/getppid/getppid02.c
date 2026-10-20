@@ -28,7 +28,7 @@ static void verify_getppid(void)
 		TST_EXP_EQ_LI(getppid(), parent_pid);
 
 		*child_pid = getpid();
-		return;
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

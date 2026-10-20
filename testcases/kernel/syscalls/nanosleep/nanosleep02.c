@@ -104,4 +104,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.setup = setup,
 	.test_all = run,
+	.needs_mmu = 1, 	/* parent runs while child runs */
 };

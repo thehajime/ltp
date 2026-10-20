@@ -134,10 +134,12 @@ static void verify_recvmsg(void)
 {
 	pid_t pid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		TST_CHECKPOINT_WAIT(0);
 		client();
+		SAFE_EXIT(0);
 	} else {
 		server();
 		tst_reap_children();

@@ -24,7 +24,7 @@ static void run(void)
 
 	pid_child = SAFE_FORK();
 	if (!pid_child)
-		exit(0);
+		SAFE_EXIT(0);
 
 	TST_EXP_FAIL(waitid(P_PID, pid_child+1, infop, WEXITED), ECHILD);
 

@@ -97,6 +97,7 @@ static void run(void)
 	pid_t pid_write;
 	int status;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_alloc = SAFE_FORK();
 	if (!pid_alloc) {
 		child_alloc_and_verify(bufsize);
@@ -105,6 +106,7 @@ static void run(void)
 
 	TST_CHECKPOINT_WAIT(0);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_write = SAFE_FORK();
 	if (!pid_write) {
 		child_write(bufsize, pid_alloc);

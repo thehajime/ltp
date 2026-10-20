@@ -68,21 +68,8 @@ static void run_test(unsigned int i)
 	struct statx buf;
 	struct test_case *tc = &tcases[i];
 
-	TEST(statx(tc->dfd, *(tc->filename), tc->flag,
-		   tc->mask, &buf));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "statx() returned with %ld", TST_RET);
-		return;
-	}
-
-	if (tc->errnum == TST_ERR) {
-		tst_res(TPASS | TTERRNO, "statx() failed with");
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO,
-		"statx() should fail with %s", tst_strerrno(tc->errnum));
+	TST_EXP_FAIL(statx(tc->dfd, *(tc->filename), tc->flag,
+			   tc->mask, &buf), tc->errnum);
 }
 
 static void setup(void)

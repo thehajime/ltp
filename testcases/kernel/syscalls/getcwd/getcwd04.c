@@ -99,5 +99,6 @@ static struct tst_test test = {
 	.test_all = verify_getcwd,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 	.min_cpus = 2
 };

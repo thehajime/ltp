@@ -138,7 +138,8 @@ static struct tst_test test = {
 	/*
 	 * When running in compat mode we can't pass 64 address to ptrace so we
 	 * have to skip the test.
-	 */
+	 */,
+	.needs_mmu = 1,
 	.skip_in_compat = 1,
 	.supported_archs = (const char *const []) {
 		"x86",

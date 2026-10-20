@@ -73,6 +73,7 @@ static void run(void)
 	SAFE_PIPE(fds);
 
 	for (i = 0; i < NWAITERS; i++) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		pids[i] = SAFE_FORK();
 		if (!pids[i])
 			child();

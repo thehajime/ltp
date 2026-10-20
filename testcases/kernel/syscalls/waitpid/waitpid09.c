@@ -157,4 +157,5 @@ static struct tst_test test = {
 	.needs_checkpoints = 1,
 	.test = waitpid09_test,
 	.tcnt = ARRAY_SIZE(tests),
+	.needs_mmu = 1,
 };

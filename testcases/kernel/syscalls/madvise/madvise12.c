@@ -100,4 +100,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.min_kver = "6.13",
+	.needs_mmu = 1,
 };

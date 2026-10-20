@@ -75,4 +75,5 @@ static struct tst_test test = {
 		{},
 	},
 	.needs_tmpdir = 1,
+	.needs_mmu = 1,
 };

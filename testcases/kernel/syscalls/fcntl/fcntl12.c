@@ -36,6 +36,7 @@ static void verify_fcntl(void)
 		}
 		TST_EXP_FAIL2(fcntl(1, F_DUPFD, 1), EMFILE,
 			"fcntl(1, F_DUPFD, 1)");
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

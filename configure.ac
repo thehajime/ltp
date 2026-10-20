@@ -105,6 +105,7 @@ AC_SUBST(HAVE_FTS_H, $have_fts)
 AC_CHECK_HEADERS(linux/vm_sockets.h, [], [], [#include <sys/socket.h>])
 
 AC_CHECK_FUNCS_ONCE([ \
+    addseverity \
     cachestat \
     clone3 \
     close_range \

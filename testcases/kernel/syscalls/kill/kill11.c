@@ -129,4 +129,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_kill,
+	.needs_mmu = 1,
 };

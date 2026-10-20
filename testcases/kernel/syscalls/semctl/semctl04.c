@@ -53,6 +53,7 @@ static void verify_semctl(void)
 	if (pid == 0) {
 		SAFE_SETEUID(ltp_uid);
 		do_child();
+		SAFE_EXIT(0);
 	} else {
 		SAFE_WAITPID(pid, NULL, 0);
 	}

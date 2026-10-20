@@ -24,6 +24,14 @@ static void verify_gethostname(void)
 		"len is smaller than the actual size");
 }
 
+static void setup(void)
+{
+#ifndef __GLIBC__
+	tst_brk(TCONF, "gethostname() truncation behavior differs in this libc");
+#endif
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = verify_gethostname,
 };

@@ -70,4 +70,5 @@ static struct tst_test test = {
 	.test_all = verify_setrlimit,
 	.forks_child = 1,
 	.setup = setup,
+	.needs_mmu = 1,
 };

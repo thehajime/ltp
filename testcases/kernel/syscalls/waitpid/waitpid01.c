@@ -150,5 +150,6 @@ static struct tst_test test = {
 	.test = run,
 	.tcnt = ARRAY_SIZE(testcase_list),
 	.test_variants = ARRAY_SIZE(variant_list),
-	.needs_tmpdir = 1	/* for coredumps */
+	.needs_tmpdir = 1, /* for coredumps */
+	.needs_mmu = 1,
 };

@@ -29,6 +29,7 @@
 #include "tst_test.h"
 #include "tst_safe_macros.h"
 #include "lapi/fcntl.h"
+#include "lapi/syscalls.h"
 
 #define TESTFILE	"testfile"
 
@@ -94,12 +95,12 @@ static int verify_write(int fd)
 
 static int verify_fchmod(int fd)
 {
-	return fchmod(fd, 0666);
+	return tst_syscall(__NR_fchmod, fd, 0666);
 }
 
 static int verify_fchown(int fd)
 {
-	return fchown(fd, 1000, 1000);
+	return tst_syscall(__NR_fchown, fd, 1000, 1000);
 }
 
 static int verify_ioctl(int fd)

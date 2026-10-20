@@ -189,4 +189,5 @@ static struct tst_test test = {
 		{"linux-git", "0572639ff66dcffe62d37adfe4c4576f9fc398f4"},
 		{},
 	},
+	.needs_mmu = 1,
 };

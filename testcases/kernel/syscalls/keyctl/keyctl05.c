@@ -157,6 +157,8 @@ static void test_update_setperm_race(void)
 	key_serial_t keyid;
 	int i;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	new_session_keyring();
 
 	TEST(add_key("user", "desc", payload, sizeof(payload),
@@ -176,7 +178,7 @@ static void test_update_setperm_race(void)
 			if (TST_RET != 0)
 				tst_brk(TBROK | TTERRNO, "setperm failed");
 		}
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_res(TINFO, "Try to update the 'user' key...");
@@ -193,8 +195,14 @@ static void test_update_setperm_race(void)
 
 static void setup(void)
 {
+	int ret;
+
 	/* There is no way to trigger automatic dns_resolver module loading. */
-	tst_cmd((const char*[]){"modprobe", MODULE, NULL}, NULL, NULL, 0);
+	ret = tst_cmd((const char*[]){"modprobe", MODULE, NULL}, NULL, NULL,
+		TST_CMD_PASS_RETVAL);
+	if (ret)
+		tst_res(TINFO, "modprobe %s failed; the dns_resolver subtest will be skipped",
+			MODULE);
 
 	fips_enabled = tst_fips_enabled();
 }

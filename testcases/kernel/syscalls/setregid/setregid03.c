@@ -128,6 +128,7 @@ void run_all(void)
 	if (!SAFE_FORK()) {
 		for (i = 0; i < ARRAY_SIZE(tcases); i++)
 			run(i);
+		SAFE_EXIT(0);
 	}
 }
 

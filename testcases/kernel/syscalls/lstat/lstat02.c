@@ -60,21 +60,7 @@ static void run(unsigned int n)
 {
 	struct test_case_t *tc = &test_cases[n];
 
-	TEST(lstat(tc->pathname, &stat_buf));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL | TTERRNO, "lstat() returned %ld, expected -1",
-			TST_RET);
-		return;
-	}
-
-	if (tc->exp_errno == TST_ERR) {
-		tst_res(TPASS | TTERRNO, "lstat() failed as expected");
-	} else {
-		tst_res(TFAIL | TTERRNO,
-			"lstat() failed unexpectedly; expected: %s - got",
-			tst_strerrno(tc->exp_errno));
-	}
+	TST_EXP_FAIL(lstat(tc->pathname, &stat_buf), tc->exp_errno);
 }
 
 static void setup(void)

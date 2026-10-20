@@ -41,6 +41,7 @@ static void verify_execve(void)
 	pid_t pid;
 	char *argv[2] = {TEST_APP, NULL};
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid == 0)
 		do_child();

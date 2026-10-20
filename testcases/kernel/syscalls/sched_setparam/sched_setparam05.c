@@ -29,7 +29,7 @@ static void run(void)
 		TST_EXP_FAIL(tv->sched_setparam(getppid(), &p), EPERM,
 			     "sched_setparam(%d, 0)", getppid());
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

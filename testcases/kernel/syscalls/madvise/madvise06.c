@@ -237,5 +237,6 @@ static struct tst_test test = {
 		{"linux-git", "8de15e920dc85d1705ab9c202c95d56845bc2d48"},
 		{"linux-git", "66383800df9cbdbf3b0c34d5a51bf35bcdb72fd2"},
 		{}
-	}
+	},
+	.needs_mmu = 1,
 };

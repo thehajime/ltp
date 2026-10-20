@@ -245,7 +245,8 @@ static struct tst_test test = {
 	.resource_files = (const char *const []) {
 		TEST_APP,
 		NULL
-	}
+	},
+	.needs_mmu = 1,
 };
 #else
 	TST_TEST_TCONF("System does not contain required fanotify support");

@@ -70,4 +70,5 @@ static void run(void)
 static struct tst_test test = {
 	.needs_root = 1,
 	.test_all = run,
+	.needs_mmu = 1,
 };

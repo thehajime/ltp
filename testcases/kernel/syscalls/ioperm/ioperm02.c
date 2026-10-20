@@ -45,6 +45,9 @@ static struct tcase_t {
 
 static void setup(void)
 {
+	if (ioperm(0, 0, 0) && errno == ENOSYS)
+		tst_brk(TCONF, "ioperm() is not implemented by this kernel");
+
 	tcases[0].from = (IO_BITMAP_BITS_16 - NUM_BYTES) + 1;
 	tcases[1].from = IO_BITMAP_BITS_16 - NUM_BYTES;
 

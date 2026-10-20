@@ -126,7 +126,7 @@ void dochild(void)
 
 	tst_res(TINFO, "Child unlocks file");
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_ftruncate(void)
@@ -141,6 +141,7 @@ static void verify_ftruncate(void)
 	reclen = RECLEN;
 	recstart = RECLEN + rand() % (len - 3 * RECLEN);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 
 	if (pid == 0)

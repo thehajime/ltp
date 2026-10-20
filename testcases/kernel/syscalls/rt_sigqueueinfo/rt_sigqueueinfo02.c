@@ -89,7 +89,8 @@ static struct tst_test test = {
 		{&siginfo_eperm, .size = sizeof(siginfo_eperm)},
 		{&siginfo_esrch, .size = sizeof(siginfo_esrch)},
 		{},
-	}
+	},
+	.needs_mmu = 1,
 };
 
 #else

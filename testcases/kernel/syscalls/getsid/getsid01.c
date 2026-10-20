@@ -33,10 +33,11 @@ static void run(void)
 		TEST(getsid(0));
 		if (TST_RET == -1) {
 			tst_res(TFAIL | TTERRNO, "getsid(0) failed in child");
-			return;
+			SAFE_EXIT(-1);
 		}
 		c_sid = TST_RET;
 		TST_EXP_EQ_LI(p_sid, c_sid);
+		SAFE_EXIT(0);
 	} else {
 		SAFE_WAITPID(pid, NULL, 0);
 	}

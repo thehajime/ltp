@@ -41,21 +41,7 @@ static void check_fstat(unsigned int tc_num)
 {
 	struct tcase *tc = &tcases[tc_num];
 
-	TEST(fstat(*tc->fd, tc->stat_buf));
-	if (TST_RET == -1) {
-		if (tc->exp_err == TST_ERR) {
-			tst_res(TPASS,
-				 "fstat() fails with expected error %s",
-				 tst_strerrno(tc->exp_err));
-		} else {
-			tst_res(TFAIL | TTERRNO,
-				 "fstat() did not fail with %s, but with",
-				 tst_strerrno(tc->exp_err));
-		}
-	} else {
-		tst_res(TFAIL, "fstat() returned %ld, expected -1",
-			 TST_RET);
-	}
+	TST_EXP_FAIL(fstat(*tc->fd, tc->stat_buf), tc->exp_err);
 }
 
 static void run(unsigned int tc_num)
@@ -66,6 +52,7 @@ static void run(unsigned int tc_num)
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		check_fstat(tc_num);
+		SAFE_EXIT(0);
 		return;
 	}
 	SAFE_WAITPID(pid, &status, 0);

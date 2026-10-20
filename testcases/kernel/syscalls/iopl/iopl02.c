@@ -49,6 +49,9 @@ static void setup(void)
 {
 	struct passwd *pw;
 
+	if (iopl(0) && errno == ENOSYS)
+		tst_brk(TCONF, "iopl() is not implemented by this kernel");
+
 	pw = SAFE_GETPWNAM("nobody");
 	SAFE_SETEUID(pw->pw_uid);
 }

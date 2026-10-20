@@ -27,21 +27,7 @@ void verify_setdomainname(unsigned int nr)
 {
 	struct test_case *tcase = &tcases[nr];
 
-	TEST(do_setdomainname(tcase->name, (size_t) tcase->len));
-
-	tst_res(TINFO, "testing %s", tcase->desc);
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "unexpected exit code: %ld", TST_RET);
-		return;
-	}
-
-	if (TST_ERR != tcase->exp_errno) {
-		tst_res(TFAIL | TTERRNO, "unexpected errno: %d, expected: %d",
-			TST_ERR, tcase->exp_errno);
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "expected failure");
+	TST_EXP_FAIL(do_setdomainname(tcase->name, (size_t) tcase->len), tcase->exp_errno);
 }
 
 static struct tst_test test = {

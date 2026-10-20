@@ -43,7 +43,7 @@ static void child(int opt, int should_pass, char *lock)
 	}
 
 	SAFE_CLOSE(fd1);
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_flock(unsigned n)

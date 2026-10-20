@@ -149,7 +149,7 @@ static void do_test(unsigned int i)
 	if (f_pid == 0) {
 		tst_res(TINFO, "forked pid is %d", getpid());
 		verify_fn(i);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAIT(&status);

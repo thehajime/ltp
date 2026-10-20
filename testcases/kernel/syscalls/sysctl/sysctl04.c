@@ -49,18 +49,7 @@ static void verify_sysctl(unsigned int n)
 		.oldlenp = tc->oldlen,
 	};
 
-	TEST(tst_syscall(__NR__sysctl, &args));
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "sysctl(2) succeeded unexpectedly");
-		return;
-	}
-
-	if (TST_ERR == tc->exp_err) {
-		tst_res(TPASS | TTERRNO, "Got expected error");
-	} else {
-		tst_res(TFAIL | TTERRNO, "Got unexpected error, expected %s",
-			tst_strerrno(tc->exp_err));
-	}
+	TST_EXP_FAIL(tst_syscall(__NR__sysctl, &args), tc->exp_err);
 }
 
 static struct tst_test test = {

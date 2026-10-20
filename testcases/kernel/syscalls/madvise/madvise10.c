@@ -170,4 +170,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test = test_madvise,
 	.setup = setup,
+	.needs_mmu = 1,
 };

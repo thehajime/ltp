@@ -53,7 +53,7 @@ static struct test_case {
 	{"CLONE_PARENT_SETTID", CLONE_PARENT_SETTID | CLONE_VM | SIGCHLD,
 	 test_clone_tid, child_clone_parent_settid},
 	{"CLONE_THREAD", CLONE_THREAD | CLONE_SIGHAND | CLONE_VM |
-	 CLONE_CHILD_CLEARTID | SIGCHLD,
+	 CLONE_CHILD_CLEARTID,
 	 test_clone_thread, child_clone_thread},
 };
 
@@ -80,6 +80,11 @@ static long clone_child(const struct test_case *t)
 
 	if (TST_RET == -1 && TTERRNO == ENOSYS)
 		tst_brk(TCONF, "clone does not support 7 args");
+
+	/* musl's clone wrapper rejects this combination with EINVAL. */
+	if (t->flags & (CLONE_THREAD | CLONE_SETTLS | CLONE_CHILD_CLEARTID) &&
+		errno == EINVAL)
+		tst_brk(TCONF, "musl libc rejects CLONE_THREAD with CLONE_SETTLS and CLONE_CHILD_CLEARTID");
 
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "%s clone() failed", t->name);

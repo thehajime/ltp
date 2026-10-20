@@ -151,6 +151,7 @@ static void setup(void)
 	small_usize = FILE_ATTR_SIZE_VER0 - 1;
 	big_usize = SAFE_SYSCONF(_SC_PAGESIZE) + 100;
 
+	missing_tmpfs_xattr = 0;
 	if (!strcmp(tst_device->fs_type, "tmpfs")) {
 		const char *const kconfig[] = {"CONFIG_TMPFS_XATTR=y", NULL};
 		missing_tmpfs_xattr = tst_kconfig_check(kconfig);

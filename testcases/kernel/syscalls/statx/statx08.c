@@ -120,6 +120,11 @@ static void caid_flags_setup(void)
 static void setup(void)
 {
 	struct statx buf;
+	clear_flags = 0;
+	supp_compr = 1;
+	supp_append = 1;
+	supp_immutable = 1;
+	supp_nodump = 1;
 
 	SAFE_MKDIR(TESTDIR_FLAGGED, 0777);
 	SAFE_MKDIR(TESTDIR_UNFLAGGED, 0777);

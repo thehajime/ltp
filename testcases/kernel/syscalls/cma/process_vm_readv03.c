@@ -164,6 +164,7 @@ static void run(unsigned int i)
 
 	create_data_size(sizes, remote_iovecs, bufsize);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_alloc = SAFE_FORK();
 	if (!pid_alloc) {
 		child_alloc(sizes, remote_iovecs);
@@ -172,6 +173,7 @@ static void run(unsigned int i)
 
 	TST_CHECKPOINT_WAIT(0);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_read = SAFE_FORK();
 	if (!pid_read) {
 		child_read(sizes, local_iovecs, remote_iovecs, pid_alloc, bufsize);

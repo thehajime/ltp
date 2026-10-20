@@ -49,9 +49,11 @@ static void verify_pidfd_send_signal(void)
 
 	fail = 1;
 	for (i = 0; i < PIDTRIES; i++) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		pid = SAFE_FORK();
 		if (pid == 0) {
 			TST_CHECKPOINT_WAIT(0);
+			SAFE_EXIT(0);
 			return;
 		}
 
@@ -66,9 +68,11 @@ static void verify_pidfd_send_signal(void)
 		sprintf(pid_str, "%d", pid - 1);
 		SAFE_FILE_PRINTF(last_pid_file, "%s", pid_str);
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		new_pid = SAFE_FORK();
 		if (new_pid == 0) {
 			TST_CHECKPOINT_WAIT(0);
+			SAFE_EXIT(0);
 			return;
 		}
 
