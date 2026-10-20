@@ -15,6 +15,11 @@ apk add \
         libtirpc \
         numactl \
         openssl \
-        py3-msgpack
+        py3-msgpack \
+        btrfs-progs \
+        e2fsprogs \
+        xfsprogs \
+        dosfstools \
+        parted
 
 adduser -D -g "Unprivileged LTP user" ltp
