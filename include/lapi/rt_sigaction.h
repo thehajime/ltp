@@ -56,6 +56,16 @@ struct kernel_sigaction {
 
 void (*restore_rt)(void);
 
+/*
+ * musl does not expose the kernel sa_restorer field through the oldact
+ * argument to sigaction(). Supply the x86-64 rt_sigreturn trampoline
+ * directly instead of reading that unspecified output field.
+ */
+static void __attribute__((naked, used)) ltp_restore_rt_x86_64(void)
+{
+	__asm__("mov $15, %rax\n\tsyscall");
+}
+
 static void handler_h(int signal)
 {
 	return;
@@ -189,13 +199,13 @@ static int ltp_rt_sigaction(int signum, const struct sigaction *act,
 	else if (oact)
 		koact_p = &koact;
 
-#ifdef __x86_64__
-	sig_initial(signum);
-#endif
-
 #if defined __x86_64__ || defined __arc__
 	kact.sa_flags |= SA_RESTORER;
+	#ifdef __x86_64__
+	kact.sa_restorer = ltp_restore_rt_x86_64;
+	#else
 	kact.sa_restorer = restore_rt;
+	#endif
 #endif
 
 #ifdef __sparc__
