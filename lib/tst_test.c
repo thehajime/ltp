@@ -143,6 +143,7 @@ extern volatile void *tst_futexes;
 extern unsigned int tst_max_futexes;
 
 static int ipc_fd;
+static int ipc_nommu_heap;
 static char ipc_path[1064];
 
 static char shm_path[1024];
@@ -158,31 +159,42 @@ static void setup_ipc(void)
 {
 	size_t size = getpagesize();
 
-	if (access("/dev/shm", F_OK) == 0) {
-		snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
-			 tcid, getpid());
+	if (tst_is_nommu()) {
+		if (tst_test->needs_checkpoints || tst_test->child_needs_reinit)
+			tst_brk(TCONF, "NOMMU does not support shared test IPC");
+
+		ipc = calloc(1, size);
+		if (!ipc)
+			tst_brk(TBROK | TERRNO, "calloc() for test IPC");
+
+		ipc_nommu_heap = 1;
 	} else {
-		char *tmpdir;
+		if (access("/dev/shm", F_OK) == 0) {
+			snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
+				 tcid, getpid());
+		} else {
+			char *tmpdir;
 
-		if (!tst_tmpdir_created())
-			tst_tmpdir();
+			if (!tst_tmpdir_created())
+				tst_tmpdir();
 
-		tmpdir = tst_get_tmpdir();
-		snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
-			 tmpdir, tcid, getpid());
-		free(tmpdir);
+			tmpdir = tst_get_tmpdir();
+			snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
+				 tmpdir, tcid, getpid());
+			free(tmpdir);
+		}
+
+		ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
+		if (ipc_fd < 0)
+			tst_brk(TBROK | TERRNO, "open(%s)", shm_path);
+		SAFE_CHMOD(shm_path, 0666);
+
+		SAFE_FTRUNCATE(ipc_fd, size);
+
+		ipc = SAFE_MMAP(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, ipc_fd, 0);
+
+		SAFE_CLOSE(ipc_fd);
 	}
-
-	ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
-	if (ipc_fd < 0)
-		tst_brk(TBROK | TERRNO, "open(%s)", shm_path);
-	SAFE_CHMOD(shm_path, 0666);
-
-	SAFE_FTRUNCATE(ipc_fd, size);
-
-	ipc = SAFE_MMAP(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, ipc_fd, 0);
-
-	SAFE_CLOSE(ipc_fd);
 
 	memset(ipc, 0, size);
 
@@ -197,10 +209,10 @@ static void setup_ipc(void)
 	}
 
 	/* Set environment variable for exec()'d children */
-	if (tst_test->needs_checkpoints || tst_test->child_needs_reinit) {
+	if (shm_path[0] && (tst_test->needs_checkpoints || tst_test->child_needs_reinit)) {
 		snprintf(ipc_path, sizeof(ipc_path), IPC_ENV_VAR "=%s", shm_path);
 		putenv(ipc_path);
-	} else {
+	} else if (shm_path[0]) {
 		SAFE_UNLINK(shm_path);
 	}
 }
@@ -208,6 +220,18 @@ static void setup_ipc(void)
 static void cleanup_ipc(void)
 {
 	size_t size = getpagesize();
+
+	if (ipc_nommu_heap) {
+		/* The NOMMU test child shares this heap region with its parent. */
+		if (context && getpid() != context->lib_pid)
+			return;
+
+		free(ipc);
+		ipc = NULL;
+		context = NULL;
+		results = NULL;
+		return;
+	}
 
 	if (ipc_fd > 0 && close(ipc_fd))
 		tst_res(TWARN | TERRNO, "close(ipc_fd) failed");
@@ -1547,6 +1571,10 @@ static void do_setup(int argc, char *argv[])
 		}
 	}
 
+	/* Skip before preparing resources such as hugepages on NOMMU. */
+	if (tst_is_nommu() && tst_test->needs_mmu)
+		tst_brk(TCONF, "Test requires MMU, skipping");
+
 	if (tst_test->iterations == 0)
 		tst_test->iterations = 1;
 
@@ -1677,9 +1705,6 @@ static void do_setup(int argc, char *argv[])
 		do_cgroup_requires();
 	else if (tst_test->needs_cgroup_ver)
 		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
-
-	if (tst_is_nommu() && tst_test->needs_mmu)
-		tst_brk(TCONF, "Test requires MMU, skipping");
 
 }
 
