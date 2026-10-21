@@ -81,6 +81,7 @@ static void run(void)
 	TST_EXP_EXPR(parentuserns != cpid2userns,
 		"parent namespace != child namespace");
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	cpid3 = SAFE_FORK();
 	if (!cpid3) {
 		SAFE_UNSHARE(CLONE_NEWUSER);

@@ -30,5 +30,6 @@ static void run(unsigned int i)
 
 static struct tst_test test = {
 	.test = run,
-	.tcnt = ARRAY_SIZE(tcases)
+	.tcnt = ARRAY_SIZE(tcases),
+	.needs_mmu = 1,
 };

@@ -99,6 +99,42 @@ struct ipc_region {
 	futex_t futexes[];
 };
 
+static int is_nommu;
+static int nommu_checked;
+
+static void detect_nommu(void)
+{
+	FILE *meminfo;
+	char *line = NULL;
+	size_t len = 0;
+
+	if (nommu_checked)
+		return;
+
+	nommu_checked = 1;
+
+	meminfo = fopen("/proc/meminfo", "r");
+
+	if (!meminfo)
+		tst_brk(TBROK | TERRNO, "fopen(/proc/meminfo) for NOMMU detection");
+
+	while (getline(&line, &len, meminfo) >= 0) {
+		if (!strncmp(line, "MmapCopy:", sizeof("MmapCopy:") - 1)) {
+			is_nommu = 1;
+			break;
+		}
+	}
+
+	free(line);
+	fclose(meminfo);
+}
+
+int tst_is_nommu(void)
+{
+	detect_nommu();
+	return is_nommu;
+}
+
 static struct ipc_region *ipc;
 static struct context *context;
 static struct results *results;
@@ -107,6 +143,7 @@ extern volatile void *tst_futexes;
 extern unsigned int tst_max_futexes;
 
 static int ipc_fd;
+static int ipc_nommu_heap;
 static char ipc_path[1064];
 
 static char shm_path[1024];
@@ -122,31 +159,42 @@ static void setup_ipc(void)
 {
 	size_t size = getpagesize();
 
-	if (access("/dev/shm", F_OK) == 0) {
-		snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
-			 tcid, getpid());
+	if (tst_is_nommu()) {
+		if (tst_test->needs_checkpoints || tst_test->child_needs_reinit)
+			tst_brk(TCONF, "NOMMU does not support shared test IPC");
+
+		ipc = calloc(1, size);
+		if (!ipc)
+			tst_brk(TBROK | TERRNO, "calloc() for test IPC");
+
+		ipc_nommu_heap = 1;
 	} else {
-		char *tmpdir;
+		if (access("/dev/shm", F_OK) == 0) {
+			snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
+				 tcid, getpid());
+		} else {
+			char *tmpdir;
 
-		if (!tst_tmpdir_created())
-			tst_tmpdir();
+			if (!tst_tmpdir_created())
+				tst_tmpdir();
 
-		tmpdir = tst_get_tmpdir();
-		snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
-			 tmpdir, tcid, getpid());
-		free(tmpdir);
+			tmpdir = tst_get_tmpdir();
+			snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
+				 tmpdir, tcid, getpid());
+			free(tmpdir);
+		}
+
+		ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
+		if (ipc_fd < 0)
+			tst_brk(TBROK | TERRNO, "open(%s)", shm_path);
+		SAFE_CHMOD(shm_path, 0666);
+
+		SAFE_FTRUNCATE(ipc_fd, size);
+
+		ipc = SAFE_MMAP(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, ipc_fd, 0);
+
+		SAFE_CLOSE(ipc_fd);
 	}
-
-	ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
-	if (ipc_fd < 0)
-		tst_brk(TBROK | TERRNO, "open(%s)", shm_path);
-	SAFE_CHMOD(shm_path, 0666);
-
-	SAFE_FTRUNCATE(ipc_fd, size);
-
-	ipc = SAFE_MMAP(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, ipc_fd, 0);
-
-	SAFE_CLOSE(ipc_fd);
 
 	memset(ipc, 0, size);
 
@@ -161,10 +209,10 @@ static void setup_ipc(void)
 	}
 
 	/* Set environment variable for exec()'d children */
-	if (tst_test->needs_checkpoints || tst_test->child_needs_reinit) {
+	if (shm_path[0] && (tst_test->needs_checkpoints || tst_test->child_needs_reinit)) {
 		snprintf(ipc_path, sizeof(ipc_path), IPC_ENV_VAR "=%s", shm_path);
 		putenv(ipc_path);
-	} else {
+	} else if (shm_path[0]) {
 		SAFE_UNLINK(shm_path);
 	}
 }
@@ -172,6 +220,18 @@ static void setup_ipc(void)
 static void cleanup_ipc(void)
 {
 	size_t size = getpagesize();
+
+	if (ipc_nommu_heap) {
+		/* The NOMMU test child shares this heap region with its parent. */
+		if (context && getpid() != context->lib_pid)
+			return;
+
+		free(ipc);
+		ipc = NULL;
+		context = NULL;
+		results = NULL;
+		return;
+	}
 
 	if (ipc_fd > 0 && close(ipc_fd))
 		tst_res(TWARN | TERRNO, "close(ipc_fd) failed");
@@ -193,6 +253,8 @@ void tst_reinit(void)
 	const char *path = getenv(IPC_ENV_VAR);
 	size_t size = getpagesize();
 	int fd;
+
+	detect_nommu();
 
 	if (ipc)
 		tst_brk(TBROK, "Test library already initialized!");
@@ -258,6 +320,8 @@ int tst_run_script(const char *script_name, char *const params[])
 		return pid;
 
 	execvpe(script_name, argv, environ);
+	if (tst_is_nommu())
+		_exit(TBROK);
 
 	tst_brk(TBROK | TERRNO, "execvpe(%s, ...) failed!", script_name);
 
@@ -439,7 +503,7 @@ void tst_vbrk_(const char *file, const int lineno, int ttype, const char *fmt,
 	 * library was initialized, just exit.
 	 */
 	if (!results || !context->lib_pid)
-		exit(TTYPE_RESULT(ttype));
+		SAFE_EXIT(TTYPE_RESULT(ttype));
 
 	update_results(TTYPE_RESULT(ttype));
 
@@ -479,7 +543,7 @@ void tst_vbrk_(const char *file, const int lineno, int ttype, const char *fmt,
 		}
 	}
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 void tst_res_(const char *file, const int lineno, int ttype,
@@ -567,20 +631,26 @@ void tst_reap_children(void)
 }
 
 
+void tst_prepare_fork(const char *filename, unsigned int lineno)
+{
+	if (!tst_test->forks_child)
+		tst_brk_(filename, lineno, TBROK,
+			 "test.forks_child must be set!");
+	tst_flush();
+}
+
 pid_t safe_fork(const char *filename, unsigned int lineno)
 {
 	pid_t pid;
 
-	if (!tst_test->forks_child)
-		tst_brk(TBROK, "test.forks_child must be set!");
-
-	tst_flush();
+	tst_prepare_fork(filename, lineno);
 
 	pid = fork();
 	if (pid < 0)
 		tst_brk_(filename, lineno, TBROK | TERRNO, "fork() failed");
 
-	if (!pid)
+	/* atexit() would modify shared state in the vfork child on NOMMU. */
+	if (!pid && !tst_is_nommu())
 		atexit(tst_free_all);
 
 	return pid;
@@ -1501,6 +1571,10 @@ static void do_setup(int argc, char *argv[])
 		}
 	}
 
+	/* Skip before preparing resources such as hugepages on NOMMU. */
+	if (tst_is_nommu() && tst_test->needs_mmu)
+		tst_brk(TCONF, "Test requires MMU, skipping");
+
 	if (tst_test->iterations == 0)
 		tst_test->iterations = 1;
 
@@ -1524,9 +1598,6 @@ static void do_setup(int argc, char *argv[])
 
 	if (tst_test->hugepages.number)
 		tst_reserve_hugepages(&tst_test->hugepages);
-
-	if (tst_test->bufs)
-		tst_buffers_alloc(tst_test->bufs);
 
 	if (needs_tmpdir() && !tst_tmpdir_created())
 		tst_tmpdir();
@@ -1634,11 +1705,15 @@ static void do_setup(int argc, char *argv[])
 		do_cgroup_requires();
 	else if (tst_test->needs_cgroup_ver)
 		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
+
 }
 
 static void do_test_setup(void)
 {
 	context->main_pid = getpid();
+
+	if (tst_test->bufs)
+		tst_buffers_alloc(tst_test->bufs);
 
 	if (!tst_test->all_filesystems && tst_test->skip_filesystems) {
 		long fs_type = tst_fs_type(".");
@@ -1722,7 +1797,7 @@ static void run_tests(void)
 		tst_test->test_all();
 
 		if (tst_getpid() != context->main_pid)
-			exit(0);
+			SAFE_EXIT(0);
 
 		tst_reap_children();
 
@@ -1738,7 +1813,7 @@ static void run_tests(void)
 		tst_test->test(i);
 
 		if (tst_getpid() != context->main_pid)
-			exit(0);
+			SAFE_EXIT(0);
 
 		tst_reap_children();
 
@@ -1774,7 +1849,7 @@ static void add_paths(void)
 	free(new_path);
 }
 
-static void testrun(void)
+static void testrun(int exit_on_completion)
 {
 	unsigned int i = 0;
 	unsigned long long stop_time = 0;
@@ -1806,7 +1881,8 @@ static void testrun(void)
 	}
 
 	do_test_cleanup();
-	exit(0);
+	if (exit_on_completion)
+		exit(0);
 }
 
 static pid_t test_pid;
@@ -1919,9 +1995,29 @@ void tst_set_runtime(int runtime)
 	heartbeat();
 }
 
+#define NOMMU_CHILD_STACK_SIZE (1024 * 1024)
+
+static void setup_testrun_child(void)
+{
+	tst_disable_oom_protection(0);
+	SAFE_SIGNAL(SIGALRM, SIG_DFL);
+	SAFE_SIGNAL(SIGUSR1, SIG_DFL);
+	SAFE_SIGNAL(SIGTERM, SIG_DFL);
+	SAFE_SIGNAL(SIGINT, SIG_DFL);
+	SAFE_SETPGID(0, 0);
+}
+
+static int nommu_testrun(void *unused LTP_ATTRIBUTE_UNUSED)
+{
+	setup_testrun_child();
+	testrun(0);
+	_exit(0);
+}
+
 static void fork_testrun(void)
 {
 	int status;
+	void *nommu_stack = NULL;
 
 	SAFE_SIGNAL(SIGINT, sigint_handler);
 	SAFE_SIGNAL(SIGTERM, sigint_handler);
@@ -1929,22 +2025,28 @@ static void fork_testrun(void)
 	alarm(context->overall_time);
 
 	show_failure_hints = 1;
+	if (tst_is_nommu()) {
+		nommu_stack = ltp_alloc_stack(NOMMU_CHILD_STACK_SIZE);
+		if (!nommu_stack)
+			tst_brk(TBROK | TERRNO, "Failed to allocate NOMMU child stack");
 
-	test_pid = fork();
+		test_pid = ltp_clone(CLONE_VM | SIGCHLD,
+				     nommu_testrun, NULL, NOMMU_CHILD_STACK_SIZE,
+				     nommu_stack);
+	} else {
+		test_pid = fork();
+	}
+
 	if (test_pid < 0)
-		tst_brk(TBROK | TERRNO, "fork()");
+		tst_brk(TBROK | TERRNO, "Failed to start test child");
 
 	if (!test_pid) {
-		tst_disable_oom_protection(0);
-		SAFE_SIGNAL(SIGALRM, SIG_DFL);
-		SAFE_SIGNAL(SIGUSR1, SIG_DFL);
-		SAFE_SIGNAL(SIGTERM, SIG_DFL);
-		SAFE_SIGNAL(SIGINT, SIG_DFL);
-		SAFE_SETPGID(0, 0);
-		testrun();
+		setup_testrun_child();
+		testrun(1);
 	}
 
 	SAFE_WAITPID(test_pid, &status, 0);
+	free(nommu_stack);
 	alarm(0);
 	SAFE_SIGNAL(SIGTERM, SIG_DFL);
 	SAFE_SIGNAL(SIGINT, SIG_DFL);
@@ -2057,6 +2159,7 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	struct utsname uval;
 
 	tst_test = self;
+	detect_nommu();
 
 	tst_res(TINFO, "LTP version: "LTP_VERSION);
 

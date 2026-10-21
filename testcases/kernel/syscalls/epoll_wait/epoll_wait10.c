@@ -68,6 +68,7 @@ static void check_epoll_event(const char *desc)
 
 static void run(void)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		SAFE_MOUNT("none", MNTPOINT, "tmpfs", 0, NULL);
 		TST_CHECKPOINT_WAKE_AND_WAIT(0);

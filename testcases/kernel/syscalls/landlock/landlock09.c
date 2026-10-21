@@ -84,20 +84,23 @@ static void run(void)
 	/* isolate test inside a process so we won't stack too many
 	 * layers (-E2BIG) when there are multiple test's iterations
 	 */
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (SAFE_FORK())
 		return;
 
 	if (tst_variant == DOMAIN_BOTH)
 		scoped_sandbox("server and client");
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		run_client();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	run_server();
 
 	tst_reap_children();
+	SAFE_EXIT(0);
 }
 
 static void setup(void)

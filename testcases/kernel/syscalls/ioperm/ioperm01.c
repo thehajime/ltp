@@ -20,6 +20,7 @@
 #include <sys/io.h>
 
 unsigned long io_addr;
+static int ioperm_supported;
 #define NUM_BYTES 3
 #ifndef IO_BITMAP_BITS
 #define IO_BITMAP_BITS 1024
@@ -42,6 +43,10 @@ static void verify_ioperm(void)
 
 static void setup(void)
 {
+	if (ioperm(0, 0, 0) && errno == ENOSYS)
+		tst_brk(TCONF, "ioperm() is not implemented by this kernel");
+	ioperm_supported = 1;
+
 	io_addr = IO_BITMAP_BITS - NUM_BYTES;
 }
 
@@ -50,7 +55,7 @@ static void cleanup(void)
 	/*
 	 * Reset I/O privileges for the specified port.
 	 */
-	if ((ioperm(io_addr, NUM_BYTES, 0)) == -1)
+	if (ioperm_supported && ioperm(io_addr, NUM_BYTES, 0) == -1)
 		tst_brk(TBROK | TERRNO, "ioperm() cleanup failed");
 }
 

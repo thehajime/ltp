@@ -86,6 +86,7 @@ AC_CHECK_HEADERS_ONCE([ \
     linux/userfaultfd.h \
     netinet/sctp.h \
     pthread.h \
+    sys/auxv.h \
     sys/epoll.h \
     sys/fanotify.h \
     sys/inotify.h \
@@ -104,6 +105,7 @@ AC_SUBST(HAVE_FTS_H, $have_fts)
 AC_CHECK_HEADERS(linux/vm_sockets.h, [], [], [#include <sys/socket.h>])
 
 AC_CHECK_FUNCS_ONCE([ \
+    addseverity \
     cachestat \
     clone3 \
     close_range \

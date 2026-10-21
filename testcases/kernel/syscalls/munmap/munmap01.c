@@ -99,4 +99,5 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.forks_child = 1,
 	.test_variants = ARRAY_SIZE(variants),
+	.needs_mmu = 1,
 };

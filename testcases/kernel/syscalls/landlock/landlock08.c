@@ -154,14 +154,16 @@ static void run(void)
 	if (!check_family_support(tc))
 		return;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		create_server(tc);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);
 
 	/* verify bind() syscall accessibility */
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		ruleset_attr->handled_access_net = tc->bind_access;
 
@@ -179,10 +181,11 @@ static void run(void)
 		test_bind(tc, addr_port, 0);
 		test_bind(tc, addr_port + 0x80, EACCES);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	/* verify connect() syscall accessibility */
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		ruleset_attr->handled_access_net = tc->connect_access;
 
@@ -202,7 +205,7 @@ static void run(void)
 
 		TST_CHECKPOINT_WAKE(0);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 }
 

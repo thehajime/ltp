@@ -268,4 +268,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test = verify_shmstat,
 	.tcnt = ARRAY_SIZE(tcases),
+	.needs_mmu = 1,
 };

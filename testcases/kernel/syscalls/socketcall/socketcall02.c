@@ -35,15 +35,7 @@ static void verify_socketcall(unsigned int i)
 {
 	tst_res(TINFO, "%s", TC[i].desc);
 
-	TEST(tst_syscall(__NR_socketcall, TC[i].call, TC[i].args));
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "socketcall() succeeded unexpectedly");
-		return;
-	}
-	if (TST_ERR == TC[i].exp_err)
-		tst_res(TPASS | TTERRNO, "socketcall() failed as expected ");
-	else
-		tst_res(TFAIL | TTERRNO, "socketcall fail expected %s got", tst_strerrno(TC[i].exp_err));
+	TST_EXP_FAIL(tst_syscall(__NR_socketcall, TC[i].call, TC[i].args), TC[i].exp_err);
 }
 
 static void setup(void)

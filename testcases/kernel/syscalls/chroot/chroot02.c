@@ -26,10 +26,13 @@ static void verify_chroot(void)
 
 	if (!SAFE_FORK()) {
 		TST_EXP_PASS(chroot(path), "chroot(%s)", path);
-		if (!TST_PASS)
+		if (!TST_PASS) {
+			SAFE_EXIT(0);
 			return;
+		}
 
 		TST_EXP_PASS(stat("/" TMP_FILENAME, &buf), "stat(/%s)", TMP_FILENAME);
+		SAFE_EXIT(0);
 	}
 }
 

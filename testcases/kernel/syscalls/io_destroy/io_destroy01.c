@@ -47,6 +47,7 @@ static void verify_io_destroy(void)
 
 static struct tst_test test = {
 	.test_all = verify_io_destroy,
+	.needs_mmu = 1,
 };
 
 #else

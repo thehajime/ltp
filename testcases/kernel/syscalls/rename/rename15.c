@@ -32,6 +32,8 @@ static char *oldname;
 static char *newname;
 static char *objname;
 
+static void setup(void);
+
 static void test_existing(void)
 {
 	tst_res(TINFO, "Test rename() on symlink pointing to an existent path");
@@ -106,6 +108,7 @@ static void test_creat(void)
 
 static void run(void)
 {
+	setup();
 	test_existing();
 	test_creat();
 	test_non_existing();
@@ -120,7 +123,6 @@ static void setup(void)
 }
 
 static struct tst_test test = {
-	.setup = setup,
 	.test_all = run,
 	.all_filesystems = 1,
 	.mntpoint = MNTPOINT,

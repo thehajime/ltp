@@ -25,23 +25,31 @@ static void test_splice(unsigned int bytes, int dev_fd)
 	char buf[bytes];
 	size_t i;
 	int fail = 0;
+	size_t total = 0;
 
 	memset(buf, 0xff, sizeof(buf));
 
 	SAFE_PIPE(pipefd);
 
-	TST_EXP_POSITIVE(splice(dev_fd, NULL, pipefd[1], NULL, sizeof(buf), 0));
+	while (total < sizeof(buf)) {
+		size_t count = sizeof(buf) - total;
+		ssize_t spliced;
 
-	if (!TST_PASS)
-		goto ret;
+		TST_EXP_POSITIVE(spliced = splice(dev_fd, NULL, pipefd[1], NULL,
+						 count, 0),
+				 "splice() to pipe");
+		if (!TST_PASS)
+			goto ret;
 
-	if ((size_t)TST_RET != sizeof(buf)) {
-		tst_res(TFAIL, "Only part %lu bytes of %u were spliced",
-			TST_RET, bytes);
-		goto ret;
+		if (!spliced) {
+			tst_res(TFAIL, "splice() returned 0 after %zu of %zu bytes",
+				total, sizeof(buf));
+			goto ret;
+		}
+
+		SAFE_READ(1, pipefd[0], buf + total, spliced);
+		total += spliced;
 	}
-
-	SAFE_READ(1, pipefd[0], buf, sizeof(buf));
 
 	for (i = 0; i < sizeof(buf); i++) {
 		if (buf[i])
@@ -51,7 +59,7 @@ static void test_splice(unsigned int bytes, int dev_fd)
 	if (fail)
 		tst_res(TFAIL, "%i non-zero bytes spliced from /dev/zero", fail);
 	else
-		tst_res(TPASS, "All bytes spliced from /dev/zero are zeroed");
+		tst_res(TPASS, "All %zu spliced bytes are zeroed", sizeof(buf));
 
 ret:
 	SAFE_CLOSE(pipefd[0]);

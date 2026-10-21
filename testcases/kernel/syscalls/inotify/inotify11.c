@@ -120,6 +120,7 @@ static struct tst_test test = {
 	.timeout = 12,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 	.cleanup = cleanup,
 	.test_all = verify_inotify,
 	.tags = (const struct tst_tag[]) {

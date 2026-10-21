@@ -54,37 +54,14 @@ struct kernel_sigaction {
 #undef SA_RESTORER
 #define SA_RESTORER     0x04000000
 
-void (*restore_rt)(void);
-
-static void handler_h(int signal)
+/*
+ * musl does not expose the kernel sa_restorer field through the oldact
+ * argument to sigaction(). Supply the x86-64 rt_sigreturn trampoline
+ * directly instead of reading that unspecified output field.
+ */
+static void __attribute__((naked, used)) ltp_restore_rt_x86_64(void)
 {
-	return;
-}
-
-/* Setup an initial signal handler for signal number = sig for x86_64. */
-static inline int sig_initial(int sig)
-{
-	int ret_code = -1;
-	struct sigaction act, oact;
-
-	act.sa_handler = handler_h;
-	act.sa_flags = 0;
-	/* Clear out the signal set. */
-	if (sigemptyset(&act.sa_mask) < 0) {
-		/* Add the signal to the mask set. */
-	} else if (sigaddset(&act.sa_mask, sig) < 0) {
-		/* Set act.sa_restorer via syscall(2) */
-	} else if (sigaction(sig, &act, &oact) < 0) {
-		/* Copy oact.sa_restorer via syscall(2) */
-	} else if (sigaction(sig, &act, &oact) < 0) {
-		/* And voila -- we just tricked the kernel into giving us our
-		 * restorer function! */
-	} else {
-		restore_rt = oact.sa_restorer;
-		ret_code = 0;
-	}
-
-	return ret_code;
+	__asm__("mov $15, %rax\n\tsyscall");
 }
 
 #endif /* __x86_64__ */
@@ -189,13 +166,13 @@ static int ltp_rt_sigaction(int signum, const struct sigaction *act,
 	else if (oact)
 		koact_p = &koact;
 
-#ifdef __x86_64__
-	sig_initial(signum);
-#endif
-
 #if defined __x86_64__ || defined __arc__
 	kact.sa_flags |= SA_RESTORER;
+#ifdef __x86_64__
+	kact.sa_restorer = ltp_restore_rt_x86_64;
+#else
 	kact.sa_restorer = restore_rt;
+#endif
 #endif
 
 #ifdef __sparc__

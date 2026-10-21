@@ -149,23 +149,7 @@ static void verify_clock_settime(unsigned int i)
 	else
 		ts = tst_ts_get(&spec);
 
-	TEST(tv->clock_settime(*tc[i].type, ts));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL | TTERRNO, "clock_settime(2): clock %s passed unexpectedly, expected %s",
-			tst_clock_name(*tc[i].type),
-			tst_strerrno(tc[i].exp_err));
-		return;
-	}
-
-	if (tc[i].exp_err == TST_ERR) {
-		tst_res(TPASS | TTERRNO, "clock_settime(%s): failed as expected",
-			tst_clock_name(*tc[i].type));
-		return;
-	}
-
-	tst_res(TFAIL | TTERRNO, "clock_settime(2): clock %s expected to fail with %s",
-		tst_clock_name(*tc[i].type), tst_strerrno(tc[i].exp_err));
+	TST_EXP_FAIL(tv->clock_settime(*tc[i].type, ts), tc[i].exp_err);
 }
 
 static struct tst_test test = {

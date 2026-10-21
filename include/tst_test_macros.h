@@ -433,6 +433,10 @@ const char *tst_errno_names(char *buf, const int *exp_errs, int exp_errs_cnt);
 
 #define TST_EXP_FAIL_SILENT_(PASS_COND, SCALL, SSCALL, ERRNOS, ERRNOS_CNT, ...)\
 	do {                                                                   \
+		/* skip a test checking EFAULT from syscall in nommu */        \
+		TST_PASS = 0;                                                  \
+		NOMMU_EFAULT_REQUIRED(ERRNOS, ERRNOS_CNT, break);	       \
+		                                                               \
 		TEST(SCALL);                                                   \
 		                                                               \
 		TST_PASS = 0;                                                  \
@@ -462,6 +466,10 @@ const char *tst_errno_names(char *buf, const int *exp_errs, int exp_errs_cnt);
 #define TST_EXP_FAIL_SILENT_PTR_(SCALL, SSCALL, FAIL_PTR_VAL,                  \
 	ERRNOS, ERRNOS_CNT, ...)                                               \
 	do {                                                                   \
+		/* skip a test checking EFAULT from syscall in nommu */        \
+		TST_PASS = 0;                                                  \
+		NOMMU_EFAULT_REQUIRED(ERRNOS, ERRNOS_CNT, break);	       \
+		                                                               \
 		TESTPTR(SCALL);                                                \
 		                                                               \
 		TST_PASS = 0;                                                  \

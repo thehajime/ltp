@@ -166,6 +166,7 @@ static void try_corrupt(void)
 	SAFE_BIND(srv_fd, (struct sockaddr *)&addr, sizeof(addr));
 	SAFE_LISTEN(srv_fd, 1);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		int cli_fd, pipefd[2];
 
@@ -196,7 +197,7 @@ static void try_corrupt(void)
 		SAFE_CLOSE(pipefd[1]);
 		SAFE_CLOSE(cli_fd);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	acc_fd = SAFE_ACCEPT(srv_fd, NULL, NULL);

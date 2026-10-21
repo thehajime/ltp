@@ -55,6 +55,11 @@ static void verify_tls(void)
 
 	TEST(ltp_clone7(flags, touch_tls_in_child, NULL, CHILD_STACK_SIZE, child_stack, NULL, tls_ptr, NULL));
 
+	/* musl's clone wrapper rejects this combination with EINVAL. */
+	if (flags & (CLONE_THREAD | CLONE_SETTLS | CLONE_CHILD_CLEARTID) &&
+		errno == EINVAL)
+		tst_brk(TCONF, "musl libc rejects CLONE_THREAD with CLONE_SETTLS and CLONE_CHILD_CLEARTID");
+
 	if (TST_RET == -1)
 		tst_brk(TBROK | TTERRNO, "clone() failed");
 

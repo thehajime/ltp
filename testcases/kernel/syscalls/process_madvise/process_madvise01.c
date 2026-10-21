@@ -94,10 +94,11 @@ static void run(void)
 	pid_t pid_alloc;
 	struct iovec vec;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_alloc = SAFE_FORK();
 	if (!pid_alloc) {
 		child_alloc();
-		return;
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

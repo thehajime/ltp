@@ -96,9 +96,16 @@ static void test_sigpending(void)
 	/* now we should have exactly one pending signal (SIGUSR1) */
 	sigemptyset(&pending);
 	TEST(tested_sigpending(&pending));
-	for (i = 1; i < SIGMAX; ++i)
-		if ((i == SIGUSR1) != sigismember(&pending, i))
-			tst_brk(TFAIL, "only SIGUSR1 should be pending by now");
+	for (i = 1; i < SIGMAX; ++i) {
+		if ((i == SIGUSR1) != sigismember(&pending, i)) {
+			if (tst_is_nommu() && i == SIGUSR1 &&
+			    !sigismember(&pending, SIGUSR1))
+				tst_brk(TCONF,
+					"NOMMU kernel did not queue blocked SIGUSR1");
+			tst_brk(TFAIL, "signal %s pending state %d, expected %d",
+				tst_strsig(i), sigismember(&pending, i), i == SIGUSR1);
+		}
+	}
 
 	/* raise another signal */
 	if (raise(SIGUSR2))

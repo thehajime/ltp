@@ -136,6 +136,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
+	.needs_mmu = 1,
 	.test_all = run,
 	.forks_child = 1,
 };

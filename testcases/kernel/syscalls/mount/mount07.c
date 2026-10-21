@@ -32,7 +32,6 @@
 static char *test_file;
 static char *link_file;
 static char *temp_link_file;
-static int flag;
 
 static void setup_symlink(void)
 {
@@ -41,7 +40,6 @@ static void setup_symlink(void)
 	fd = SAFE_CREAT(test_file, O_RDWR);
 	SAFE_SYMLINK(test_file, link_file);
 	SAFE_CLOSE(fd);
-	flag = 1;
 }
 
 static void test_link_traversal(bool nosymfollow)
@@ -138,8 +136,7 @@ static void run(void)
 
 	TST_EXP_PASS_SILENT(mount(tst_device->dev, MNTPOINT, tst_device->fs_type,
 		0, NULL));
-	if (!flag || !strcmp(tst_device->fs_type, "tmpfs"))
-		setup_symlink();
+	setup_symlink();
 	run_tests(false);
 
 	tst_res(TINFO, "Testing behaviour when setting MS_NOSYMFOLLOW");

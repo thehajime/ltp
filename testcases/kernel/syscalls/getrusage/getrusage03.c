@@ -186,4 +186,5 @@ static struct tst_test test = {
 		TST_CAP(TST_CAP_REQ, CAP_IPC_LOCK),
 		{}
 	},
+	.needs_mmu = 1,
 };

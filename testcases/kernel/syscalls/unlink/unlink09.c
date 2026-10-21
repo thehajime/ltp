@@ -63,6 +63,11 @@ static void setup(void)
 	if (TST_RET == -1 && TST_ERR == ENOTTY) {
 		SAFE_CLOSE(fd_immutable);
 
+		/* Some NOMMU filesystems lack inode attribute support. */
+		if (tst_is_nommu())
+			tst_brk(TCONF, "Inode attributes on nommu not supported by '%s', skipping",
+				tst_device->fs_type);
+
 		tst_brk(TBROK, "Inode attributes not supported by '%s'",
 			tst_device->fs_type);
 	}

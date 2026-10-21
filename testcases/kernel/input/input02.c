@@ -36,6 +36,7 @@ static void send_events(void)
 
 static void run(void)
 {
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		send_events();
 		exit(0);

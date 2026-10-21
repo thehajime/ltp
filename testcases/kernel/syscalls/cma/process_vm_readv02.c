@@ -84,6 +84,7 @@ static void run(void)
 
 	length = strlen(data);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_alloc = SAFE_FORK();
 	if (!pid_alloc) {
 		child_alloc(data);
@@ -93,6 +94,7 @@ static void run(void)
 	/* wait until child_alloc has allocated VM */
 	TST_CHECKPOINT_WAIT(0);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid_invoke = SAFE_FORK();
 	if (!pid_invoke) {
 		child_invoke(data, length, pid_alloc);

@@ -19,6 +19,9 @@
 static void run(void)
 {
 	aio_context_t ctx;
+	int exp_errno = EFAULT;
+
+	NOMMU_EFAULT_REQUIRED(&exp_errno, 1, return);
 
 	memset(&ctx, 0, sizeof(ctx));
 	TST_EXP_FAIL(tst_syscall(__NR_io_cancel, ctx, NULL, NULL), EFAULT);

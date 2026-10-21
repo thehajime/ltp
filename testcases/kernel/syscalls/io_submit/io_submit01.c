@@ -78,6 +78,8 @@ static void setup(void)
 	TEST(io_setup(1, &ctx));
 	if (TST_RET == -ENOSYS)
 		tst_brk(TCONF, "io_setup(): AIO not supported by kernel");
+	if (tst_is_nommu() && TST_RET == -ENOMEM)
+		tst_brk(TCONF, "io_setup(): AIO ring allocation unsupported on NOMMU");
 	else if (TST_RET) {
 		tst_brk(TBROK, "io_setup() returned %ld(%s)",
 			TST_RET, tst_strerrno(-TST_RET));
@@ -117,6 +119,9 @@ static void verify_io_submit(unsigned int n)
 	struct io_event evbuf;
 	struct timespec timeout = { .tv_sec = 1 };
 	int i, ret;
+	int exp_errno = -t->exp_errno;
+
+	NOMMU_EFAULT_REQUIRED(&exp_errno, 1, return);
 
 	ret = io_submit(*t->ctx, t->nr, t->iocbs);
 

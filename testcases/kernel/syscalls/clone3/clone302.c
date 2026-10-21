@@ -83,10 +83,11 @@ static void run(unsigned int n)
 		args->tls = tc->tls;
 	}
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_errno, 1, return);
 	TEST(ltp_clone3_raw(args, tc->size));
 
 	if (!TST_RET)
-		exit(EXIT_SUCCESS);
+		SAFE_EXIT(EXIT_SUCCESS);
 
 	if (TST_RET >= 0) {
 		tst_res(TFAIL, "%s: clone3() passed unexpectedly", tc->name);

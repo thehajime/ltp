@@ -61,6 +61,7 @@ static void run(unsigned int i)
 			"%s personality is set",
 			 pers[i].name);
 
+		SAFE_EXIT(0);
 		return;
 	}
 }

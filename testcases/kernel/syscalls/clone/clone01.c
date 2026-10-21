@@ -19,7 +19,7 @@ static void *child_stack;
 
 static int do_child(void *arg LTP_ATTRIBUTE_UNUSED)
 {
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_clone(void)

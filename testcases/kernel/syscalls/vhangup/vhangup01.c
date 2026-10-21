@@ -36,6 +36,7 @@ static void run(void)
 			tst_res(TPASS, "Got EPERM as expected.");
 		else
 			tst_res(TFAIL, "expected EPERM got %d", TST_ERR);
+		SAFE_EXIT(0);
 	}
 }
 

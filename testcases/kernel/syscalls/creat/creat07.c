@@ -29,6 +29,7 @@ static void verify_creat(void)
 {
 	pid_t pid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		SAFE_EXECL(TEST_APP, TEST_APP, NULL);

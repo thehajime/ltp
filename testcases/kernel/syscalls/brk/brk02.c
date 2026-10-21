@@ -87,4 +87,5 @@ static void brk_down_vmas(void)
 static struct tst_test test = {
 	.test_all = brk_down_vmas,
 	.test_variants = 2,
+	.needs_mmu = 1,
 };

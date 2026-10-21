@@ -21,6 +21,8 @@
 #if defined __i386__ || defined(__x86_64__)
 #include <sys/io.h>
 
+static int iopl_supported;
+
 static void verify_iopl(void)
 {
 	int total_level = 4;
@@ -41,12 +43,19 @@ static void verify_iopl(void)
 	}
 }
 
+static void setup(void)
+{
+	if (iopl(0) && errno == ENOSYS)
+		tst_brk(TCONF, "iopl() is not implemented by this kernel");
+	iopl_supported = 1;
+}
+
 static void cleanup(void)
 {
 	/*
 	 * back to I/O privilege for normal process.
 	 */
-	if (iopl(0) == -1)
+	if (iopl_supported && iopl(0) == -1)
 		tst_res(TWARN, "iopl() cleanup failed");
 }
 
@@ -55,6 +64,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	/* iopl() is restricted under kernel lockdown. */
 	.skip_in_lockdown = 1,
+	.setup = setup,
 	.cleanup = cleanup,
 };
 

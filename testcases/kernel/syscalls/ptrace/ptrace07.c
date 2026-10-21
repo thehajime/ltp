@@ -81,7 +81,7 @@ static void check_regs_loop(uint32_t initval)
 			"xmm registers corrupted!  initval=%08X, xmm0=%08X%08X%08X%08X\n",
 			initval, xmm0[0], xmm0[1], xmm0[2], xmm0[3]);
 	}
-	exit(status);
+	SAFE_EXIT(status);
 }
 
 static void do_test(void)
@@ -103,12 +103,14 @@ static void do_test(void)
 
 	tst_res(TINFO, "CPUID.(EAX=%u, ECX=0):EAX=%u, EBX=%u, ECX=%u, EDX=%u",
 		CPUID_LEAF_XSTATE, eax, ebx, ecx, edx);
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		TST_CHECKPOINT_WAKE(0);
 		check_regs_loop(0x00000000);
 	}
 	for (i = 0; i < num_cpus; i++) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (SAFE_FORK() == 0)
 			check_regs_loop(0xDEADBEEF);
 	}

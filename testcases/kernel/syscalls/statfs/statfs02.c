@@ -53,7 +53,7 @@ static void statfs_verify(unsigned int n)
 	pid = SAFE_FORK();
 	if (!pid) {
 		TST_EXP_FAIL(statfs(tests[n].path, tests[n].buf), tests[n].exp_error, "statfs()");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(pid, &status, 0);

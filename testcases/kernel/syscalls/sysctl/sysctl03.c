@@ -84,6 +84,7 @@ static void do_test(void)
 		ltpuser = SAFE_GETPWNAM("nobody");
 		SAFE_SETUID(ltpuser->pw_uid);
 		verify_sysctl();
+		SAFE_EXIT(0);
 	} else {
 		verify_sysctl();
 		tst_reap_children();

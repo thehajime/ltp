@@ -93,6 +93,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.cleanup = cleanup,
 	.forks_child = 1,
+	.needs_mmu = 1,
 	.supported_archs = (const char *const []) {
 		"x86",
 		"x86_64",

@@ -103,4 +103,5 @@ static struct tst_test test = {
 	.test_all = verify_kill,
 	.needs_root = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

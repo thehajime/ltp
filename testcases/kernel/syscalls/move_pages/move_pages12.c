@@ -140,7 +140,7 @@ static void do_child(int tpgs)
 		}
 	}
 
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void do_test(unsigned int n)

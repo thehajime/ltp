@@ -255,6 +255,7 @@ static void verify_access(unsigned int n)
 		} else {
 			SAFE_SETUID(uid);
 			access_test(tc, "nobody");
+			SAFE_EXIT(0);
 		}
 	}
 }

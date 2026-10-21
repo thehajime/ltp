@@ -11,6 +11,9 @@
 # error Oldlib test.h already included
 #endif /* __TEST_H__ */
 
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
@@ -142,15 +145,61 @@ void tst_printf(const char *const fmt, ...)
  */
 void tst_flush(void);
 
+void tst_prepare_fork(const char *filename, unsigned int lineno);
 pid_t safe_fork(const char *filename, unsigned int lineno);
 /**
  * SAFE_FORK() - Forks a test child.
  *
  * This call makes sure that output file streams are flushed and also handles
- * errors from fork(). Use this instead of fork() whenever possible!
+ * errors from fork(). It uses vfork() when NOMMU is detected. In that case,
+ * the child must not return from the caller or modify parent memory and must
+ * exit via SAFE_EXIT() or _exit(), or exec a new program.
  */
 #define SAFE_FORK() \
-	safe_fork(__FILE__, __LINE__)
+	({ \
+		pid_t pid_; \
+		if (tst_is_nommu()) { \
+			tst_prepare_fork(__FILE__, __LINE__); \
+			pid_ = vfork(); \
+			if (pid_ < 0) \
+				tst_brk(TBROK | TERRNO, "vfork() failed"); \
+		} else { \
+			pid_ = safe_fork(__FILE__, __LINE__); \
+		} \
+		pid_; \
+	})
+/* NOMMU kernels may not support fork(), so use vfork() at runtime. */
+#define fork() (tst_is_nommu() ? vfork() : fork())
+/**
+ * SAFE_EXIT - Exit using the NOMMU-safe function when needed.
+ * @code: Exit status.
+ */
+#define SAFE_EXIT(code) \
+	(tst_is_nommu() ? _exit(code) : exit(code))
+
+/**
+ * NOMMU_EFAULT_REQUIRED() - Skip cases that expect EFAULT on NOMMU kernels.
+ * @ERRNOS: Array of expected errno values.
+ * @ERRNOS_CNT: Number of entries in @ERRNOS.
+ * @ACTION: Statement to execute after reporting the case skipped.
+ */
+#define NOMMU_EFAULT_REQUIRED(ERRNOS, ERRNOS_CNT, ACTION)\
+	if (tst_is_nommu() && tst_errno_in_set(EFAULT, ERRNOS, ERRNOS_CNT)) {\
+		tst_res(TCONF, "no memory protection in NOMMU, skipping test");\
+		ACTION;\
+	}
+
+/**
+ * NOMMU_PARENT_BLOCK_REQUIRED() - Skip tests requiring parallel children.
+ *
+ * A NOMMU vfork child shares the parent's address space until it exits.
+ */
+#define NOMMU_PARENT_BLOCK_REQUIRED()					\
+	do {								\
+		if (tst_is_nommu())					\
+			tst_brk(TCONF,					\
+				"nommu: parent requires children running in parallel."); \
+	} while (0)
 
 #define TST_TRACE(expr)	                                            \
 	({int ret = expr;                                           \
@@ -551,6 +600,7 @@ struct tst_fs {
  *
  * @needs_cgroup_nsdelegate: If set the test will run only if cgroup2 is mounted
  *                           with nsdelegate option.
+ * @needs_mmu: If set the test will be skipped when running on a NOMMU kernel.
  */
 
  struct tst_test {
@@ -643,6 +693,7 @@ struct tst_fs {
 	const char *const *needs_cgroup_ctrls;
 
 	unsigned int needs_cgroup_nsdelegate:1;
+	unsigned int needs_mmu:1;
 };
 
 /**

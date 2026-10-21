@@ -128,4 +128,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.hugepages = {1, TST_NEEDS},
+	.needs_mmu = 1,
 };

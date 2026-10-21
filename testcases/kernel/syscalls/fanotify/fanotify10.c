@@ -721,7 +721,7 @@ static int generate_event(struct tcase *tc, unsigned long long expected_mask)
 			}
 		}
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_WAITPID(child_pid, &status, 0);
@@ -931,8 +931,11 @@ static void cleanup(void)
 
 	cleanup_fanotify_groups();
 
-	if (bind_mount_created)
+	if (bind_mount_created) {
 		SAFE_UMOUNT(MNT2_PATH);
+		/* nommu shares global variable btw/ parent/child */
+		bind_mount_created = 0;
+	}
 
 	for (i = 0; i < max_file_multi; i++) {
 		char path[PATH_MAX];

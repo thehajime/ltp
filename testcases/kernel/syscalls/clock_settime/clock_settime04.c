@@ -106,7 +106,7 @@ static void run(unsigned int tc_index)
 
 	if (!SAFE_FORK()) {
 		child_nanosleep(tv, tc_index ? TIMER_ABSTIME : 0);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_CLOCK_GETTIME(CLOCK_REALTIME, &begin);

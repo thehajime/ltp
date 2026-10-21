@@ -187,6 +187,7 @@ static void cleanup(void)
 static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 	.test_all = verify_ioctl,
 	.bufs = (struct tst_buffers []) {
 		{&q, .size = sizeof(*q)},

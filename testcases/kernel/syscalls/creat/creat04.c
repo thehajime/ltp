@@ -38,15 +38,17 @@ static void child_fn(unsigned int i)
 	if (TST_RET != -1) {
 		SAFE_UNLINK(tcases[i].fname);
 		tst_res(TFAIL, "call succeeded unexpectedly");
-		return;
+		goto out;
 	}
 
 	if (TST_ERR != EACCES) {
 		tst_res(TFAIL | TTERRNO, "Expected EACCES");
-		return;
+		goto out;
 	}
 
 	tst_res(TPASS, "call failed with EACCES as expected");
+out:
+	SAFE_EXIT(0);
 }
 
 static void verify_creat(unsigned int i)

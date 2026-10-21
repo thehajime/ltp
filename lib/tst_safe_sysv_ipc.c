@@ -162,6 +162,12 @@ void *safe_shmat(const char *file, const int lineno, int shmid,
 {
 	void *rval;
 
+	if (tst_is_nommu()) {
+		tst_brk(TCONF,
+			"NOMMU does not support shmat(2) (mmap(MAP_SHARED))");
+		return (void *)-1;
+	}
+
 	rval = shmat(shmid, shmaddr, shmflg);
 
 	if (rval == (void *)-1) {

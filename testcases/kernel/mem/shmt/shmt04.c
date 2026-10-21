@@ -30,6 +30,7 @@ static void run(void)
 
 	key = GETIPCKEY();
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		TST_CHECKPOINT_WAIT(0);
 

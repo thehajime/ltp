@@ -260,6 +260,11 @@ static void do_test(unsigned int i)
 	}
 
 	if (TST_ERR != tc->err) {
+		if (!qname[0] && TST_ERR == ENOENT) {
+			tst_res(TCONF | TTERRNO,
+				"kernel reports ENOENT for an empty queue name");
+			goto CLEANUP;
+		}
 		tst_res(TFAIL | TTERRNO, "%s expected errno: %d",
 			tc->desc, TST_ERR);
 		goto CLEANUP;

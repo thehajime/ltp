@@ -16,6 +16,19 @@
 
 #define TC(x, y) .oflags = x, .mode = y, .desc = #x " with mode " #y,
 
+static void setup(void)
+{
+	int fd, ret;
+
+	fd = SAFE_OPEN("lease-probe", O_RDWR | O_CREAT, 0600);
+	ret = fcntl(fd, F_SETLEASE, F_RDLCK);
+	if (ret < 0 && errno == EINVAL)
+		tst_brk(TCONF, "filesystem does not support file leases");
+	if (ret == 0 && fcntl(fd, F_SETLEASE, F_UNLCK))
+		tst_brk(TBROK | TERRNO, "F_UNLCK failed");
+	SAFE_CLOSE(fd);
+}
+
 static struct test_case
 {
 	int oflags;
@@ -42,4 +55,5 @@ static struct tst_test test = {
 	.test = verify_fcntl,
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_tmpdir = 1,
+	.setup = setup,
 };

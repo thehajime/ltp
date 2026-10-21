@@ -448,16 +448,19 @@ static void do_test(unsigned int n)
 
 	open_netdev(ldisc);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		read_netdev(ldisc);
 		return;
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		do_pty(ldisc);
 		return;
 	}
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		TST_CHECKPOINT_WAIT2(0, 100000);
 		SAFE_IOCTL(pts, TIOCVHANGUP);

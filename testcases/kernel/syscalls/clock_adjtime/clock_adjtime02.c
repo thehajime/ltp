@@ -165,27 +165,11 @@ static void verify_clock_adjtime(unsigned int i)
 
 	/* special case: EFAULT for bad addresses */
 	if (tc[i].exp_err == EFAULT) {
-		TEST(tv->clock_adjtime(*tc[i].clktype, bad_addr));
+		TST_EXP_FAIL(tv->clock_adjtime(*tc[i].clktype, bad_addr), tc[i].exp_err);
 	} else {
-		TEST(tv->clock_adjtime(*tc[i].clktype, tst_timex_get(txcptr)));
+		TST_EXP_FAIL(tv->clock_adjtime(*tc[i].clktype, tst_timex_get(txcptr)), tc[i].exp_err);
 		timex_show("TEST", txcptr);
 	}
-
-	if (TST_RET >= 0) {
-		tst_res(TFAIL, "clock_adjtime(): passed unexpectedly (mode=%x, "
-				"uid=%d)", tc[i].modes, whoami);
-		return;
-	}
-
-	if (tc[i].exp_err != TST_ERR) {
-		tst_res(TFAIL | TTERRNO, "clock_adjtime(): expected %d but "
-				"failed with %d (mode=%x, uid=%d)",
-				tc[i].exp_err, TST_ERR, tc[i].modes, whoami);
-		return;
-	}
-
-	tst_res(TPASS, "clock_adjtime(): failed as expected (mode=0x%x, "
-			"uid=%d)", tc[i].modes, whoami);
 
 	if (tc[i].droproot)
 		SAFE_SETEUID(0);

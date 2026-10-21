@@ -21,6 +21,9 @@
 static void run(void)
 {
 	io_context_t ctx;
+	int exp_errno = EFAULT;
+
+	NOMMU_EFAULT_REQUIRED(&exp_errno, 1, return);
 
 	memset(&ctx, 0, sizeof(ctx));
 	TEST(io_cancel(ctx, NULL, NULL));

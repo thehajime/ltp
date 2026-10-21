@@ -246,6 +246,7 @@ static void try_corrupt(void)
 	SAFE_BIND(srv_fd, (struct sockaddr *)&addr, sizeof(addr));
 	SAFE_LISTEN(srv_fd, 1);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		int cli_fd, pipefd[2];
 

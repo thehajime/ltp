@@ -319,4 +319,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
+	.needs_mmu = 1,
 };

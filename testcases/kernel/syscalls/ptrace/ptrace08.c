@@ -135,6 +135,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.cleanup = cleanup,
 	.forks_child = 1,
+	.needs_mmu = 1,
 	/*
 	 * When running in compat mode we can't pass 64 address to ptrace so we
 	 * have to skip the test.

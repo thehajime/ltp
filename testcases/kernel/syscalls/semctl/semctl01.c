@@ -309,4 +309,5 @@ static struct tst_test test = {
 	.test = verify_semctl,
 	.tcnt = ARRAY_SIZE(tests),
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

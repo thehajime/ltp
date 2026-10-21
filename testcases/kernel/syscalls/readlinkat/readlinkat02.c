@@ -80,4 +80,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.tcnt = ARRAY_SIZE(tcases),
+	.needs_mmu = 1,
 };

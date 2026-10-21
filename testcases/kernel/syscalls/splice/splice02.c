@@ -159,4 +159,5 @@ static struct tst_test test = {
 		{"s:", &sarg, "Size of output file in bytes (default: 16x max pipe size, i.e. 1M on intel)"},
 		{}
 	},
+	.needs_mmu = 1,
 };

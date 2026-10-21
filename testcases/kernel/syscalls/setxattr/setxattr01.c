@@ -126,6 +126,8 @@ struct test_case tc[] = {
 
 static void verify_setxattr(unsigned int i)
 {
+	NOMMU_EFAULT_REQUIRED(&tc[i].exp_err, 1, return);
+
 	/* some tests might require existing keys for each iteration */
 	if (tc[i].keyneeded) {
 		SAFE_SETXATTR(FNAME, tc[i].key, *tc[i].value, tc[i].size,

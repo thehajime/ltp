@@ -81,27 +81,7 @@ static void verify_link(unsigned int i)
 		SAFE_SETEUID(nobody_pwd->pw_uid);
 	}
 
-	TEST(link(tc->file1, tc->file2));
-
-	if (TST_RET == -1) {
-		if (TST_ERR == tc->exp_errno) {
-			tst_res(TPASS | TTERRNO,
-				"link(<%s>, <%s>)",
-				tc->desc1, tc->desc2);
-		} else {
-			tst_res(TFAIL | TTERRNO,
-				"link(<%s>, <%s>) Failed "
-				"expected errno: %d",
-				tc->desc1, tc->desc2,
-				tc->exp_errno);
-		}
-	} else {
-		tst_res(TFAIL,
-			 "link(<%s>, <%s>) returned %ld, "
-			"expected -1, errno:%d",
-			tc->desc1, tc->desc2, TST_RET,
-			tc->exp_errno);
-	}
+	TST_EXP_FAIL(link(tc->file1, tc->file2), tc->exp_errno);
 }
 
 static void setup(void)

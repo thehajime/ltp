@@ -26,8 +26,12 @@ static iocb **iocbs;
 
 static void setup(void)
 {
-	if (tst_syscall(__NR_io_setup, 1, &ctx))
+	if (tst_syscall(__NR_io_setup, 1, &ctx)) {
+		if (tst_is_nommu() && errno == ENOMEM)
+			tst_brk(TCONF | TERRNO,
+				"io_setup(): AIO ring allocation unsupported on NOMMU");
 		tst_brk(TBROK | TERRNO, "io_setup failed");
+	}
 
 	SAFE_PIPE(fd);
 

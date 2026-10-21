@@ -41,6 +41,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "test.h"
+#include "config.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -70,7 +71,7 @@ void clearbuf(void)
 		buf[i] = '\0';
 }
 
-#if !defined(__UCLIBC__)
+#ifdef HAVE_ADDSEVERITY
 
 int main(int argc, char *argv[])
 {
@@ -246,7 +247,7 @@ int blexit(void)
 
 int main(void)
 {
-	tst_brkm(TCONF, NULL, "test is not available on uClibc");
+	tst_brkm(TCONF, NULL, "addseverity() is not available in libc");
 }
 
-#endif /* if !defined(__UCLIBC__) */
+#endif /* HAVE_ADDSEVERITY */

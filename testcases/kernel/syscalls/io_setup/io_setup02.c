@@ -48,8 +48,16 @@ static void run(void)
 		tst_res(TCONF, "the aio-max-nr file did not exist");
 	}
 
-	TST_EXP_PASS(tst_syscall(__NR_io_setup, 1, &ctx),
-		     "io_setup() when both nr_events and ctxp are valid");
+	TEST(tst_syscall(__NR_io_setup, 1, &ctx));
+	if (tst_is_nommu() && TST_RET == -1 && TST_ERR == ENOMEM)
+		tst_brk(TCONF | TTERRNO,
+			"io_setup(): AIO ring allocation unsupported on NOMMU");
+	if (TST_RET == 0)
+		tst_res(TPASS,
+			"io_setup() with valid nr_events and ctxp succeeded");
+	else
+		tst_res(TFAIL | TTERRNO,
+			"io_setup() with valid nr_events and ctxp failed");
 	TST_EXP_PASS_SILENT(tst_syscall(__NR_io_destroy, ctx));
 }
 

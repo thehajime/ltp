@@ -29,10 +29,12 @@ static void do_test(void)
 {
 	int i;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (!SAFE_FORK()) {
 		SAFE_FILE_PRINTF(PATH_AUTOGROUP, "%d", 1);
 		SAFE_SETSID();
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (SAFE_FORK())
 			pause();
 

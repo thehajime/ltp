@@ -52,7 +52,15 @@ static void check_vulnerable(void)
 		TST_EXP_EQ_LI(retval, ERANGE);
 }
 
+static void setup(void)
+{
+#ifndef __GLIBC__
+	tst_brk(TCONF, "GHOST CVE-2015-0235 applies to glibc only");
+#endif
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = check_vulnerable,
 	.tags = (const struct tst_tag[]) {
 		{"glibc-git", "d5dd6189d506"},

@@ -60,4 +60,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = do_test,
+	.needs_mmu = 1,
 };

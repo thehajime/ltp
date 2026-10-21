@@ -31,4 +31,5 @@ static struct tst_test test = {
 	.test_all = do_test,
 	.test_variants = 2,
 	.forks_child = 1,
+	.needs_mmu = 1,
 };

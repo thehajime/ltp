@@ -66,12 +66,14 @@ static void run(void)
 	} else {
 		tst_res(TINFO, "unshare() with CLONE_NEWUTS");
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (!SAFE_FORK()) {
 			SAFE_UNSHARE(CLONE_NEWUTS);
 			child1_run();
 			return;
 		}
 
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (!SAFE_FORK()) {
 			SAFE_UNSHARE(CLONE_NEWUTS);
 			child2_run();

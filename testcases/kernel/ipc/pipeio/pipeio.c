@@ -132,6 +132,10 @@ int main(int ac, char *av[])
 	unsigned int uwait_iter = 1000, uwait_total = 5000000;
 	pid_t child;
 
+	if (tst_is_nommu())
+		tst_brkm(TCONF, NULL,
+			"pipeio requires fork() semantics unavailable on NOMMU");
+
 	setup(ac, av);
 
 	for (i = num_writers; i > 0; --i) {

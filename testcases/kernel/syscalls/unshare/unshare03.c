@@ -42,6 +42,7 @@ static void setup(void)
 }
 
 static struct tst_test test = {
+	.needs_mmu = 1,
 	.forks_child = 1,
 	.needs_root = 1,
 	.test_all = run,

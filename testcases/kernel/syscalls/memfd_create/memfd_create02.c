@@ -73,6 +73,8 @@ static void verify_memfd_create_errno(unsigned int n)
 		return;
 	}
 
+	NOMMU_EFAULT_REQUIRED(&tc->memfd_create_exp_err, 1, return);
+
 	TEST(sys_memfd_create(tc->memfd_name, tc->flags));
 	if (TST_ERR != tc->memfd_create_exp_err)
 		tst_brk(TFAIL, "test '%s'", tc->descr);

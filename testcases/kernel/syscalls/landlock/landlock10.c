@@ -35,6 +35,7 @@ static void run(void)
 	/* isolate test inside a process so we won't stack too many
 	 * layers (-E2BIG) when there are multiple test's iterations
 	 */
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	if (SAFE_FORK())
 		return;
 
@@ -44,6 +45,7 @@ static void run(void)
 	pid_t paused_pid;
 	pid_t killer_pid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	paused_pid = SAFE_FORK();
 	if (!paused_pid) {
 		if (tst_variant == DOMAIN_PAUSED)
@@ -51,12 +53,13 @@ static void run(void)
 
 		TST_CHECKPOINT_WAKE(0);
 		pause();
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);
 	TST_PROCESS_STATE_WAIT(paused_pid, 'S', 10000);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	killer_pid = SAFE_FORK();
 	if (!killer_pid) {
 		if (tst_variant == DOMAIN_KILLER)
@@ -65,7 +68,7 @@ static void run(void)
 		TST_CHECKPOINT_WAKE(0);
 
 		TST_EXP_PASS_OR_FAIL(kill(paused_pid, SIGKILL), err);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

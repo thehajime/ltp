@@ -105,6 +105,7 @@ static void stat_setup_1(void)
 	pid_t pid;
 
 	for (i = 0; i < N_ATTACH; i++) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		switch (pid = SAFE_FORK()) {
 		case 0:
 			test = (attach_to_parent == NULL) ? set_shmat() : attach_to_parent;

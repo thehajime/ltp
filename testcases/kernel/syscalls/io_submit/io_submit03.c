@@ -78,7 +78,12 @@ static inline void io_prep_option(struct iocb *cb, int fd, void *buf,
 
 static void setup(void)
 {
-	TST_EXP_PASS_SILENT(tst_syscall(__NR_io_setup, 1, &ctx));
+	TEST(tst_syscall(__NR_io_setup, 1, &ctx));
+	if (tst_is_nommu() && TST_RET == -1 && TST_ERR == ENOMEM)
+		tst_brk(TCONF | TTERRNO,
+			"io_setup(): AIO ring allocation unsupported on NOMMU");
+	if (TST_RET != 0)
+		tst_brk(TBROK | TTERRNO, "io_setup() failed");
 	io_prep_option(&inv_fd_iocb, -1, buf, sizeof(buf), 0, IOCB_CMD_PREAD);
 
 	rdonly_fd = SAFE_OPEN(RDONLY_FILE, O_RDONLY | O_CREAT, MODE);
@@ -95,12 +100,14 @@ static void cleanup(void)
 	if (wronly_fd > 0)
 		SAFE_CLOSE(wronly_fd);
 
-	if (tst_syscall(__NR_io_destroy, ctx))
+	if (ctx && tst_syscall(__NR_io_destroy, ctx))
 		tst_brk(TBROK | TERRNO, "io_destroy() failed");
 }
 
 static void run(unsigned int i)
 {
+	NOMMU_EFAULT_REQUIRED(&tc[i].exp_errno, 1, return);
+
 	TST_EXP_FAIL2(tst_syscall(__NR_io_submit, *tc[i].ctx, tc[i].nr, tc[i].iocbs),
 		     tc[i].exp_errno, "io_submit() with %s", tc[i].desc);
 }

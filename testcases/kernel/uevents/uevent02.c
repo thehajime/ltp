@@ -113,6 +113,7 @@ static void verify_uevent(void)
 {
 	int pid, fd;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	pid = SAFE_FORK();
 	if (!pid) {
 		fd = open_uevent_netlink();
@@ -120,7 +121,7 @@ static void verify_uevent(void)
 		wait_for_uevents_unordered(fd, add_uevents);
 		wait_for_uevents_unordered(fd, rem_uevents);
 		close(fd);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

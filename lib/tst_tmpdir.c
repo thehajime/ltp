@@ -356,7 +356,13 @@ char *tst_tmpdir_path(void)
 	if (!TESTDIR)
 		tst_brkm(TBROK, NULL, ".needs_tmpdir must be set!");
 
-	if (tmpdir)
+	/*
+	 * A NOMMU test may run once per filesystem in a vfork() child.  The
+	 * child shares the parent's address space, and tst_free_all() unmaps
+	 * this allocation when the child finishes.  Do not reuse that pointer
+	 * in the next vfork child.
+	 */
+	if (tmpdir && !tst_is_nommu())
 		return tmpdir;
 
 	tmpdir = tst_strdup(TESTDIR);

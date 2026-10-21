@@ -92,6 +92,7 @@ static void check_inherit_timerslack(char *message, unsigned long value)
 			tst_res(TFAIL,
 				"%s current_value is %lu, default value is %lu, the parent current value is %lu",
 				message, current_value, default_value, value);
+		SAFE_EXIT(0);
 	}
 
 }

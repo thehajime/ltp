@@ -242,6 +242,7 @@ static void run(unsigned int n)
 		tc->desc, tc->depth, tc->fanout, tc->repetitions, tc->workers);
 
 	for (i = 0; i < tc->workers; i++) {
+		NOMMU_PARENT_BLOCK_REQUIRED();
 		if (!SAFE_FORK())
 			run_worker(tc);
 	}

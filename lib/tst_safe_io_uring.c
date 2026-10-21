@@ -35,11 +35,23 @@ int safe_io_uring_init(const char *file, const int lineno,
 	uring->cqr_mapsize = params->cq_off.cqes +
 		params->cq_entries * sizeof(struct io_uring_cqe);
 
-	uring->sqr_base = safe_mmap(file, lineno, NULL, uring->sqr_mapsize,
-		PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, uring->fd,
-		IORING_OFF_SQ_RING);
+	if (params->features & IORING_FEAT_SINGLE_MMAP) {
+		if (uring->cqr_mapsize > uring->sqr_mapsize)
+			uring->sqr_mapsize = uring->cqr_mapsize;
+		uring->sqr_base = safe_mmap(file, lineno, NULL,
+			uring->sqr_mapsize, PROT_READ | PROT_WRITE,
+			MAP_SHARED | MAP_POPULATE, uring->fd, IORING_OFF_SQ_RING);
+		uring->cqr_base = uring->sqr_base;
+	} else {
+		uring->sqr_base = safe_mmap(file, lineno, NULL,
+			uring->sqr_mapsize, PROT_READ | PROT_WRITE,
+			MAP_SHARED | MAP_POPULATE, uring->fd, IORING_OFF_SQ_RING);
+		uring->cqr_base = safe_mmap(file, lineno, NULL,
+			uring->cqr_mapsize, PROT_READ | PROT_WRITE,
+			MAP_SHARED | MAP_POPULATE, uring->fd, IORING_OFF_CQ_RING);
+	}
 
-	if (uring->sqr_base == MAP_FAILED)
+	if (uring->sqr_base == MAP_FAILED || uring->cqr_base == MAP_FAILED)
 		return -1;
 
 	uring->sqr_entries = safe_mmap(file, lineno, NULL,
@@ -50,12 +62,6 @@ int safe_io_uring_init(const char *file, const int lineno,
 	if (uring->sqr_entries == MAP_FAILED)
 		return -1;
 
-	uring->cqr_base = safe_mmap(file, lineno, NULL, uring->cqr_mapsize,
-		PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, uring->fd,
-		IORING_OFF_CQ_RING);
-
-	if (uring->cqr_base == MAP_FAILED)
-		return -1;
 
 	uring->sqr_head = uring->sqr_base + params->sq_off.head;
 	uring->sqr_tail = uring->sqr_base + params->sq_off.tail;
@@ -77,7 +83,8 @@ int safe_io_uring_close(const char *file, const int lineno,
 {
 	int ret;
 
-	safe_munmap(file, lineno, NULL, uring->cqr_base, uring->cqr_mapsize);
+	if (uring->cqr_base != uring->sqr_base)
+		safe_munmap(file, lineno, NULL, uring->cqr_base, uring->cqr_mapsize);
 	safe_munmap(file, lineno, NULL, uring->sqr_entries,
 		uring->sqr_size * sizeof(struct io_uring_sqe));
 	safe_munmap(file, lineno, NULL, uring->sqr_base, uring->sqr_mapsize);

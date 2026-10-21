@@ -73,4 +73,5 @@ static void verify_brk(void)
 static struct tst_test test = {
 	.test_all = verify_brk,
 	.test_variants = 2,
+	.needs_mmu = 1,
 };

@@ -72,5 +72,6 @@ static struct tst_test test = {
 	},
 	.test_variants = ARRAY_SIZE(sched_variants),
 	.tcnt = ARRAY_SIZE(cases),
+	.needs_mmu = 1,
 	.test = test_reset_on_fork,
 };

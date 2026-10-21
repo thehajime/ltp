@@ -109,4 +109,5 @@ static struct tst_test test = {
 		"x86_64",
 		NULL
 	},
+	.needs_mmu = 1,
 };

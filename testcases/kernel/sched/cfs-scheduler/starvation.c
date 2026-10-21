@@ -137,6 +137,7 @@ static void do_test(void)
 {
 	pid_t child_pid;
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
 	child_pid = SAFE_FORK();
 
 	if (!child_pid)

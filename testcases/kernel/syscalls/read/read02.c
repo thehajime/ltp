@@ -61,6 +61,8 @@ static void verify_read(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_error, 1, return);
+
 	if (tc->fd == &fd4 && *tc->fd == -1) {
 		tst_res(TCONF, "O_DIRECT not supported on %s filesystem",
 			tst_fs_type_name(fs_type));
@@ -103,7 +105,7 @@ static void setup(void)
 	addr5 = addr4 + 1;
 
 	fs_type = tst_fs_type(".");
-	if (fs_type != TST_TMPFS_MAGIC)
+	if (fs_type != TST_TMPFS_MAGIC && fs_type != TST_RAMFS_MAGIC)
 		fd4 = SAFE_OPEN("test_file", O_RDWR | O_DIRECT);
 }
 

@@ -416,6 +416,7 @@ static struct tst_test test = {
 	.mntpoint = MOUNT_PATH,
 	.forks_child = 1,
 	.needs_checkpoints = 1,
+	.needs_mmu = 1,
 };
 
 #else

@@ -673,6 +673,11 @@ int main(void)
  */
 void setup(void)
 {
+	/* The test depends on glibc nftw() cycle detection semantics. */
+#ifndef __GLIBC__
+	tst_brkm(TCONF, NULL, "nftw cycle detection is unavailable in this libc");
+#endif
+
 	/* Direct debug output to stderr */
 	temp = stderr;
 

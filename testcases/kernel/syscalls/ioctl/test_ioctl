@@ -47,12 +47,18 @@ case "$device_no" in
     tst_resm TINFO "Testing ioctl02 with $tttype"
     ioctl02 -d $tttype
     RC=$?
-    if  [ $RC -eq 0 ]
-    then
-     tst_resm TPASS "ioctl02 Passed with $tttype"
-    else
-     tst_resm TFAIL "ioctl02 Failed with $tttype"
-    fi
+    case $RC in
+        0)
+            tst_resm TPASS "ioctl02 Passed with $tttype"
+        ;;
+        32)
+            tst_resm TCONF "ioctl02 requires MMU"
+            break
+        ;;
+        *)
+            tst_resm TFAIL "ioctl02 Failed with $tttype"
+        ;;
+    esac
 echo;;
 esac
 done

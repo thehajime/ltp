@@ -276,4 +276,5 @@ static struct tst_test test = {
 	.test = verify_pkey,
 	.setup = setup,
 	.hugepages = {1, TST_REQUEST},
+	.needs_mmu = 1,
 };

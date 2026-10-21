@@ -32,9 +32,8 @@ static void setup(void)
 	static key_t semkey;
 	struct passwd *ltpuser = SAFE_GETPWNAM("nobody");
 
-	SAFE_SETUID(ltpuser->pw_uid);
-
 	semkey = GETIPCKEY();
+	SAFE_SETUID(ltpuser->pw_uid);
 
 	sem_id = SAFE_SEMGET(semkey, PSEMS, IPC_CREAT | IPC_EXCL);
 }

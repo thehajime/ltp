@@ -187,7 +187,7 @@ static void run(void)
 
 		if (accept(sfd, (struct sockaddr *)&addr6, &addr_size) < 0)
 			tst_brk(TBROK | TERRNO, "accept() failed");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	SAFE_SENDTO(1, cfd, packet, pkt_len, 0, (struct sockaddr *)&rmt,

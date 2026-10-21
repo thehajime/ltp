@@ -24,6 +24,7 @@ static void verify_setpgrp(void)
 			tst_res(TFAIL, "setpgrp() FAILED to set new group id");
 		else
 			tst_res(TPASS, "functionality is correct");
+		SAFE_EXIT(0);
 	}
 }
 

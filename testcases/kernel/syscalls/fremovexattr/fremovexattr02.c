@@ -62,6 +62,8 @@ struct test_case tc[] = {
 
 static void verify_fremovexattr(unsigned int i)
 {
+	NOMMU_EFAULT_REQUIRED(&tc[i].exp_err, 1, return);
+
 	TEST(fremovexattr(tc[i].fd, tc[i].key));
 
 	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP)

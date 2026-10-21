@@ -186,4 +186,5 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.min_kver = "4.14",
 	.hugepages = {1, TST_NEEDS},
+	.needs_mmu = 1,
 };

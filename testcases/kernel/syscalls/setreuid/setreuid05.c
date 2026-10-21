@@ -105,7 +105,7 @@ static void run(void)
 		for (i = 0; i < ARRAY_SIZE(test_data); i++)
 			run_child(test_data + i);
 
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	tst_reap_children();

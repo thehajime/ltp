@@ -69,6 +69,8 @@ static void start_server(struct sockaddr_in *sock)
 {
 	socklen_t slen = sizeof(*sock);
 
+	NOMMU_PARENT_BLOCK_REQUIRED();
+
 	sock->sin_family = AF_INET;
 	sock->sin_port = 0;
 	sock->sin_addr.s_addr = INADDR_ANY;
@@ -84,7 +86,7 @@ static void start_server(struct sockaddr_in *sock)
 		int nfd = SAFE_ACCEPT(fd_server, NULL, NULL);
 
 		SAFE_CLOSE(nfd);
-		exit(0);
+		SAFE_EXIT(0);
 	}
 	SAFE_CLOSE(fd_server);
 }

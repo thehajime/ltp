@@ -235,6 +235,7 @@ static void do_test(unsigned int n)
 }
 
 static struct tst_test test = {
+	.needs_mmu = 1,
 	.setup = setup,
 	.cleanup = cleanup,
 	.test = do_test,

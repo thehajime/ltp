@@ -19,7 +19,7 @@ static int *child_pid;
 static int child_fn(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	*child_pid = getpid();
-	exit(0);
+	SAFE_EXIT(0);
 }
 
 static void verify_clone(void)

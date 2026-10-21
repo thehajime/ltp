@@ -150,6 +150,8 @@ static void verify_prctl(unsigned int n)
 	break;
 	}
 
+	NOMMU_EFAULT_REQUIRED(&tc->exp_errno, 1, return);
+
 	TEST(prctl(tc->option, *tc->arg2, *tc->arg3, 0, 0));
 	if (TST_RET == 0) {
 		tst_res(TFAIL, "prctl() succeeded unexpectedly");

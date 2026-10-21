@@ -10,10 +10,12 @@
 
 #include "tst_test.h"
 #include "tst_safe_stdio.h"
+#include "tst_private.h"
 #include "lapi/syscalls.h"
 #include "lapi/arch_prctl.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/utsname.h>
 
 static int arch_prctl_get(int code)
 {
@@ -37,6 +39,9 @@ static void setup(void)
 
 	tag = false;
 
+	if (tst_kconfig_get("CONFIG_UML") == 'y')
+		tst_brk(TCONF, "ARCH_SET_CPUID is not supported by UML");
+
 	f = SAFE_FOPEN("/proc/cpuinfo", "r");
 
 	while (getline(&line, &len, f) != -1)
@@ -51,6 +56,16 @@ static void setup(void)
 static void run(unsigned int index)
 {
 	int err = tag ? 0 : ENODEV;
+	struct utsname uval;
+
+	if (uname(&uval))
+		tst_brk(TBROK | TERRNO, "uname() failed");
+
+	/* tst_arch is the build architecture; uname detects the running UML kernel. */
+	if (!strcmp(uval.machine, "um")) {
+		tst_res(TCONF, "skipping ARCH=um test");
+		return;
+	}
 
 	TST_EXP_PASS_OR_FAIL(arch_prctl_set(ARCH_SET_CPUID, index), err);
 

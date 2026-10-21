@@ -10,15 +10,15 @@
 #include "tse_parse_vdso.h"
 #include "config.h"
 
-#ifdef HAVE_GETAUXVAL
+#if defined(HAVE_GETAUXVAL) && defined(HAVE_SYS_AUXV_H)
 # include <sys/auxv.h>
-#endif /* HAVE_GETAUXVAL */
+#endif /* HAVE_GETAUXVAL && HAVE_SYS_AUXV_H */
 
 static unsigned long sysinfo_ehdr;
 
 static void vdso_init(void)
 {
-#ifdef HAVE_GETAUXVAL
+#if defined(HAVE_GETAUXVAL) && defined(HAVE_SYS_AUXV_H)
 	if (sysinfo_ehdr)
 		return;
 
@@ -31,7 +31,7 @@ static void vdso_init(void)
 	vdso_init_from_sysinfo_ehdr(sysinfo_ehdr);
 #else
 	tst_res(TINFO, "getauxval() not supported");
-#endif /* HAVE_GETAUXVAL */
+#endif /* HAVE_GETAUXVAL && HAVE_SYS_AUXV_H */
 }
 
 void find_clock_gettime_vdso(gettime_t *ptr_vdso_gettime,

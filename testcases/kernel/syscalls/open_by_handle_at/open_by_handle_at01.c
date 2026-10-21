@@ -19,7 +19,7 @@
 #define TEST_FILE "test_file"
 #define TEST_DIR "test_dir"
 
-static int dir_fd, fd_atcwd = AT_FDCWD, file_fd;
+static int dir_fd = -1, fd_atcwd = AT_FDCWD, file_fd = -1;
 static struct file_handle *f_fhp, *d_fhp, *at_fhp;
 static struct file_handle *f_fhp, *d_fhp, *at_fhp;
 
@@ -41,8 +41,11 @@ static struct tcase {
 
 static void cleanup(void)
 {
-	SAFE_CLOSE(dir_fd);
-	SAFE_CLOSE(file_fd);
+	if (dir_fd != -1)
+		SAFE_CLOSE(dir_fd);
+
+	if (file_fd != -1)
+		SAFE_CLOSE(file_fd);
 }
 
 static void setup(void)
@@ -110,4 +113,8 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
 	.needs_root = 1,
+	.skip_filesystems = (const char*[]) {
+		"ramfs",
+		NULL
+	},
 };

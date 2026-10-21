@@ -22,7 +22,7 @@ static void verify_alarm(void)
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		TST_EXP_PASS(alarm(0), "alarm(0) in child process");
-		exit(0);
+		SAFE_EXIT(0);
 	}
 
 	TST_EXP_VAL(alarm(0), 100, "alarm(0) in parent process");

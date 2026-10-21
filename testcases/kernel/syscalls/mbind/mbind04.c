@@ -107,7 +107,7 @@ static void verify_policy(unsigned int node, int mode, unsigned flag)
 		tse_nodemap_print_counters(nodes);
 
 	if (!pid)
-		exit(0);
+		SAFE_EXIT(0);
 }
 
 static const int modes[] = {

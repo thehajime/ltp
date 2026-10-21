@@ -79,4 +79,8 @@ static struct tst_test test = {
 	.test = run,
 	.setup = setup,
 	.needs_tmpdir = 1,
+	.skip_filesystems = (const char*[]) {
+		"ramfs",
+		NULL
+	},
 };

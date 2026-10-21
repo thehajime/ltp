@@ -56,6 +56,7 @@ static void verify_ptrace(unsigned int n)
 		else
 			tst_res(TFAIL | TTERRNO, "ptrace() failed unexpectedly, expected %s",
 					tst_strerrno(tc->exp_errno));
+		SAFE_EXIT(0);
 	}
 	tst_reap_children();
 }

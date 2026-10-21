@@ -79,6 +79,8 @@ static void run(unsigned int n)
 			tst_res(TFAIL, "FD_CLOEXEC not set on %d", fd);
 		break;
 	case 5:
+		NOMMU_PARENT_BLOCK_REQUIRED();
+
 		fd = SAFE_OPEN("/", O_PATH);
 
 		if (!SAFE_CLONE(&args)) {
@@ -88,11 +90,11 @@ static void run(unsigned int n)
 				fd, fd);
 
 			if (res != TPASS)
-				exit(0);
+				SAFE_EXIT(0);
 
 			TST_EXP_FAIL(fcntl(fd, F_GETFD), EBADF,
 				     "fcntl(%d, F_GETFD)", fd);
-			exit(0);
+			SAFE_EXIT(0);
 		}
 
 		tst_reap_children();
