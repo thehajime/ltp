@@ -44,6 +44,7 @@ static struct tst_test test = {
 		NULL
 	},
 	.test_all = run,
+	.needs_mmu = 1,
 };
 
 #else

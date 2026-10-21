@@ -47,6 +47,7 @@
 
 static int fd;
 static int evfd;
+static int aio_ctx_created;
 static io_context_t ctx;
 
 static void async_write(void)
@@ -140,6 +141,7 @@ static void setup(void)
 		tst_brk(TCONF, "io_setup(): AIO ring allocation unsupported on NOMMU");
 	if (TST_RET < 0)
 		tst_brk(TBROK, "io_setup() failed: %s", tst_strerrno(-TST_RET));
+	aio_ctx_created = 1;
 
 	fd = SAFE_OPEN("testfile", O_RDWR | O_CREAT, 0644);
 	evfd = TST_EXP_FD(eventfd(0, EFD_NONBLOCK));
@@ -148,7 +150,8 @@ static void setup(void)
 static void cleanup(void)
 {
 	SAFE_CLOSE(evfd);
-	io_destroy(ctx);
+	if (aio_ctx_created)
+		io_destroy(ctx);
 }
 
 static void run(void)
