@@ -5,6 +5,10 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_MAKE_TARGETS += sendmsg03
+endif
+
 CPPFLAGS		+= -I$(abs_srcdir)/../utils
 
 sendmsg03:  CFLAGS += -pthread

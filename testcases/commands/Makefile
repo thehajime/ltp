@@ -10,4 +10,8 @@ FILTER_OUT_SUBDIRS	:= tpm-tools
 endif
 
 include $(top_srcdir)/include/mk/env_pre.mk
+
+ifeq ($(UCLIBC),1)
+FILTER_OUT_DIRS		+= ldd
+endif
 include $(top_srcdir)/include/mk/generic_trunk_target.mk

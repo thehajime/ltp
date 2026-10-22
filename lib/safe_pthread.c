@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include "config.h"
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 
@@ -45,6 +46,11 @@ int safe_pthread_join(const char *file, const int lineno,
 int safe_pthread_barrier_wait(const char *file, const int lineno,
 			      pthread_barrier_t *barrier)
 {
+#ifndef HAVE_PTHREAD_BARRIER
+	(void)barrier;
+	tst_brk_(file, lineno, TCONF, "pthread barriers are not supported");
+	return -1;
+#else
 	int rval;
 
 	rval =  pthread_barrier_wait(barrier);
@@ -56,11 +62,17 @@ int safe_pthread_barrier_wait(const char *file, const int lineno,
 	}
 
 	return rval;
+#endif
 }
 
 int safe_pthread_barrier_destroy(const char *file, const int lineno,
 				 pthread_barrier_t *barrier)
 {
+#ifndef HAVE_PTHREAD_BARRIER
+	(void)barrier;
+	tst_brk_(file, lineno, TCONF, "pthread barriers are not supported");
+	return -1;
+#else
 	int rval;
 
 	rval = pthread_barrier_destroy(barrier);
@@ -72,6 +84,7 @@ int safe_pthread_barrier_destroy(const char *file, const int lineno,
 	}
 
 	return rval;
+#endif
 }
 
 int safe_pthread_cancel(const char *file, const int lineno,
@@ -94,6 +107,13 @@ int safe_pthread_barrier_init(const char *file, const int lineno,
 			      const pthread_barrierattr_t *attr,
 			      unsigned count)
 {
+#ifndef HAVE_PTHREAD_BARRIER
+	(void)barrier;
+	(void)attr;
+	(void)count;
+	tst_brk_(file, lineno, TCONF, "pthread barriers are not supported");
+	return -1;
+#else
 	int rval;
 
 	rval = pthread_barrier_init(barrier, attr, count);
@@ -105,6 +125,7 @@ int safe_pthread_barrier_init(const char *file, const int lineno,
 	}
 
 	return rval;
+#endif
 }
 
 int safe_pthread_mutexattr_init(const char *file, const int lineno,

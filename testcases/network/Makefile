@@ -21,6 +21,10 @@ ifeq ($(ANDROID),1)
 FILTER_OUT_DIRS		+= lib6 rpc sockets
 endif
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_DIRS		+= lib6 rpc sockets nfs nfsv4
+endif
+
 ifeq ($(HAVE_RPC),)
 FILTER_OUT_DIRS		+= rpc
 endif

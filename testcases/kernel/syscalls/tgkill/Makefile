@@ -5,6 +5,10 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_MAKE_TARGETS += tgkill01 tgkill02 tgkill03
+endif
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
 
 CFLAGS			+= -pthread

@@ -22,6 +22,10 @@
 # define MADV_REMOVE 9
 #endif
 
+#ifndef MADV_DONTNEED
+# define MADV_DONTNEED 4
+#endif
+
 #ifndef MADV_DONTFORK
 # define MADV_DONTFORK 10
 #endif

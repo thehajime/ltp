@@ -52,6 +52,8 @@
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
 
+#ifdef HAVE_PTHREAD_ATTR_SETSTACK
+
 static long page_size;
 
 static bool LTP_ATTRIBUTE_NOINLINE check_stackgrow_up(void)
@@ -211,3 +213,7 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.needs_mmu = 1, /* Stack-growth cases rely on MAP_FIXED mappings. */
 };
+
+#else
+TST_TEST_TCONF("pthread_attr_setstack() is not available");
+#endif

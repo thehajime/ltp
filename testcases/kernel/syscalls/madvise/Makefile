@@ -5,6 +5,11 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
+ifeq ($(UCLIBC),1)
+FILTER_OUT_MAKE_TARGETS += madvise01 madvise02 madvise03 madvise04 madvise05 madvise06
+FILTER_OUT_MAKE_TARGETS += madvise07 madvise08 madvise09 madvise10 madvise11 madvise12
+endif
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
 
 madvise11: CFLAGS += -pthread

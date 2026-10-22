@@ -146,6 +146,9 @@ void tst_old_flush(void);
  */
 pid_t tst_fork(void);
 
+/* Use vfork() on NOMMU where fork() may not be available. */
+#define fork() (tst_is_nommu() ? vfork() : fork())
+
 /* lib/tst_res.c */
 /*
  * In case we need do real test work in child process parent process can use

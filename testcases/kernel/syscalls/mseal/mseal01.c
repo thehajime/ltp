@@ -25,6 +25,7 @@
 
 #include "tst_test.h"
 #include "lapi/syscalls.h"
+#include "lapi/mmap.h"
 #include "lapi/pkey.h"
 
 #define MEMPAGES 8
@@ -67,7 +68,8 @@ static void test_pkey_mprotect(void)
 
 static void test_madvise(void)
 {
-	TST_EXP_FAIL(madvise(mem_addr, mem_size, MADV_DONTNEED), EPERM);
+	TST_EXP_FAIL(tst_syscall(__NR_madvise, mem_addr, mem_size,
+				 MADV_DONTNEED), EPERM);
 }
 
 static void test_munmap(void)

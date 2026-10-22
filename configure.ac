@@ -24,6 +24,14 @@ AM_MAINTAINER_MODE([enable])
 AC_CANONICAL_HOST
 
 AC_PROG_CC
+
+dnl Detect the target libc from the target compiler, including when cross-compiling.
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <features.h>
+#ifndef __UCLIBC__
+#error not uClibc
+#endif]])], [uclibc=1], [uclibc=0])
+AC_SUBST([UCLIBC], [$uclibc])
+
 # <= autoconf 2.61 doesn't have AC_PROG_AR, but 2.63 has it. Not sure about
 # 2.62.
 AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
@@ -176,6 +184,21 @@ AC_CHECK_FUNCS_ONCE([ \
     ustat \
     vmsplice \
 ])
+
+AC_CHECK_LIB([pthread], [pthread_attr_setstack], [
+	AC_DEFINE([HAVE_PTHREAD_ATTR_SETSTACK], [1],
+		[Define if pthread_attr_setstack() is available])
+	have_pthread_attr_setstack=1
+])
+AC_SUBST([HAVE_PTHREAD_ATTR_SETSTACK], [$have_pthread_attr_setstack])
+
+AC_CHECK_LIB([pthread], [pthread_barrier_init], [
+	AC_DEFINE([HAVE_PTHREAD_BARRIER], [1],
+		[Define if pthread barriers are available])
+	have_pthread_barrier=1
+])
+AC_SUBST([HAVE_PTHREAD_BARRIER], [$have_pthread_barrier])
+
 AC_CHECK_FUNCS(mkdtemp,[],AC_MSG_ERROR(mkdtemp() not found!))
 
 AC_CHECK_MEMBERS([struct iocb.aio_rw_flags],,,[#include <linux/aio_abi.h>])
