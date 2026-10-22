@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Fork validation - Kirk inside NOMMU UML
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Kirk suite to run in the UML guest
+        required: true
+        default: syscalls
+      pattern:
+        description: Optional Kirk test name regex (for example, ^close01$)
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  kirk-in-guest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Alpine musl LTP
+        run: |
+          mkdir -p "$RUNNER_TEMP/ltp-install"
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/ltp" \
+            -v "$RUNNER_TEMP/ltp-install:/ltp-install" \
+            -w /ltp alpine:3.20.3 /bin/sh -ec './ci/nommu-uml-build.sh /ltp-install'
+
+      - name: Run Kirk in NOMMU UML guest
+        env:
+          LTPROOT: ${{ runner.temp }}/ltp-install
+          LTP_VIRT_OVERRIDE: uml
+          LTP_DEV: /dev/loop0
+          KIRK_GUEST_SUITE: ${{ inputs.suite }}
+          KIRK_GUEST_PATTERN: ${{ inputs.pattern }}
+        run: |
+          unset LTP_SINGLE_FS_TYPE
+          ci/nommu-uml-kirk-in-guest

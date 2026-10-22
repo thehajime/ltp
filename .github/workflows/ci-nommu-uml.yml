@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: NOMMU UML syscall runtime
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syscalls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Alpine musl LTP
+        run: |
+          mkdir -p "$RUNNER_TEMP/ltp-install"
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/ltp" \
+            -v "$RUNNER_TEMP/ltp-install:/ltp-install" \
+            -w /ltp alpine:3.20.3 /bin/sh -ec './ci/nommu-uml-build.sh /ltp-install'
+
+      - name: Run syscall suite on NOMMU UML
+        env:
+          LTPROOT: ${{ runner.temp }}/ltp-install
+          TMPDIR: /tmp
+          LTP_DEV: /dev/loop0
+          LTP_VIRT_OVERRIDE: uml
+          LD_LIBRARY_PATH: ${{ runner.temp }}/ltp-install/lib
+        run: |
+          unset LTP_SINGLE_FS_TYPE
+          python3 ci/nommu-uml-kirk \
+            --no-colors \
+            --com "nommu-uml:ltp_root=$LTPROOT:init_script=$GITHUB_WORKSPACE/ci/nommu-uml-init.sh" \
+            --sut default:com=nommu-uml \
+            --run-suite syscalls \
+            --workers 1 \
+            --exec-timeout 600 \
+            --suite-timeout 19800

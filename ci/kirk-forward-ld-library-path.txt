@@ -1,0 +1,10 @@
+--- a/libkirk/ltp.py
++++ b/libkirk/ltp.py
+@@ -64,6 +64,7 @@ class LTPFramework(Framework):
+     SUPPORTED_ENV: frozenset = frozenset(
+         {
+             "PATH",
++            "LD_LIBRARY_PATH",
+             "KCONFIG_PATH",
+             "KCONFIG_SKIP_CHECK",
+             # LTP network test variables
