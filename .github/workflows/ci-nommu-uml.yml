@@ -44,4 +44,29 @@ jobs:
             --run-suite syscalls \
             --workers 1 \
             --exec-timeout 600 \
-            --suite-timeout 19800
+            --suite-timeout 19800 \
+            --json-report "$LTPROOT/tmp/kirk-report.json"
+
+      - name: Validate Kirk result report
+        run: |
+          python3 - "${{ runner.temp }}/ltp-install/tmp/kirk-report.json" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as report_file:
+              stats = json.load(report_file)["stats"]
+
+          for name in ("passed", "skipped", "failed", "broken", "warnings"):
+              print(f"{name}: {stats[name]}")
+
+          if any(stats[name] for name in ("failed", "broken", "warnings")):
+              sys.exit(1)
+          PY
+
+      - name: Upload Kirk JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nommu-uml-kirk-report
+          path: ${{ runner.temp }}/ltp-install/tmp/kirk-report.json
+          if-no-files-found: warn

@@ -34,7 +34,10 @@ The build script installs the Alpine build dependencies, omits
 not expose their `sigevent` fields, then runs `autotools`, `configure`, `build`,
 and `install`. It stages `libaio`, `libcap`, and `libnuma` for the smaller guest
 image, applies the Kirk environment-forwarding patch, and creates the loopback
-image used by filesystem tests.
+image used by filesystem tests. It also removes the `timer_create01` and
+`timer_create03` entries from the installed syscall runtest list because their
+source files are omitted for musl; leaving the entries would make Kirk report
+missing executables as FAIL.
 
 ## Run Kirk inside the UML guest
 
@@ -58,6 +61,8 @@ LTPROOT="$PWD/build/nommu-install" \
 The runner sets `LTP_VIRT_OVERRIDE=uml`, uses `/dev/loop0`, and leaves
 `LTP_SINGLE_FS_TYPE` unset so tests can try every filesystem available in the
 guest. It exits nonzero if Kirk or any LTP test reports FAIL, BROK, or WARN.
+The GitHub workflow validates Kirk's JSON result counters and uploads the JSON
+report even if the validation step fails.
 
 ## GitHub Actions
 

@@ -40,6 +40,14 @@ rm -f \
 ./build.sh -r build
 ./build.sh -r install -i
 
+# The Alpine build omits these source files because musl does not expose the
+# sigevent fields they use. Remove their runtest entries too, otherwise Kirk
+# treats the missing test executables as failures.
+sed -i \
+	-e '/^timer_create01[[:space:]]/d' \
+	-e '/^timer_create03[[:space:]]/d' \
+	"$prefix/runtest/syscalls"
+
 # Kirk's LTP framework uses a restricted environment for testcase commands.
 # Keep the library path for optional libraries staged in the install tree.
 patch -d "$prefix" -p1 < ci/kirk-forward-ld-library-path.txt
