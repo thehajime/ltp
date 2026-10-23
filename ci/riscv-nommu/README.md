@@ -2,14 +2,20 @@
 
 The `RISC-V NOMMU syscall execution (fork)` workflow builds a minimal Buildroot
 system and runs every entry in `runtest/syscalls` through host-side Kirk and QEMU
-TCG. It runs on pushes to `hajime/riscv-nommu-upstream`, and can also be started
-with `workflow_dispatch`. The job is restricted to `thehajime/ltp`.
+TCG. It runs on pushes to `hajime/riscv-nommu-upstream`. Use GitHub Actions'
+re-run control to repeat an existing run. Manual dispatch is also available
+once the workflow exists on the repository's default branch. The job is
+restricted to `thehajime/ltp`.
 
 Buildroot, Linux and Kirk revisions are pinned in the configuration and scripts.
 Linux is the 7.2.0-rc5 source used for the local validation. The Buildroot
 configuration contains the toolchain, BusyBox, kernel and QEMU; LTP is compiled
 from the checked-out repository after the toolchain build. Downloaded source
 archives are cached, while compiled LTP binaries are rebuilt for each revision.
+Reused dependency checkouts must match the pinned revisions. A repeated build
+uses a fresh installation directory and verifies that the Kirk patch is applied.
+The target compiler detects uClibc during configure; no UCLIBC make override
+is needed.
 
 The patches under this directory are validation dependencies:
 
@@ -18,8 +24,10 @@ The patches under this directory are validation dependencies:
   through the first UART. This patch is suitable for this validation fixture;
   its text-only file transfer is not a general binary transport implementation.
 
-The guest uses 2 GiB of RAM and a disposable 2 GiB ext4 root filesystem. An init
-script initializes the clock from the build host to avoid the 1970 epoch restore
+The guest uses 2 GiB of RAM and a disposable copy of a 2 GiB ext4 root filesystem.
+The base image is preserved between runs, and the previous JSON report is
+removed before starting a new run. An init script initializes the clock from
+the build host to avoid the 1970 epoch restore
 failure in clock tests. `LTP_TIMEOUT_MUL=1` is used. `LTP_SINGLE_FS_TYPE` and
 `LTP_VIRT_OVERRIDE` are unset, and no external skip file is used. Missing kernel
 features and filesystem tools may produce LTP `TCONF` results.

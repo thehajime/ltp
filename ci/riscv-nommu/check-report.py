@@ -19,7 +19,9 @@ actual = collections.Counter(result["test_fqn"] for result in results)
 missing = expected - actual.keys()
 extra = actual.keys() - expected
 duplicates = [name for name, count in actual.items() if count != 1]
-bad = [r["test_fqn"] for r in results if r["status"] not in ("pass", "conf")]
+bad = [r["test_fqn"] for r in results
+       if r["status"] not in ("pass", "conf") or
+       any(r["test"].get(key, 0) for key in ("failed", "broken", "warnings"))]
 stats = report["stats"]
 print(json.dumps({"tests": len(results), **stats}, indent=2))
 for label, names in (("missing", missing), ("unexpected", extra),
@@ -27,4 +29,5 @@ for label, names in (("missing", missing), ("unexpected", extra),
     if names:
         print(f"{label}: {', '.join(sorted(names))}", file=sys.stderr)
 sys.exit(bool(missing or extra or duplicates or bad or not expected or
+              not (stats.get("passed", 0) + stats.get("skipped", 0)) or
               any(stats.get(key, 0) for key in ("failed", "broken", "warnings"))))
