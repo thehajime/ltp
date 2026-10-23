@@ -1,0 +1,64 @@
+--- a/libkirk/channels/shell.py
++++ b/libkirk/channels/shell.py
+@@ -173,7 +173,7 @@
+ 
+             self._procs.append(proc)
+ 
+-            t_start = time.time()
++            t_start = time.monotonic()
+             panic = False
+ 
+             while True:
+@@ -194,7 +194,7 @@
+ 
+             await proc.wait()
+ 
+-            t_end = time.time() - t_start
++            t_end = time.monotonic() - t_start
+ 
+             if panic:
+                 raise KernelPanicError()
+--- a/libkirk/scheduler.py
++++ b/libkirk/scheduler.py
+@@ -226,7 +226,7 @@
+ 
+             iobuffer = RedirectTestStdout(test)
+             cmd = test.full_command
+-            start_t = time.time()
++            start_t = time.monotonic()
+             exec_time = 0
+             test_data: Dict[str, Any] = {}
+             tainted_msg: List[str] = []
+@@ -262,12 +262,12 @@
+                         tainted_msg = tainted_msg2
+                         status = TestStatus.KERNEL_TAINTED
+             except KernelPanicError:
+-                exec_time = time.time() - start_t
++                exec_time = time.monotonic() - start_t
+ 
+                 self._logger.info("Recognised Kernel panic")
+                 status = TestStatus.KERNEL_PANIC
+             except asyncio.TimeoutError:
+-                exec_time = time.time() - start_t
++                exec_time = time.monotonic() - start_t
+                 status = TestStatus.TEST_TIMEOUT
+ 
+                 self._logger.info("Got test timeout. Checking if SUT is still replying")
+@@ -539,7 +539,7 @@
+         try:
+             while not self._stop and tests_left:
+                 try:
+-                    start_t = time.time()
++                    start_t = time.monotonic()
+                     await asyncio.wait_for(
+                         self._scheduler.schedule(tests_left),
+                         timeout=self._suite_timeout,
+@@ -565,7 +565,7 @@
+                         await self._restart_sut()
+                         reboot_event.set()
+                 finally:
+-                    exec_times.append(time.time() - start_t)
++                    exec_times.append(time.monotonic() - start_t)
+                     # pyrefly: ignore[bad-argument-type]
+                     tests_results.extend(self._scheduler.results)
+ 

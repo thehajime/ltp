@@ -1,0 +1,37 @@
+--- a/libkirk/channels/shell.py
++++ b/libkirk/channels/shell.py
+@@ -175,6 +175,7 @@
+ 
+             t_start = time.monotonic()
+             panic = False
++            children_killed = False
+ 
+             while True:
+                 line = await proc.stdout.read(self.BUFFSIZE)
+@@ -187,10 +188,12 @@
+                     await iobuffer.write(sline)
+ 
+                 stdout += sline
+-                panic = "Kernel panic" in stdout[-2 * self.BUFFSIZE :]
+-
+-                if not await self._process_alive(proc):
+-                    break
++                panic = panic or "Kernel panic" in stdout[-2 * self.BUFFSIZE :]
++
++                # CI: drain stdout after exit instead of losing the summary.
++                if not await self._process_alive(proc) and not children_killed:
++                    await self._kill_process(proc)
++                    children_killed = True
+ 
+             await proc.wait()
+ 
+@@ -203,6 +206,9 @@
+                 self._procs.remove(proc)
+ 
+                 await self._kill_process(proc)
++                # A cancelled reader may leave a full, paused pipe.
++                if proc.stdout:
++                    await proc.stdout.read()
+                 await proc.wait()
+ 
+                 ret = {

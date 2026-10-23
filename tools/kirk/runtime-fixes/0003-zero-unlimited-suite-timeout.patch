@@ -1,0 +1,11 @@
+--- a/libkirk/scheduler.py
++++ b/libkirk/scheduler.py
+@@ -542,7 +542,7 @@
+                     start_t = time.monotonic()
+                     await asyncio.wait_for(
+                         self._scheduler.schedule(tests_left),
+-                        timeout=self._suite_timeout,
++                        timeout=self._suite_timeout or None,
+                     )
+                 except asyncio.TimeoutError:
+                     self._logger.info("Testing suite timed out: %s", suite.name)
