@@ -1,0 +1,53 @@
+name: RISC-V NOMMU syscall execution (fork)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [hajime/riscv-nommu-upstream]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riscv-nommu-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syscalls:
+    if: github.repository == 'thehajime/ltp'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake bc bison build-essential \
+            cpio e2fsprogs fakeroot file flex gawk git libelf-dev libglib2.0-dev \
+            libncurses-dev libpixman-1-dev libssl-dev libtool ninja-build \
+            patch pkg-config python3-dev rsync texinfo unzip wget xz-utils
+      - uses: actions/cache@v4
+        with:
+          path: .riscv-nommu/buildroot/dl
+          key: riscv-nommu-downloads-${{ hashFiles('ci/riscv-nommu/**') }}
+          restore-keys: riscv-nommu-downloads-
+      - name: Build toolchain, kernel, rootfs and syscall tests
+        run: bash ci/riscv-nommu/build.sh 2>&1 | tee build-riscv-nommu.log
+      - name: Run complete syscall suite with Kirk and QEMU TCG
+        timeout-minutes: 240
+        run: bash ci/riscv-nommu/run.sh 2>&1 | tee run-riscv-nommu.log
+      - name: Preserve reports and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riscv-nommu-results
+          path: |
+            *-riscv-nommu.log
+            .riscv-nommu/results/
+            .riscv-nommu/buildroot/.config
+            .riscv-nommu/buildroot/output/build/linux-*/.config
+            /tmp/kirk.*/
+          retention-days: 14
