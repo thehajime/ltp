@@ -10,7 +10,8 @@
 /*\
  * Test for EINVAL, EPERM, EFAULT errors.
  *
- * - setgroups() fails with EINVAL if the size argument value is > NGROUPS.
+ * - setgroups() fails with EINVAL if the size exceeds the kernel
+ *   supplementary group limit.
  *
  * - setgroups() fails with EPERM if the calling process is not super-user.
  *
@@ -18,6 +19,7 @@
  */
 
 #include <pwd.h>
+#include <limits.h>
 #include <stdlib.h>
 
 #include "tst_test.h"
@@ -33,9 +35,9 @@ static struct tcase {
 	GID_T **glist;
 	int exp_errno;
 } tcases[] = {
-	{NGROUPS + 1, &glist1, EINVAL},
+	{0, &glist1, EINVAL},
 	{1, &glist2, EPERM},
-	{NGROUPS, &glist3, EFAULT},
+	{1, &glist3, EFAULT},
 };
 
 static void verify_setgroups(unsigned int i)
@@ -54,6 +56,13 @@ static void verify_setgroups(unsigned int i)
 
 static void setup(void)
 {
+	long max_groups;
+
+	SAFE_FILE_SCANF("/proc/sys/kernel/ngroups_max", "%ld", &max_groups);
+
+	if (max_groups < 0 || max_groups >= INT_MAX)
+		tst_brk(TBROK, "Invalid kernel ngroups_max: %ld", max_groups);
+	tcases[0].gsize = max_groups + 1;
 	user_info = SAFE_GETPWNAM(TESTUSER);
 	glist2[0] = 42;
 	glist3 = tst_get_bad_addr(NULL);
