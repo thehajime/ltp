@@ -45,6 +45,10 @@
 static const struct sock_filter  strict_filter[] = {
 	BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof(struct seccomp_data, nr))),
 
+#if __NR_fork != __LTP__NR_INVALID_SYSCALL
+	/* musl uses fork(2), while other libcs implement fork via clone(2). */
+	BPF_JUMP(BPF_JMP | BPF_JEQ, __NR_fork, 8, 0),
+#endif
 	BPF_JUMP(BPF_JMP | BPF_JEQ, __NR_waitid, 7, 0),
 	BPF_JUMP(BPF_JMP | BPF_JEQ, __NR_rt_sigprocmask, 6, 0),
 	BPF_JUMP(BPF_JMP | BPF_JEQ, __NR_close, 5, 0),
