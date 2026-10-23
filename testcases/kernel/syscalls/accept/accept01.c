@@ -88,6 +88,12 @@ void verify_accept(unsigned int nr)
 {
 	struct test_case *tcase = &tcases[nr];
 
+	/* An invalid pointer cannot be safely tested without memory protection. */
+	if (tst_is_nommu() && tcase->sockaddr == (struct sockaddr *)3) {
+		tst_res(TCONF, "invalid socket buffer cannot be tested on NOMMU");
+		return;
+	}
+
 	TST_EXP_FAIL2(accept(*tcase->fd, tcase->sockaddr, &tcase->salen),
 	             tcase->experrno, "%s", tcase->desc);
 }

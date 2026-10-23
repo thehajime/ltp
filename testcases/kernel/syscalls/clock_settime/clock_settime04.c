@@ -127,6 +127,7 @@ static struct tst_test test = {
 	.tcnt = 2,
 	.needs_root = 1,
 	.forks_child = 1,
+	.needs_mmu = 1,
 	.restore_wallclock = 1,
 	.test_variants = ARRAY_SIZE(variants),
 	.bufs = (struct tst_buffers []) {

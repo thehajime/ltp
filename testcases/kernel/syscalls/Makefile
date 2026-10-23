@@ -10,10 +10,6 @@ top_srcdir		?= ../../..
 
 include	$(top_srcdir)/include/mk/env_pre.mk
 
-ifeq ($(UCLIBC),1)
-FILTER_OUT_DIRS	+= profil
-endif
-
 ifeq ($(ANDROID), 1)
 FILTER_OUT_DIRS	+= \
 	accept4 adjtimex cma confstr fcntl fmtmsg futex getcontext getcpu \

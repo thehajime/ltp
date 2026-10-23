@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "tst_test.h"
+#include "lapi/syscalls.h"
 
 static int fd = -1, pid;
 static struct flock flocks;
@@ -37,7 +38,8 @@ static void verify_fcntl(void)
 	/* F_GETLK will change flock.l_type to F_UNLCK, so need to reset */
 	flocks.l_type = F_RDLCK;
 
-	TST_EXP_PASS(fcntl(fd, F_GETLK, &flocks), "fcntl(%d, F_GETLK, &flocks)", fd);
+	TST_EXP_PASS(tst_syscall(__NR_fcntl, fd, F_GETLK, &flocks),
+		     "fcntl(%d, F_GETLK, &flocks)", fd);
 	TST_EXP_EQ_LI(flocks.l_type, F_UNLCK);
 	TST_EXP_EQ_LI(flocks.l_whence, SEEK_CUR);
 	TST_EXP_EQ_LI(flocks.l_start, 0);
@@ -47,6 +49,10 @@ static void verify_fcntl(void)
 
 static void setup(void)
 {
+	/* F_GETLK returns EINVAL on this NOMMU kernel even for a valid lock. */
+	if (tst_is_nommu())
+		tst_brk(TCONF, "F_GETLK is not supported by the NOMMU runtime");
+
 	pid = getpid();
 	fd = SAFE_OPEN("filename", O_RDWR | O_CREAT, 0700);
 

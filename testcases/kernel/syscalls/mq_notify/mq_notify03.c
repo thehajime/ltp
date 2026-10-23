@@ -83,8 +83,16 @@ static void do_test(void)
 	try_null_dereference();
 }
 
+static void setup(void)
+{
+#ifdef __UCLIBC__
+	tst_brk(TCONF, "this test checks a glibc mq_notify() bug");
+#endif
+}
+
 
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = do_test,
 	.tags = (const struct tst_tag[]) {
 		{"glibc-git", "b805aebd42"},

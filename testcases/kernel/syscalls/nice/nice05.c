@@ -23,6 +23,8 @@
 #include "tst_safe_clocks.h"
 #include "tst_timer.h"
 
+#if HAVE_PTHREAD_BARRIER
+
 static pthread_barrier_t barrier;
 
 static void set_nice(int nice_inc)
@@ -154,3 +156,16 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.runtime = 3,
 };
+
+#else
+
+static void tconf(void)
+{
+	tst_brk(TCONF, "pthread barriers are not supported");
+}
+
+static struct tst_test test = {
+	.test_all = tconf,
+};
+
+#endif

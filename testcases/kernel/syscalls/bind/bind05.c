@@ -184,6 +184,8 @@ static void test_bind(unsigned int n)
 static struct tst_test test = {
 	.test = test_bind,
 	.tcnt = ARRAY_SIZE(testcase_list),
+	/* Concurrent pthread operations are not supported by NOMMU uClibc. */
+	.needs_mmu = 1,
 	.needs_tmpdir = 1,
 	.setup = setup,
 };

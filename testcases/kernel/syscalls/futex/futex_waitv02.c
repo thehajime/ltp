@@ -86,6 +86,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.min_kver = "5.16",
+	.needs_mmu = 1,
 	.test_variants = FUTEX_VARIANTS,
 	.options =
 		(struct tst_option[]){

@@ -127,5 +127,7 @@ static void test01(void)
 static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.test_all = test01,
-	.setup = setup
+	.setup = setup,
+	/* NOMMU uClibc threads can crash while sharing the OFD lock test state. */
+	.needs_mmu = 1,
 };

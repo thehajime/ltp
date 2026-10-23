@@ -267,6 +267,8 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_variants = 2,
 	.forks_child = 1,
+	/* POSIX locks are checked across an isolated parent and child. */
+	.needs_mmu = 1,
 	.needs_tmpdir = 1,
 	.options = (struct tst_option[]) {
 		{ "n:", &str_op_nums, "Total # operations to do (default 5000)" },

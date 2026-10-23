@@ -41,6 +41,7 @@ static void setup(void)
 
 static struct tst_test test = {
 	.needs_root = 1,
+	.needs_mmu = 1,
 	.setup = setup,
 	.test_all = run,
 };

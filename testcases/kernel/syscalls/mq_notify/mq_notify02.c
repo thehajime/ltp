@@ -12,6 +12,7 @@
 
 #include <mqueue.h>
 #include "tst_test.h"
+#include "lapi/syscalls.h"
 
 static struct test_case_t {
 	struct sigevent sevp;
@@ -25,7 +26,8 @@ static void run(unsigned int i)
 {
 	struct test_case_t *test = &tcase[i];
 
-	TST_EXP_FAIL(mq_notify(0, &(test->sevp)), test->exp_errno);
+	TST_EXP_FAIL(tst_syscall(__NR_mq_notify, 0, &(test->sevp)),
+		     test->exp_errno);
 }
 
 static struct tst_test test = {

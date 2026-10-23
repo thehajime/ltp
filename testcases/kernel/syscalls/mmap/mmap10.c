@@ -38,6 +38,7 @@
  */
 
 #include "tst_test.h"
+#include "lapi/madvise.h"
 
 #define SIZE (5 * TST_MB)
 

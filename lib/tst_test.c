@@ -2009,8 +2009,6 @@ void tst_set_runtime(int runtime)
 	heartbeat();
 }
 
-#define NOMMU_CHILD_STACK_SIZE (1024 * 1024)
-
 static void setup_testrun_child(void)
 {
 	tst_disable_oom_protection(0);
@@ -2020,6 +2018,8 @@ static void setup_testrun_child(void)
 	SAFE_SIGNAL(SIGINT, SIG_DFL);
 	SAFE_SETPGID(0, 0);
 }
+
+#define NOMMU_CHILD_STACK_SIZE (1024 * 1024)
 
 static int nommu_testrun(void *unused LTP_ATTRIBUTE_UNUSED)
 {
@@ -2037,16 +2037,14 @@ static void fork_testrun(void)
 	SAFE_SIGNAL(SIGTERM, sigint_handler);
 
 	alarm(context->overall_time);
-
 	show_failure_hints = 1;
 	if (tst_is_nommu()) {
 		nommu_stack = ltp_alloc_stack(NOMMU_CHILD_STACK_SIZE);
 		if (!nommu_stack)
 			tst_brk(TBROK | TERRNO, "Failed to allocate NOMMU child stack");
 
-		test_pid = ltp_clone(CLONE_VM | SIGCHLD,
-				     nommu_testrun, NULL, NOMMU_CHILD_STACK_SIZE,
-				     nommu_stack);
+		test_pid = ltp_clone(CLONE_VM | SIGCHLD, nommu_testrun, NULL,
+				     NOMMU_CHILD_STACK_SIZE, nommu_stack);
 	} else {
 		test_pid = fork();
 	}
@@ -2059,7 +2057,12 @@ static void fork_testrun(void)
 		testrun(1);
 	}
 
-	SAFE_WAITPID(test_pid, &status, 0);
+	while (waitpid(test_pid, &status, 0) == -1) {
+		if (errno == EINTR)
+			continue;
+
+		tst_brk(TBROK | TERRNO, "waitpid(%d) failed", test_pid);
+	}
 	free(nommu_stack);
 	alarm(0);
 	SAFE_SIGNAL(SIGTERM, SIG_DFL);
@@ -2184,7 +2187,17 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	tst_enable_oom_protection(context->lib_pid);
 
 	SAFE_SIGNAL(SIGALRM, alarm_handler);
-	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
+	if (tst_is_nommu()) {
+		struct sigaction sa = {
+			.sa_handler = heartbeat_handler,
+			.sa_flags = SA_RESTART,
+		};
+
+		sigemptyset(&sa.sa_mask);
+		SAFE_SIGACTION(SIGUSR1, &sa, NULL);
+	} else {
+		SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
+	}
 
 	if (tst_test->min_runtime && !tst_test->runtime)
 		tst_test->runtime = tst_test->min_runtime;

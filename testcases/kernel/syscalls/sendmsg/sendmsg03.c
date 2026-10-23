@@ -101,6 +101,7 @@ static void run(void)
 static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
+	.needs_mmu = 1,
 	.cleanup = cleanup,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.runtime = 150,

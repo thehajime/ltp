@@ -84,6 +84,9 @@ static void cleanup(void)
 
 static void setup(void)
 {
+#ifdef __UCLIBC__
+	tst_brk(TCONF, "statvfs() cannot reliably report attributes on cloned mounts in uClibc");
+#endif
 	fsopen_supported_by_kernel();
 
 	if (access(OT_MNTPOINT, F_OK) != 0)

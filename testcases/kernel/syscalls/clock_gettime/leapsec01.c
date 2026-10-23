@@ -206,4 +206,6 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.needs_root = 1,
+	/* NOMMU UML returns EINVAL after this test changes CLOCK_REALTIME. */
+	.needs_mmu = 1,
 };

@@ -69,6 +69,7 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
+	.needs_mmu = 1,
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,

@@ -121,4 +121,6 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = run,
 	.forks_child = 1,
+	/* Thread workers need independent address spaces and process teardown. */
+	.needs_mmu = 1,
 };

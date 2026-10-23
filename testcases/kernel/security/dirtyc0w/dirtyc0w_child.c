@@ -5,6 +5,7 @@
  */
 
 #include <sys/mman.h>
+#include "lapi/madvise.h"
 #include <fcntl.h>
 #include <pthread.h>
 #include <unistd.h>

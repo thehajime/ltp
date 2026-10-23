@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 static void run_child(void)
 {

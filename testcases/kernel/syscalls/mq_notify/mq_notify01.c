@@ -99,6 +99,14 @@ static void tfunc(union sigval sv)
 	notified = 1;
 }
 
+static void setup(void)
+{
+#ifdef __UCLIBC__
+	tst_brk(TCONF, "mq_notify() callback handling is unavailable in uClibc");
+#endif
+	setup_common();
+}
+
 static void do_test(unsigned int i)
 {
 	struct sigaction sigact;
@@ -205,6 +213,6 @@ static struct tst_test test = {
 		{"d", &str_debug, "Print debug messages"},
 		{}
 	},
-	.setup = setup_common,
+	.setup = setup,
 	.cleanup = cleanup_common,
 };

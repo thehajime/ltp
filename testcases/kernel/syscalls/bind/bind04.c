@@ -167,6 +167,8 @@ static struct tst_test test = {
 	.timeout = 1,
 	.test = test_bind,
 	.tcnt = ARRAY_SIZE(testcase_list),
+	/* Concurrent pthread operations are not supported by NOMMU uClibc. */
+	.needs_mmu = 1,
 	.needs_tmpdir = 1,
 	.setup = setup,
 };

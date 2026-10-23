@@ -22,7 +22,7 @@
  */
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 #define MAP_SIZE (8 * TST_KB)
 

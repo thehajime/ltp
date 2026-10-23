@@ -26,7 +26,7 @@ static void verify_gethostname(void)
 
 static void setup(void)
 {
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) || defined(__UCLIBC__)
 	tst_brk(TCONF, "gethostname() truncation behavior differs in this libc");
 #endif
 }

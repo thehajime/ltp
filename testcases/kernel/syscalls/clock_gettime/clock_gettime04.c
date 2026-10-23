@@ -189,5 +189,7 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "5b43bd184530af6b868d8273b0a743a138d37ee8"},
 		{}
-	}
+	},
+	/* This test compares vDSO implementations, which require MMU mappings. */
+	.needs_mmu = 1,
 };
