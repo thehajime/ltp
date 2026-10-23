@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: riscv-nommu-${{ github.ref }}
   cancel-in-progress: true
@@ -44,6 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: riscv-nommu-results
+          include-hidden-files: true
           path: |
             *-riscv-nommu.log
             .riscv-nommu/results/
