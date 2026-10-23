@@ -48,6 +48,7 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "lapi/syscalls.h"
 #include "tso_safe_macros.h"
 
 char *TCID = "sendmsg01";
@@ -383,7 +384,8 @@ int main(int argc, char *argv[])
 			msgdat.msg_controllen = controllen;
 			msgdat.msg_flags = 0;
 
-			TEST(sendmsg(s, tdat[testno].msg, tdat[testno].flags));
+			/* Test kernel validation; libc may copy ancillary data first. */
+			TEST(tst_syscall(__NR_sendmsg, s, tdat[testno].msg, tdat[testno].flags));
 
 			if (TEST_RETURN > 0)
 				TEST_RETURN = 0;
