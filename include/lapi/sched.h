@@ -127,6 +127,10 @@ static inline int getcpu(unsigned *cpu, unsigned *node)
 # define CLONE_FS	0x00000200
 #endif
 
+#ifndef CLONE_FILES
+# define CLONE_FILES	0x00000400
+#endif
+
 #ifndef CLONE_PIDFD
 # define CLONE_PIDFD	0x00001000
 #endif
