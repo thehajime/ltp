@@ -2000,10 +2000,18 @@ void tst_set_runtime(int runtime)
 static void setup_testrun_child(void)
 {
 	tst_disable_oom_protection(0);
-	SAFE_SIGNAL(SIGALRM, SIG_DFL);
-	SAFE_SIGNAL(SIGUSR1, SIG_DFL);
-	SAFE_SIGNAL(SIGTERM, SIG_DFL);
-	SAFE_SIGNAL(SIGINT, SIG_DFL);
+	/*
+	 * On NOMMU the test runner uses CLONE_VM. Some C libraries keep signal
+	 * handler trampolines in user-space state shared with the parent. Changing
+	 * a disposition in the child can then clear the parent's handler and make
+	 * its next signal jump to NULL. Keep the inherited handlers in that case.
+	 */
+	if (!tst_is_nommu()) {
+		SAFE_SIGNAL(SIGALRM, SIG_DFL);
+		SAFE_SIGNAL(SIGUSR1, SIG_DFL);
+		SAFE_SIGNAL(SIGTERM, SIG_DFL);
+		SAFE_SIGNAL(SIGINT, SIG_DFL);
+	}
 	SAFE_SETPGID(0, 0);
 }
 
