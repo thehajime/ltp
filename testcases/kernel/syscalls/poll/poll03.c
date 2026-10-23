@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/poll.h>
+#include <sys/syscall.h>
 
 #include "tst_test.h"
 
@@ -32,10 +33,13 @@ static void verify_pollhup(void)
 		tst_res(TFAIL, "Unexpected poll() return value %ld", TST_RET);
 		return;
 	}
-	if (!(pfd.revents & POLLHUP) && tst_is_nommu()) {
-		tst_res(TCONF, "NOMMU kernel does not report POLLHUP on closed pipe");
+#if defined(__UCLIBC__) && !defined(SYS_poll)
+	/* uClibc emulates poll() with select() when the syscall is absent. */
+	if (!(pfd.revents & POLLHUP)) {
+		tst_res(TCONF, "uClibc poll() emulation does not report POLLHUP");
 		return;
 	}
+#endif
 
 	TST_EXP_EXPR(pfd.revents & POLLHUP);
 	TST_EXP_EXPR((pfd.revents & ~(POLLHUP | POLLIN)) == 0);
