@@ -145,6 +145,7 @@ static void run(unsigned int n)
 }
 
 static struct tst_test test = {
+	.needs_kconfigs = (const char *[]) { "CONFIG_COREDUMP=y", NULL },
 	.forks_child = 1,
 	.setup = setup,
 	.test = run,
