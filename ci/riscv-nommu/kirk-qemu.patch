@@ -1,0 +1,63 @@
+diff --git a/libkirk/channels/qemu.py b/libkirk/channels/qemu.py
+index c123e84..f20ea7d 100644
+--- a/libkirk/channels/qemu.py
++++ b/libkirk/channels/qemu.py
+@@ -99,7 +99,8 @@ class QemuComChannel(ComChannel):
+         tty_log = os.path.join(self._tmpdir, f"ttyS0-{pid}.log")
+ 
+         params = []
+-        params.append("-enable-kvm")
++        # Leave accelerator selection to QEMU. The hardcoded KVM flag
++        # prevents running foreign architectures (e.g. RISC-V on x86) with TCG.
+         params.append("-display none")
+         params.append(f"-m {self._ram}")
+         params.append(f"-smp {self._smp}")
+@@ -576,40 +577,18 @@ class QemuComChannel(ComChannel):
+             if retcode != 0:
+                 raise CommunicationError(f"'{target_path}' doesn't exist")
+ 
+-            transport_dev, transport_path = self._get_transport()
+-
+-            stdout, retcode, _ = await self._exec(
+-                f"cat {target_path} > {transport_dev}", None
+-            )
++            # RISC-V QEMU virt exposes one UART in its device tree.  The
++            # secondary UART used by Kirk's binary transport is therefore
++            # absent on this guest. LTP suite and metadata files are UTF-8
++            # text, so transport them through the primary console.
++            stdout, retcode, _ = await self._exec(f"cat {target_path}", None)
+ 
+             if self._stop:
+                 return bytes()
+ 
+-            if retcode not in [0, signal.SIGHUP, signal.SIGKILL]:
+-                raise CommunicationError(
+-                    f"Can't send file to {transport_dev}: {stdout}"
+-                )
+-
+-            # read back data and send it to the local file path
+-            file_size = os.path.getsize(transport_path)
+-
+-            retdata = bytearray()
+-
+-            async with AsyncFile(transport_path, "rb") as transport:
+-                while not self._stop and self._last_pos < file_size:
+-                    await transport.seek(self._last_pos)
+-
+-                    data = await transport.read(4096)
+-                    if data:
+-                        # pyrefly: ignore[bad-argument-type]
+-                        retdata.extend(data)
+-
+-                    pos = await transport.tell()
+-                    if pos is None:
+-                        raise CommunicationError("Can't read file position")
++            if retcode != 0:
++                raise CommunicationError(f"Can't encode {target_path}: {stdout}")
+ 
+-                    self._last_pos = pos
++            return stdout.encode("utf-8")
+ 
+             self._logger.info("File downloaded")
+-
+-            return bytes(retdata)
