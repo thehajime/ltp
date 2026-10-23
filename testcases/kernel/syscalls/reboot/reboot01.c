@@ -29,7 +29,14 @@ static struct tcase {
 
 static void run(unsigned int n)
 {
-	TST_EXP_PASS(reboot(tcases[n].cmd), "reboot(%s)", tcases[n].desc);
+	TEST(reboot(tcases[n].cmd));
+	/* reboot_pid_ns rejects CAD commands with EINVAL. */
+	if (TST_RET == -1 && TST_ERR == EINVAL)
+		tst_brk(TCONF, "CAD commands unavailable (e.g. nested PID namespace)");
+	if (TST_RET)
+		tst_res(TFAIL | TTERRNO, "reboot(%s) failed", tcases[n].desc);
+	else
+		tst_res(TPASS, "reboot(%s) passed", tcases[n].desc);
 }
 
 static struct tst_test test = {

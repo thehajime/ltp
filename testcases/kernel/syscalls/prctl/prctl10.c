@@ -97,7 +97,19 @@ static void verify_prctl(unsigned int n)
 		tst_res(TPASS, "Test %s succeeded", tc->name);
 }
 
+static void setup(void)
+{
+	int state;
+
+	TEST(prctl(PR_GET_TSC, &state));
+	if (TST_RET == -1 && TST_ERR == EINVAL)
+		tst_brk(TCONF, "PR_GET_TSC is not implemented by this kernel");
+	if (TST_RET)
+		tst_brk(TBROK | TTERRNO, "PR_GET_TSC capability probe failed");
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.forks_child = 1,
 	.test = verify_prctl,
 	.tcnt = ARRAY_SIZE(tcases),
