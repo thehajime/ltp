@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "tst_test.h"
+#include "lapi/syscalls.h"
 
 #define DIR_TEMP	"test_dir_1"
 #define TEST_FILE1	"test_dir_1/test_file_1"
@@ -61,7 +62,12 @@ static void verify_readlink(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
-	TEST(readlink(tc->link, tc->buf, tc->buf_size));
+	/* Test kernel argument validation without libc buffer-size adjustment. */
+#if __NR_readlink != __LTP__NR_INVALID_SYSCALL
+	TEST(tst_syscall(__NR_readlink, tc->link, tc->buf, tc->buf_size));
+#else
+	TEST(tst_syscall(__NR_readlinkat, AT_FDCWD, tc->link, tc->buf, tc->buf_size));
+#endif
 	if (TST_RET != -1) {
 		tst_res(TFAIL, "readlink() sueeeeded unexpectedly");
 		return;

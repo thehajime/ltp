@@ -22,6 +22,7 @@
  */
 
 #include "tst_test.h"
+#include "lapi/syscalls.h"
 
 #define TEST_FILE	"test_file"
 #define SYMLINK_FILE	"symlink_file"
@@ -51,7 +52,7 @@ static void verify_readlinkat(unsigned int i)
 
 	memset(buf, 0, sizeof(buf));
 
-	TST_EXP_FAIL(readlinkat(*tc->fd, tc->pathname, buf, tc->bufsiz),
+	TST_EXP_FAIL(tst_syscall(__NR_readlinkat, *tc->fd, tc->pathname, buf, tc->bufsiz),
 		     tc->exp_errno, "readlinkat(%d, %s, NULL, %ld)",
 		     *tc->fd, tc->pathname, tc->bufsiz);
 }
