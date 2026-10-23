@@ -20,6 +20,8 @@ make -C "$work/buildroot" BR2_DEFCONFIG="$work/buildroot.config" defconfig
 make -C "$work/buildroot" -j"$jobs"
 
 export PATH="$work/buildroot/output/host/bin:$PATH"
+# Host utilities must not inherit the target's elf2flt linker flags.
+export HOST_CFLAGS=-O2 HOST_LDFLAGS=-Wl,--as-needed
 cd "$src"
 make autotools
 CC=riscv64-buildroot-linux-uclibc-gcc \
