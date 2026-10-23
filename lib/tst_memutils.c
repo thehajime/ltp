@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <sys/sysinfo.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
@@ -85,6 +86,65 @@ void tst_pollute_memory(size_t maxsize, int fillchar)
 	free(map_blocks);
 }
 
+/*
+ * Bound the host estimate by the visible cgroup-v2 hierarchy. A private
+ * cgroup namespace cannot expose a hidden ancestor's limit, so containers
+ * running memory-pressure tests should have an explicit memory limit.
+ */
+static unsigned long long cgroup2_available_memory(unsigned long long available)
+{
+	char line[PATH_MAX], path[PATH_MAX - 32], file[PATH_MAX];
+	const size_t root_len = sizeof("/sys/fs/cgroup") - 1;
+	unsigned long long limit, used;
+	FILE *fp;
+	char *end;
+
+	if (access("/sys/fs/cgroup/cgroup.controllers", F_OK))
+		return available;
+
+	fp = fopen("/proc/self/cgroup", "r");
+	if (!fp)
+		return available;
+
+	path[0] = 0;
+	while (fgets(line, sizeof(line), fp)) {
+		if (strncmp(line, "0::/", 4))
+			continue;
+		line[strcspn(line, "\n")] = 0;
+		if (snprintf(path, sizeof(path), "/sys/fs/cgroup%s", line + 3)
+		    >= (int)sizeof(path))
+			path[0] = 0;
+		break;
+	}
+	fclose(fp);
+	if (!path[0])
+		return available;
+	end = path + strlen(path) - 1;
+	if (*end == '/')
+		*end = 0;
+
+	/* Check every visible ancestor, including the namespace's root. */
+	while (strlen(path) >= root_len) {
+		snprintf(file, sizeof(file), "%s/memory.max", path);
+		fp = fopen(file, "r");
+		if (fp) {
+			int finite = fscanf(fp, "%llu", &limit) == 1;
+
+			fclose(fp);
+			if (finite) {
+				snprintf(file, sizeof(file), "%s/memory.current", path);
+				SAFE_FILE_SCANF(file, "%llu", &used);
+				available = MIN(available, used < limit ? limit - used : 0);
+			}
+		}
+		end = strrchr(path, '/');
+		if (!end || (size_t)(end - path) < root_len)
+			break;
+		*end = 0;
+	}
+	return available;
+}
+
 long long tst_available_mem(void)
 {
 	unsigned long long mem_available = 0;
@@ -95,7 +155,7 @@ long long tst_available_mem(void)
 			+ SAFE_READ_MEMINFO("Cached:");
 	}
 
-	return mem_available;
+	return cgroup2_available_memory(mem_available * 1024) / 1024;
 }
 
 long long tst_available_swap(void)
