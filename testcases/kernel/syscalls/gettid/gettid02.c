@@ -59,6 +59,14 @@ static void run(void)
 		tst_res(TPASS, "All threads have a different TID");
 }
 
+static void setup(void)
+{
+	/* Buildroot uClibc NOMMU pthreads share a PID instead of distinct TIDs. */
+	if (tst_is_nommu())
+		tst_brk(TCONF, "NOMMU pthread implementation does not provide distinct TIDs");
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = run,
 };

@@ -50,6 +50,8 @@
 #include "test.h"
 #include "tso_safe_macros.h"
 #include "lapi/fcntl.h"
+#include "lapi/syscalls.h"
+#include <sys/syscall.h>
 
 #define MNTPOINT "mntpoint"
 #define TESTDIR "testdir"
@@ -193,7 +195,7 @@ static void renameat_verify(const struct test_case_t *tc)
 		return;
 	}
 
-	TEST(renameat(*(tc->oldfdptr), tc->oldpath,
+	TEST(syscall(__NR_renameat, *(tc->oldfdptr), tc->oldpath,
 			*(tc->newfdptr), tc->newpath));
 
 	if (tc->exp_errno && TEST_RETURN != -1) {
@@ -216,8 +218,8 @@ static void renameat_verify(const struct test_case_t *tc)
 			strerror(tc->exp_errno));
 	}
 
-	if (TEST_ERRNO == 0 && renameat(*(tc->newfdptr), tc->newpath,
-		*(tc->oldfdptr), tc->oldpath) < 0) {
+	if (TEST_ERRNO == 0 && syscall(__NR_renameat, *(tc->newfdptr),
+		tc->newpath, *(tc->oldfdptr), tc->oldpath) < 0) {
 		tst_brkm(TBROK | TERRNO, cleanup, "renameat(%d, %s, "
 			"%d, %s) failed.", *(tc->newfdptr), tc->newpath,
 			*(tc->oldfdptr), tc->oldpath);

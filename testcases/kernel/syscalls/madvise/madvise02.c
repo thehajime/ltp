@@ -41,7 +41,7 @@
 #include <unistd.h>
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 #define MAP_SIZE (4 * 1024)
 #define TEST_FILE "testfile"

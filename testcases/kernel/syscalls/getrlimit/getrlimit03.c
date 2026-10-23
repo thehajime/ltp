@@ -19,6 +19,8 @@
  * RLIM_INFINITY constant.
  */
 
+#define _LARGEFILE64_SOURCE
+
 #include <inttypes.h>
 #include <stdint.h>
 #include <sys/time.h>

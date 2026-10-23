@@ -12,6 +12,8 @@
  * http://www.securityfocus.com/bid/55855/info
  */
 
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <sys/utsname.h>
 #include "tst_test.h"

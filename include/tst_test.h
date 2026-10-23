@@ -169,6 +169,8 @@ pid_t safe_fork(const char *filename, unsigned int lineno);
 		pid_; \
 	})
 /* NOMMU kernels may not support fork(), so use vfork() at runtime. */
+/* Strict POSIX feature profiles can hide the libc declaration. */
+extern pid_t vfork(void);
 #define fork() (tst_is_nommu() ? vfork() : fork())
 /**
  * SAFE_EXIT - Exit using the NOMMU-safe function when needed.

@@ -43,6 +43,8 @@
 #include "tst_test.h"
 #include "fcntl_common.h"
 
+#if HAVE_PTHREAD_BARRIER
+
 static int thread_cnt;
 static int fail_flag = 0;
 static volatile int loop_flag = 1;
@@ -393,3 +395,16 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup
 };
+
+#else
+
+static void tconf(void)
+{
+	tst_brk(TCONF, "pthread barriers are not supported");
+}
+
+static struct tst_test test = {
+	.test_all = tconf,
+};
+
+#endif

@@ -109,5 +109,7 @@ static struct tst_test test = {
 	.test_variants = ARRAY_SIZE(variants),
 	.setup = setup,
 	.needs_root = 1,
+	/* NOMMU UML rejects clock_settime and cannot restore wall-clock state. */
+	.needs_mmu = 1,
 	.restore_wallclock = 1,
 };

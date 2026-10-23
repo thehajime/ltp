@@ -46,4 +46,5 @@ static void do_test(unsigned int n)
 static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(siglist),
 	.test = do_test,
+	.needs_mmu = 1,
 };

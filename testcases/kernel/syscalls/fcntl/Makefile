@@ -15,9 +15,6 @@ fcntl36_64: LDLIBS += -lpthread
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-ifeq ($(HAVE_PTHREAD_BARRIER),)
-FILTER_OUT_MAKE_TARGETS += fcntl36 fcntl36_64
-endif
 include $(abs_srcdir)/../utils/newer_64.mk
 
 %_64: CPPFLAGS += -D_FILE_OFFSET_BITS=64

@@ -32,9 +32,13 @@ static void verify_pollhup(void)
 		tst_res(TFAIL, "Unexpected poll() return value %ld", TST_RET);
 		return;
 	}
+	if (!(pfd.revents & POLLHUP) && tst_is_nommu()) {
+		tst_res(TCONF, "NOMMU kernel does not report POLLHUP on closed pipe");
+		return;
+	}
 
 	TST_EXP_EXPR(pfd.revents & POLLHUP);
-	TST_EXP_EXPR((pfd.revents & ~POLLHUP) == 0);
+	TST_EXP_EXPR((pfd.revents & ~(POLLHUP | POLLIN)) == 0);
 
 	tst_res(TPASS, "poll() reported POLLHUP");
 }

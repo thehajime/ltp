@@ -97,6 +97,8 @@ static struct tst_test test = {
 	.test_all = verify_inotify,
 	.runtime = 150,
 	.min_runtime = 2,
+	/* The fuzzy race needs independent worker state unavailable on NOMMU. */
+	.needs_mmu = 1,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "d90a10e2444ba5a351fa695917258ff4c5709fa5"},
 		{}

@@ -170,6 +170,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
+	.needs_mmu = 1,
 	.runtime = 300,
 	.min_runtime = 30,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,

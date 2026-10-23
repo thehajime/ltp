@@ -147,6 +147,8 @@ void tst_old_flush(void);
 pid_t tst_fork(void);
 
 /* Use vfork() on NOMMU where fork() may not be available. */
+/* Strict POSIX feature profiles can hide the libc declaration. */
+extern pid_t vfork(void);
 #define fork() (tst_is_nommu() ? vfork() : fork())
 
 /* lib/tst_res.c */

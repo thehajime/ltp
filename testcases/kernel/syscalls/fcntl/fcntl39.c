@@ -20,7 +20,7 @@
 #define	TEST_DIR2	"test_dir2"
 #define	TEST_FILE	"test_file"
 
-#define TEST_SIG (SIGRTMIN+1)
+#define TEST_SIG (SIGRTMIN+2)
 
 static int parent_fd, subdir_fd;
 static int got_parent_event, got_subdir_event;
@@ -127,4 +127,6 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = verify_dnotify,
 	.needs_kconfigs = (const char *[]) { "CONFIG_DNOTIFY=y", NULL },
+	/* NOMMU test runners share signal dispositions with their parent. */
+	.needs_mmu = 1,
 };

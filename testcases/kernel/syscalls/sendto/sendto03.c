@@ -194,6 +194,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.needs_mmu = 1,
 	.test = run,
 	.tcnt = ARRAY_SIZE(testcase_list),
 	.setup = setup,

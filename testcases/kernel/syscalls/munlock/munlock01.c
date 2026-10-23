@@ -43,6 +43,7 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.needs_root = 1,
+	.needs_mmu = 1,
 	.test = verify_munlock,
 	.tcnt = ARRAY_SIZE(tcases),
 	.cleanup = cleanup,

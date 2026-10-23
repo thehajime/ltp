@@ -24,6 +24,9 @@
 
 static void setup(void)
 {
+#ifdef __UCLIBC__
+	tst_brk(TCONF, "realpath() error handling differs in uClibc");
+#endif
 	SAFE_MKDIR(CHROOT_DIR, 0755);
 	SAFE_CHROOT(CHROOT_DIR);
 }

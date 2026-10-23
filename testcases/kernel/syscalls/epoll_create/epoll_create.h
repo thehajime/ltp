@@ -24,6 +24,9 @@ static int do_epoll_create(int size)
 
 static void variant_info(void)
 {
+	if (__NR_epoll_create == __LTP__NR_INVALID_SYSCALL)
+		tst_brk(TCONF, "epoll_create legacy syscall is unavailable on this arch");
+
 	switch (tst_variant) {
 	case 0:
 		tst_res(TINFO, "Testing variant: syscall __NR_epoll_create");

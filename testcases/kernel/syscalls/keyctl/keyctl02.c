@@ -156,6 +156,8 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.runtime = 60,
 	.test_all = do_test,
+	/* NOMMU pthread cleanup can leave the test runner's shell blocked. */
+	.needs_mmu = 1,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "b4a1b4f5047e4f54e194681125c74c0aa64d637d"},
 		{"CVE", "2015-7550"},

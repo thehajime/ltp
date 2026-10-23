@@ -7,8 +7,4 @@ nice05: CFLAGS += -pthread
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-ifeq ($(HAVE_PTHREAD_BARRIER),)
-FILTER_OUT_MAKE_TARGETS += nice05
-endif
-
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

@@ -10,6 +10,7 @@
  */
 
 #include "tst_test.h"
+#include "lapi/madvise.h"
 
 #define MAP_SIZE (8 * 1024)
 

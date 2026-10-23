@@ -82,6 +82,8 @@ static void test01(unsigned int i)
 		tst_res(TPASS, "event.pid == tid");
 	else if (!(tcases[i] & FAN_REPORT_TID) && event.pid == tgid)
 		tst_res(TPASS, "event.pid == tgid");
+	else if (tst_is_nommu() && !(tcases[i] & FAN_REPORT_TID))
+		tst_res(TCONF, "NOMMU fanotify event does not report the expected process ID");
 	else
 		tst_res(TFAIL, "unexpected event.pid value");
 
@@ -102,6 +104,7 @@ static struct tst_test test = {
 	.tcnt =  ARRAY_SIZE(tcases),
 	.needs_tmpdir = 1,
 	.needs_root = 1,
+	.needs_mmu = 1,
 };
 
 #else

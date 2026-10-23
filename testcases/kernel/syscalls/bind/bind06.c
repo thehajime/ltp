@@ -91,6 +91,8 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
+	/* The race test requires pthreads, which are not usable on NOMMU uClibc. */
+	.needs_mmu = 1,
 	.min_runtime = 300,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.needs_kconfigs = (const char *[]) {

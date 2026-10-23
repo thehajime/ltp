@@ -20,7 +20,7 @@
 #include <unistd.h>
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 #define TMP_DIR "tmp_madvise"
 #define TEST_FILE TMP_DIR"/testfile"

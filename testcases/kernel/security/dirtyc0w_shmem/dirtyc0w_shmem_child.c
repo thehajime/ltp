@@ -17,6 +17,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include "lapi/madvise.h"
 #include <sys/syscall.h>
 #include <sys/ioctl.h>
 

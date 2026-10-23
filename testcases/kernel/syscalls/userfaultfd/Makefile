@@ -9,10 +9,6 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-ifeq ($(UCLIBC),1)
-FILTER_OUT_MAKE_TARGETS += userfaultfd06 userfaultfd07
-endif
-
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
 
 userfaultfd01: CFLAGS += -pthread

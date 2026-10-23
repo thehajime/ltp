@@ -43,7 +43,7 @@
 #include <ctype.h>
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 static size_t page_size;
 static int sleep_between_faults;

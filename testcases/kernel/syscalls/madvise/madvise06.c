@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <sys/mount.h>
 #include "tst_test.h"
+#include "lapi/madvise.h"
 
 #define CHUNK_SZ (400*1024*1024L)
 #define MEM_LIMIT (CHUNK_SZ / 2)

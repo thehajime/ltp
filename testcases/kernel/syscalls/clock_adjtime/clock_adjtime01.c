@@ -255,4 +255,6 @@ static struct tst_test test = {
 	.test_variants = ARRAY_SIZE(variants),
 	.needs_root = 1,
 	.restore_wallclock = 1,
+	/* NOMMU UML cannot restore the wall clock after ADJ_TICK changes. */
+	.needs_mmu = 1,
 };

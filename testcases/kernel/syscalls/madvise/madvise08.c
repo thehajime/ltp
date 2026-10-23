@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #include "tst_test.h"
-#include "lapi/mmap.h"
+#include "lapi/madvise.h"
 
 #define CORE_FILTER "/proc/self/coredump_filter"
 #define YCOUNT 0x500L

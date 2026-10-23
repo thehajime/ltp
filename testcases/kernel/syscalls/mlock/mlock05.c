@@ -109,4 +109,5 @@ static void verify_mlock(void)
 
 static struct tst_test test = {
 	.test_all = verify_mlock,
+	.needs_mmu = 1,
 };

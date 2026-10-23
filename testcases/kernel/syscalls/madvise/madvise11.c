@@ -23,6 +23,7 @@
 #include <sys/klog.h>
 
 #include "tst_test.h"
+#include "lapi/madvise.h"
 #include "tst_safe_pthread.h"
 #include "tst_safe_stdio.h"
 #include "lapi/mmap.h"

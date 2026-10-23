@@ -158,5 +158,4 @@ static struct tst_test test = {
 	.setup = setup,
 	.tcnt = ARRAY_SIZE(tc),
 	.needs_root = 1,
-	.restore_wallclock = 1,
 };

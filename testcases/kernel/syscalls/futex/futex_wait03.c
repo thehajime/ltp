@@ -70,4 +70,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = run,
 	.test_variants = ARRAY_SIZE(variants),
+	.needs_mmu = 1,
 };

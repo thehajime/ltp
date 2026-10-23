@@ -142,6 +142,9 @@ static void test_efault_on_invalid_sigset(void)
 {
 	/* set sigset to point to an invalid location */
 	sigset_t *sigset = tst_get_bad_addr(NULL);
+	int exp_errno = EFAULT;
+
+	NOMMU_EFAULT_REQUIRED(&exp_errno, 1, return);
 
 	TEST(tested_sigpending(sigset));
 

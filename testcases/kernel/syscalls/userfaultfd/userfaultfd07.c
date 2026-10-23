@@ -17,6 +17,7 @@
 #include "tst_safe_prw.h"
 #include "tst_safe_pthread.h"
 #include "lapi/memfd.h"
+#include "lapi/madvise.h"
 #include "lapi/userfaultfd.h"
 #include "lapi/syscalls.h"
 
@@ -144,6 +145,7 @@ static void run(void)
 }
 
 static struct tst_test test = {
+	.needs_mmu = 1,
 	.setup = setup,
 	.test_all = run,
 	/*
