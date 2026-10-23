@@ -10,7 +10,9 @@ static int my_sigtimedwait(const sigset_t * set, siginfo_t * info,
 }
 
 struct sigwait_test_desc tests[] = {
-	{ tse_empty_set, SIGUSR1},
+	/* EINTR-only empty-set waits are tested by rt_sigtimedwait01.
+	 * libc may retry EINTR indefinitely (for example musl).
+	 */
 	{ tse_unmasked_matching, SIGUSR1},
 	{ tse_masked_matching, SIGUSR1},
 	{ tse_unmasked_matching_noinfo, SIGUSR1},
