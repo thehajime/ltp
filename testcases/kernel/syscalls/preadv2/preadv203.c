@@ -46,6 +46,7 @@
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
 #include "lapi/uio.h"
+#include "lapi/syncfs.h"
 
 #define CHUNK_SZ 4123
 #define CHUNKS 60
@@ -203,6 +204,9 @@ static void verify_preadv2(void)
 
 	stop = 0;
 
+	/* drop_caches cannot evict the dirty pages written by setup(). */
+	if (syncfs(fds[0]))
+		tst_brk(TBROK | TERRNO, "syncfs() before dropping setup cache");
 	drop_caches();
 
 	SAFE_PTHREAD_CREATE(&dropper, NULL, cache_dropper, NULL);
