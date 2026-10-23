@@ -323,8 +323,14 @@ static int clear_loop_device_partitions(const char *dev)
 {
 	char part_path[PATH_MAX];
 	struct loop_info loopinfo = {};
-	int dev_fd;
+	int dev_fd, i;
 
+	/* Device managers remove partition nodes asynchronously after detach. */
+	for (i = 0; i < 40; i++) {
+		if (!find_loop_device_partition(dev, part_path, PATH_MAX))
+			return 0;
+		usleep(50000);
+	}
 	if (!find_loop_device_partition(dev, part_path, PATH_MAX))
 		return 0;
 
