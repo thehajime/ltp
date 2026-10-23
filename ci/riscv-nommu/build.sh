@@ -55,12 +55,13 @@ date -u -s '$(date -u '+%Y-%m-%d %H:%M:%S')'
 EOF
 chmod +x "$stage/etc/init.d/S00ltpclock"
 
-# fakeroot preserves target ownership without running tests or builds as root.
+# Use the matching Buildroot fakeroot and e2fsprogs. Its fakeroot prepends
+# host/lib to LD_LIBRARY_PATH, which is incompatible with the runner's mke2fs.
 export stage work
-fakeroot -- sh -eu -c '
+"$work/buildroot/output/host/bin/fakeroot" -- sh -eu -c '
 	chown -R 0:0 "$stage"
 	truncate -s 2G "$work/rootfs.ext4"
-	mke2fs -q -F -t ext4 -O ^has_journal -E root_owner=0:0 -d "$stage" "$work/rootfs.ext4"
+	"$work/buildroot/output/host/sbin/mkfs.ext4" -q -F -O ^has_journal -E root_owner=0:0 -d "$stage" "$work/rootfs.ext4"
 '
 
 if [ ! -d "$work/kirk/.git" ]; then
