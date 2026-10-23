@@ -1,2 +1,3 @@
 # Keep the validation dependencies despite the repository-wide *.patch rule.
 !*.patch
+!patches/

@@ -1,0 +1,75 @@
+diff --git a/libc/sysdeps/linux/common/bits/msq.h b/libc/sysdeps/linux/common/bits/msq.h
+index c54d5ff..5109e24 100644
+--- a/libc/sysdeps/linux/common/bits/msq.h
++++ b/libc/sysdeps/linux/common/bits/msq.h
+@@ -46,11 +46,17 @@ struct msqid_ds
+   unsigned long int msg_ctime_internal_2;
+ #else
+   __time_t msg_stime;		/* time of last msgsnd command */
++#if __WORDSIZE == 32
+   unsigned long int __uclibc_unused1;
++#endif
+   __time_t msg_rtime;		/* time of last msgrcv command */
++#if __WORDSIZE == 32
+   unsigned long int __uclibc_unused2;
++#endif
+   __time_t msg_ctime;		/* time of last change */
++#if __WORDSIZE == 32
+   unsigned long int __uclibc_unused3;
++#endif
+ #endif
+   unsigned long int __msg_cbytes; /* current number of bytes on queue */
+   msgqnum_t msg_qnum;		/* number of messages currently on queue */
+diff --git a/libc/sysdeps/linux/common/bits/sem.h b/libc/sysdeps/linux/common/bits/sem.h
+index 526608b..f13b706 100644
+--- a/libc/sysdeps/linux/common/bits/sem.h
++++ b/libc/sysdeps/linux/common/bits/sem.h
+@@ -46,7 +46,7 @@ struct semid_ds
+   __time_t sem_otime;			/* last semop() time */
+ #endif
+ #if (__WORDSIZE == 32 && !defined(__ARC64_ARCH32__) && !defined(__arc__) && !defined(__arm__) && !defined(__or1k__) && !defined(__xtensa__) && !defined(__riscv) && !defined(__csky__) && !defined(__i386__) && !defined(__microblaze__) && !defined(__m68k__)) || \
+-    ((defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__microblaze__) || defined(__m68k__)) && !defined(__UCLIBC_USE_TIME64__))
++    (__WORDSIZE == 32 && (defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__microblaze__) || defined(__m68k__)) && !defined(__UCLIBC_USE_TIME64__))
+   unsigned long int __uclibc_unused1;
+ #endif
+ #if defined(__UCLIBC_USE_TIME64__)
+@@ -56,7 +56,7 @@ struct semid_ds
+   __time_t sem_ctime;			/* last time changed by semctl() */
+ #endif
+ #if (__WORDSIZE == 32 && !defined(__ARC64_ARCH32__) && !defined(__arc__) && !defined(__arm__) && !defined(__or1k__) && !defined(__xtensa__) && !defined(__riscv) && !defined(__csky__) && !defined(__i386__) && !defined(__microblaze__) && !defined(__m68k__)) || \
+-    ((defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__microblaze__) || defined(__m68k__)) && !defined(__UCLIBC_USE_TIME64__))
++    (__WORDSIZE == 32 && (defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__microblaze__) || defined(__m68k__)) && !defined(__UCLIBC_USE_TIME64__))
+   unsigned long int __uclibc_unused2;
+ #endif
+   unsigned long int sem_nsems;		/* number of semaphores in set */
+diff --git a/libc/sysdeps/linux/common/bits/shm.h b/libc/sysdeps/linux/common/bits/shm.h
+index 313ef79..b3da094 100644
+--- a/libc/sysdeps/linux/common/bits/shm.h
++++ b/libc/sysdeps/linux/common/bits/shm.h
+@@ -56,7 +56,7 @@ struct shmid_ds
+     __time_t shm_atime;			/* time of last shmat() */
+ #endif
+ #if (__WORDSIZE == 32 && !defined(__ARC64_ARCH32__) && !defined(__arc__) && !defined(__arm__) && !defined(__or1k__) && !defined(__xtensa__) && !defined(__riscv) && !defined(__csky__) && !defined(__i386__) && !defined(__m68k__) && !defined(__microblaze__)) || \
+-    ((defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
++    (__WORDSIZE == 32 && (defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
+     unsigned long int __uclibc_unused1;
+ #endif
+ #if defined(__UCLIBC_USE_TIME64__)
+@@ -66,7 +66,7 @@ struct shmid_ds
+     __time_t shm_dtime;			/* time of last shmdt() */
+ #endif
+ #if (__WORDSIZE == 32 && !defined(__ARC64_ARCH32__) && !defined(__arc__) && !defined(__arm__) && !defined(__or1k__) && !defined(__xtensa__) && !defined(__riscv) && !defined(__csky__) && !defined(__i386__) && !defined(__m68k__) && !defined(__microblaze__)) || \
+-    ((defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
++    (__WORDSIZE == 32 && (defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
+     unsigned long int __uclibc_unused2;
+ #endif
+ #if defined(__UCLIBC_USE_TIME64__)
+@@ -76,7 +76,7 @@ struct shmid_ds
+     __time_t shm_ctime;			/* time of last change by shmctl() */
+ #endif
+ #if (__WORDSIZE == 32 && !defined(__ARC64_ARCH32__) && !defined(__arc__) && !defined(__arm__) && !defined(__or1k__) && !defined(__xtensa__) && !defined(__riscv) && !defined(__csky__) && !defined(__i386__) && !defined(__m68k__) && !defined(__microblaze__)) || \
+-    ((defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
++    (__WORDSIZE == 32 && (defined(__ARC64_ARCH32__) || defined(__arc__) || defined(__arm__) || defined(__or1k__) || defined(__xtensa__) || defined(__riscv) || defined(__csky__) || defined(__i386__) || defined(__m68k__) || defined(__microblaze__)) && !defined(__UCLIBC_USE_TIME64__))
+     unsigned long int __uclibc_unused3;
+ #endif
+     __pid_t shm_cpid;			/* pid of creator */
