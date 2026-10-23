@@ -28,7 +28,17 @@ static void run(unsigned int i)
 		"sbrk(%ld) returned %p", tc->increment, TST_RET_PTR);
 }
 
+static void setup(void)
+{
+	void *current_break = sbrk(0);
+
+	/* Match brk01's non-mutating libc capability probe. */
+	if (current_break == (void *)-1 || brk(current_break))
+		tst_brk(TCONF, "libc does not implement program-break updates");
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.test = run,
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_mmu = 1,
