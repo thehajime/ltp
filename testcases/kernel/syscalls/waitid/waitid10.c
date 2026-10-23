@@ -67,6 +67,7 @@ static void setup(void)
 }
 
 static struct tst_test test = {
+	.needs_kconfigs = (const char *[]) { "CONFIG_COREDUMP=y", NULL },
 	.test_all = run,
 	.forks_child = 1,
 	.setup = setup,
