@@ -90,7 +90,7 @@ static void verify_recvmmsg(unsigned int i, void *timeout)
 static void test_bad_addr(unsigned int i)
 {
 	struct time64_variants *tv = &variants[tst_variant];
-	void *timeout = bad_addr;
+	void *timeout = tcase[i].bad_ts_addr ? bad_addr : tst_ts_get(&ts);
 	pid_t pid;
 	int status;
 
@@ -118,7 +118,8 @@ static void do_test(unsigned int i)
 {
 	struct test_case *tc = &tcase[i];
 
-	if (tc->bad_ts_addr)
+	/* libc may dereference either argument before entering the kernel. */
+	if (tc->bad_ts_addr || tc->msg_vec == (void *)&bad_addr)
 		test_bad_addr(i);
 	else
 		verify_recvmmsg(i, tst_ts_get(&ts));
