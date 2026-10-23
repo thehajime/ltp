@@ -42,6 +42,8 @@ static struct tcase {
 
 static void setup(void)
 {
+	/* Detect an unavailable syscall before a CLONE_VM child uses cleanup. */
+	kcmp(getpid(), getpid(), KCMP_VM, 0, 0);
 	stack = SAFE_MALLOC(STACK_SIZE);
 }
 
