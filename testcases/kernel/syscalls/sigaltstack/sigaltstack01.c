@@ -74,6 +74,7 @@
 #include <string.h>
 #include <ucontext.h>
 #include <errno.h>
+#include <sys/auxv.h>
 
 #include "test.h"
 
@@ -86,6 +87,7 @@ pid_t my_pid;			/* test process id */
 
 stack_t sigstk, osigstk;	/* signal stack storing struct. */
 struct sigaction act, oact;	/* sigaction() struct. */
+size_t stack_size = SIGSTKSZ;
 
 void setup(void);		/* Main setup function of test */
 void cleanup(void);		/* cleanup function for the test */
@@ -105,7 +107,7 @@ int main(int ac, char **av)
 		tst_count = 0;
 
 		/* Call sigaltstack() to set up an alternate stack */
-		sigstk.ss_size = SIGSTKSZ;
+		sigstk.ss_size = stack_size;
 		sigstk.ss_flags = 0;
 		TEST(sigaltstack(&sigstk, &osigstk));
 
@@ -143,13 +145,13 @@ int main(int ac, char **av)
 			 * alternate stk boundaries.
 			 */
 			if ((alt_stk < sigstk.ss_sp) ||
-			    (alt_stk > (sigstk.ss_sp + SIGSTKSZ))) {
+			    (alt_stk > (sigstk.ss_sp + stack_size))) {
 				tst_resm(TFAIL,
 					 "alt. stack is not within the "
 					 "alternate stk boundaries");
 			} else if ((main_stk >= sigstk.ss_sp) &&
 				   (main_stk <=
-				    (sigstk.ss_sp + SIGSTKSZ))) {
+				    (sigstk.ss_sp + stack_size))) {
 				tst_resm(TFAIL,
 					 "main stk. not outside the "
 					 "alt. stack boundaries");
@@ -176,6 +178,17 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
+#ifdef AT_MINSIGSTKSZ
+	unsigned long min_stack_size = getauxval(AT_MINSIGSTKSZ);
+
+	/*
+	 * SIGSTKSZ is a compile-time constant in this legacy test.  Kernels on
+	 * hosts with large XSAVE state can advertise a larger signal-frame
+	 * minimum and reject that constant with ENOMEM.
+	 */
+	if (min_stack_size >= stack_size)
+		stack_size += min_stack_size;
+#endif
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -201,7 +214,7 @@ void setup(void)
 	main_stk = addr;
 
 	/* Allocate memory for the alternate stack */
-	if ((sigstk.ss_sp = malloc(SIGSTKSZ)) == NULL) {
+	if ((sigstk.ss_sp = malloc(stack_size)) == NULL) {
 		tst_brkm(TFAIL, cleanup,
 			 "could not allocate memory for the alternate stack");
 	}
