@@ -147,8 +147,10 @@ int main(int ac, char **av)
 			if ((alt_stk < sigstk.ss_sp) ||
 			    (alt_stk > (sigstk.ss_sp + stack_size))) {
 				tst_resm(TFAIL,
-					 "alt. stack is not within the "
-					 "alternate stk boundaries");
+					 "alt. stack %p is not within the "
+					 "alternate stk boundaries [%p, %p]",
+					 alt_stk, sigstk.ss_sp,
+					 sigstk.ss_sp + stack_size);
 			} else if ((main_stk >= sigstk.ss_sp) &&
 				   (main_stk <=
 				    (sigstk.ss_sp + stack_size))) {
