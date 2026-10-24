@@ -74,6 +74,7 @@
 #include <string.h>
 #include <ucontext.h>
 #include <errno.h>
+#include <stdint.h>
 #include <sys/auxv.h>
 
 #include "test.h"
@@ -81,7 +82,7 @@
 char *TCID = "sigaltstack01";
 int TST_TOTAL = 1;
 
-void *addr, *main_stk;		/* address of main stack for signal */
+uintptr_t addr, main_stk;	/* address of main stack for signal */
 int got_signal = 0;
 pid_t my_pid;			/* test process id */
 
@@ -96,11 +97,14 @@ void sig_handler(int);		/* signal catching function */
 int main(int ac, char **av)
 {
 	int lc;
-	void *alt_stk;		/* address of alternate stack for signal */
+	uintptr_t alt_stk;	/* address of alternate stack for signal */
+	uintptr_t stack_start, stack_end;
 
 	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
+	stack_start = (uintptr_t)sigstk.ss_sp;
+	stack_end = stack_start + stack_size;
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -144,16 +148,15 @@ int main(int ac, char **av)
 			 * Check that main_stk is outside the
 			 * alternate stk boundaries.
 			 */
-			if ((alt_stk < sigstk.ss_sp) ||
-			    (alt_stk > (sigstk.ss_sp + stack_size))) {
+			if ((alt_stk < stack_start) ||
+			    (alt_stk >= stack_end)) {
 				tst_resm(TFAIL,
 					 "alt. stack %p is not within the "
-					 "alternate stk boundaries [%p, %p]",
-					 alt_stk, sigstk.ss_sp,
-					 sigstk.ss_sp + stack_size);
-			} else if ((main_stk >= sigstk.ss_sp) &&
-				   (main_stk <=
-				    (sigstk.ss_sp + stack_size))) {
+					 "alternate stk boundaries [%p, %p)",
+					 (void *)alt_stk, (void *)stack_start,
+					 (void *)stack_end);
+			} else if ((main_stk >= stack_start) &&
+				   (main_stk < stack_end)) {
 				tst_resm(TFAIL,
 					 "main stk. not outside the "
 					 "alt. stack boundaries");
@@ -235,7 +238,7 @@ void sig_handler(int n)
 	int i;
 
 	(void) n;
-	addr = &i;
+	addr = (uintptr_t)&i;
 	got_signal = 1;
 }
 
