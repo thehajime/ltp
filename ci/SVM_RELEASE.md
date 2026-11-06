@@ -26,6 +26,10 @@ container image must use a registry digest (`name@sha256:...`) or a local
 content ID (`sha256:...`); mutable tags are rejected. The runner overrides the
 image entrypoint with `sh`, so a preloaded self-hosted-runner image cannot
 start its registration process during the payload build.
+The build entrypoint supports Alpine (`apk`) and Ubuntu/Debian (`apt-get`)
+images, then drops to the invoking host UID/GID before compiling. This permits
+the glibc-hosted ARM Buildroot compiler to run without weakening the existing
+non-root output and cache boundary.
 
 ```json
 {

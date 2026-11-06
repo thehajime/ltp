@@ -26,18 +26,40 @@ esac
 [ "${#SVM_UAPI_SHA256}" -eq 64 ]
 
 if [ "$(id -u)" -eq 0 ]; then
-	apk add --no-cache alpine-sdk ccache autoconf automake m4 bison flex \
-		findutils linux-headers perl python3 > "$svm_output/dependencies.log" 2>&1
 	: "${SVM_BUILD_UID:?non-root output UID required}"
 	: "${SVM_BUILD_GID:?non-root output GID required}"
-	group=$(awk -F: -v gid="$SVM_BUILD_GID" '$3 == gid {print $1; exit}' /etc/group)
-	[ -n "$group" ] || { addgroup -g "$SVM_BUILD_GID" svm-ltp; group=svm-ltp; }
-	user=$(awk -F: -v uid="$SVM_BUILD_UID" '$3 == uid {print $1; exit}' /etc/passwd)
-	[ -n "$user" ] || { adduser -D -H -u "$SVM_BUILD_UID" -G "$group" svm-ltp; user=svm-ltp; }
+	if command -v apk >/dev/null 2>&1; then
+		apk add --no-cache alpine-sdk ccache autoconf automake m4 bison flex \
+			findutils linux-headers perl python3 > "$svm_output/dependencies.log" 2>&1
+		group=$(awk -F: -v gid="$SVM_BUILD_GID" '$3 == gid {print $1; exit}' /etc/group)
+		[ -n "$group" ] || { addgroup -g "$SVM_BUILD_GID" svm-ltp; group=svm-ltp; }
+		user=$(awk -F: -v uid="$SVM_BUILD_UID" '$3 == uid {print $1; exit}' /etc/passwd)
+		[ -n "$user" ] || { adduser -D -H -u "$SVM_BUILD_UID" -G "$group" svm-ltp; user=svm-ltp; }
+	else
+		command -v apt-get >/dev/null 2>&1 || {
+			echo "supported package manager not found" >&2; exit 2;
+		}
+		apt-get update > "$svm_output/dependencies.log" 2>&1
+		apt-get install -y --no-install-recommends build-essential ccache \
+			autoconf automake m4 bison flex findutils linux-libc-dev perl python3 \
+			>> "$svm_output/dependencies.log" 2>&1
+		group=$(getent group "$SVM_BUILD_GID" | cut -d: -f1)
+		[ -n "$group" ] || { groupadd -g "$SVM_BUILD_GID" svm-ltp; group=svm-ltp; }
+		user=$(getent passwd "$SVM_BUILD_UID" | cut -d: -f1)
+		[ -n "$user" ] || {
+			useradd -M -u "$SVM_BUILD_UID" -g "$group" -s /bin/sh svm-ltp
+			user=svm-ltp
+		}
+	fi
 	cache_gid=$(stat -c %g "$CCACHE_DIR")
 	cache_group=$(awk -F: -v gid="$cache_gid" '$3 == gid {print $1; exit}' /etc/group)
-	[ -n "$cache_group" ] || { addgroup -g "$cache_gid" svm-cache; cache_group=svm-cache; }
-	addgroup "$user" "$cache_group"
+	if [ -z "$cache_group" ]; then
+		if command -v apk >/dev/null 2>&1; then addgroup -g "$cache_gid" svm-cache;
+		else groupadd -g "$cache_gid" svm-cache; fi
+		cache_group=svm-cache
+	fi
+	if command -v apk >/dev/null 2>&1; then addgroup "$user" "$cache_group";
+	else usermod -a -G "$cache_group" "$user"; fi
 	export SVM_RELEASE_BUILDER=$0
 	exec su -s /bin/sh "$user" -c \
 		'exec sh "$SVM_RELEASE_BUILDER" "$1" "$2"' sh "$svm_source" "$svm_output"
