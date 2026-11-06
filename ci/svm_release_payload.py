@@ -18,6 +18,11 @@ ARCHITECTURES = ("x86_64", "arm")
 SCHEMA = 1
 
 
+def is_hex_digest(value, length):
+    return (isinstance(value, str) and len(value) == length and
+            set(value) <= set("0123456789abcdef"))
+
+
 def digest(path):
     value = hashlib.sha256()
     with path.open("rb") as stream:
@@ -70,16 +75,34 @@ def deterministic_archive(root, output):
 
 def source_contract(source_manifest):
     data = json.loads(source_manifest.read_text())
+    integration_patches = data.get("integration_patch_decisions", [])
     if (data.get("schema_version") != 1 or
             data.get("base", {}).get("commit") !=
             "1bb350a1cd55501173e33f1836a674494f2cb48b" or
-            len(data.get("fix_nommu_decisions", [])) != 7):
+            len(data.get("fix_nommu_decisions", [])) != 7 or
+            len(integration_patches) != 6 or
+            {row.get("name") for row in integration_patches} != {
+                "ltp-madvise11-void-ptrs.patch",
+                "ltp-nommu-config-results.patch",
+                "ltp-musl-syscall-errors.patch",
+                "sigevent-thread-id.patch",
+                "kernel-7.4-test-compat.patch",
+                "kconfig-constant-length.patch",
+            } or
+            any(row.get("decision") not in {"selected", "already_present"}
+                or not is_hex_digest(row.get("sha256"), 64)
+                or not row.get("result_commits")
+                or not all(is_hex_digest(commit, 40)
+                           for commit in row["result_commits"])
+                for row in integration_patches)):
         raise RuntimeError("unexpected source composition manifest")
     return {"manifest_sha256": digest(source_manifest),
             "base_commit": data["base"]["commit"],
             "selected_commits": [row["result_commit"] for row in
                                  data["fix_nommu_decisions"]
-                                 if row["decision"] == "selected"]}
+                                 if row["decision"] == "selected"],
+            "integration_commits": [commit for row in integration_patches
+                                    for commit in row["result_commits"]]}
 
 
 def create(args):
@@ -87,10 +110,9 @@ def create(args):
     output = args.output.resolve()
     if root.is_symlink() or not root.is_dir() or output.exists():
         raise RuntimeError("use a real install root and fresh output directory")
-    if (len(args.source_commit) != 40 or
-            not set(args.source_commit) <= set("0123456789abcdef")):
+    if not is_hex_digest(args.source_commit, 40):
         raise RuntimeError("source commit must be a full hexadecimal object name")
-    if not all(len(value) == 64 and set(value) <= set("0123456789abcdef")
+    if not all(is_hex_digest(value, 64)
                for value in (args.libc_sha256, args.uapi_sha256)):
         raise RuntimeError("libc and UAPI digests must be SHA-256 values")
     output.mkdir(parents=True)
@@ -125,17 +147,25 @@ def safe_extract(archive, destination):
 
 def verify(archive, manifest_path):
     manifest = json.loads(manifest_path.read_text())
+    source = manifest.get("source", {})
     if (set(manifest) != {"schema", "status", "architecture", "source_commit",
                           "source", "compiler", "libc_sha256", "uapi_sha256",
                           "files", "archive"} or
             manifest["schema"] != SCHEMA or manifest["status"] != "PASS" or
             manifest["architecture"] not in ARCHITECTURES or
-            len(manifest["source_commit"]) != 40 or
-            not set(manifest["source_commit"]) <= set("0123456789abcdef") or
+            not is_hex_digest(manifest["source_commit"], 40) or
+            set(source) != {"manifest_sha256", "base_commit",
+                            "selected_commits", "integration_commits"} or
+            not is_hex_digest(source.get("manifest_sha256"), 64) or
+            not is_hex_digest(source.get("base_commit"), 40) or
+            not source.get("selected_commits") or
+            not source.get("integration_commits") or
+            not all(is_hex_digest(commit, 40) for commit in
+                    source.get("selected_commits", []) +
+                    source.get("integration_commits", [])) or
             manifest["archive"] != {"name": archive.name, "sha256": digest(archive)} or
             not manifest["compiler"] or
-            not all(len(manifest[name]) == 64 and
-                    set(manifest[name]) <= set("0123456789abcdef")
+            not all(is_hex_digest(manifest[name], 64)
                     for name in ("libc_sha256", "uapi_sha256"))):
         raise RuntimeError("invalid release manifest")
     with tempfile.TemporaryDirectory(prefix="svm-ltp-payload-") as directory:

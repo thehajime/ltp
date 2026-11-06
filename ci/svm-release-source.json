@@ -50,6 +50,59 @@
       "reason": "The later validated f1fe6fcf runtime series provides the shared NOMMU detection and syscall adaptations."
     }
   ],
+  "integration_patch_decisions": [
+    {
+      "name": "ltp-madvise11-void-ptrs.patch",
+      "sha256": "9e78bf0ea136914281ba0427fe06796d29a2a88844011aae598c964588d8b0fc",
+      "decision": "selected",
+      "result_commits": [
+        "da92389ed752e58386e4c84dbf71acab263448bd"
+      ]
+    },
+    {
+      "name": "ltp-nommu-config-results.patch",
+      "sha256": "683b3823fdba670676ecdd687260fbca4d4c63a2aa9a1f7d38589b651ea4c9dc",
+      "decision": "selected",
+      "result_commits": [
+        "d57f7f62cc5677c95db6d6af041e5cb3d55cf3e8"
+      ]
+    },
+    {
+      "name": "ltp-musl-syscall-errors.patch",
+      "sha256": "10eebf44c972c3a875596c59681752fadba666034ab5f4ab3d2320544c1527be",
+      "decision": "already_present",
+      "result_commits": [
+        "7e5fe203d6024d585b7ca9b3ca8354f114d9d94a",
+        "07ecfde088b9dc9e22fedd73bc9bf77bf224c51f",
+        "4c1534249e9085415c0b90384d2681b2592fc9b6",
+        "4255a0ae7b7326334f975b7076687d7cd09a640e"
+      ]
+    },
+    {
+      "name": "sigevent-thread-id.patch",
+      "sha256": "3d2c73b83da7c237d3231bf58ea07bbbedc7e007413246af0ecab3b26ad78368",
+      "decision": "selected",
+      "result_commits": [
+        "c9ac6fcb1b8b4c842163e6dca38700093b005dea"
+      ]
+    },
+    {
+      "name": "kernel-7.4-test-compat.patch",
+      "sha256": "fd06d6e4988f14f459aff200927bb71d2bde18c3d8991dfb0df2fda28a84cc94",
+      "decision": "selected",
+      "result_commits": [
+        "a717b52f281bc9e9f58a9a28817db0d0d5d36d02"
+      ]
+    },
+    {
+      "name": "kconfig-constant-length.patch",
+      "sha256": "b367d4e717aea2ab02fc7b3a6c1553c7f320081c5880f5839990d277819e5cfa",
+      "decision": "selected",
+      "result_commits": [
+        "deb0eedef0785b3881438af93b21f6a19fe409fb"
+      ]
+    }
+  ],
   "acceptance": {
     "architectures": [
       "x86_64",

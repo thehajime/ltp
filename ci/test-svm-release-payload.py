@@ -78,6 +78,15 @@ class PayloadTests(unittest.TestCase):
         self.save(changed)
         with self.assertRaisesRegex(RuntimeError, "invalid release manifest"):
             payload.verify(self.archive, self.manifest_path)
+        for field, value in (("manifest_sha256", "0"),
+                             ("integration_commits", [])):
+            with self.subTest(source_field=field):
+                changed = copy.deepcopy(self.manifest)
+                changed["source"][field] = value
+                self.save(changed)
+                with self.assertRaisesRegex(RuntimeError,
+                                            "invalid release manifest"):
+                    payload.verify(self.archive, self.manifest_path)
 
     def test_absolute_or_escaping_symlink_is_rejected(self):
         link = self.root / "bad-link"
