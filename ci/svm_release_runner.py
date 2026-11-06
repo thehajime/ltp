@@ -14,7 +14,8 @@ import sys
 
 ARCHITECTURES = ("x86_64", "arm")
 SAFE_VALUE = re.compile(r"[A-Za-z0-9_+.,:/=@%-]+")
-IMAGE = re.compile(r"[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}")
+IMAGE = re.compile(
+    r"(?:[a-z0-9][a-z0-9._/-]*@)?sha256:[0-9a-f]{64}")
 CONTAINER_PATH = re.compile(r"/[A-Za-z0-9_.+/-]+")
 RESERVED_MOUNTS = ("/input", "/source", "/output", "/repository", "/ccache")
 
@@ -96,6 +97,7 @@ def run(args):
                        for name, path in files.items()}
     command = [
         "docker", "run", "--rm", "--network", "bridge",
+        "--entrypoint", "sh",
         "--volume", f"{root}:/input:ro",
         "--volume", f"{source.parent}:/source:ro",
         "--volume", f"{output}:/output",
@@ -122,7 +124,7 @@ def run(args):
     # out repository through a separate read-only mount.
     command.extend([
         "--volume", f"{args.repository.resolve()}:/repository:ro",
-        data["container_image"], "sh", "/repository/ci/svm_release_build.sh",
+        data["container_image"], "/repository/ci/svm_release_build.sh",
         "/source/" + source.name, "/output",
     ])
     subprocess.run(command, check=True)

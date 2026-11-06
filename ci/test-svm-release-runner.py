@@ -42,6 +42,12 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(set(files), {"compiler", "libc", "uapi", "plugin",
                                       "toolchain_root"})
 
+    def test_valid_local_content_digest(self):
+        self.contract["container_image"] = "sha256:" + "b" * 64
+        self.save()
+        data, _ = runner.load_contract(self.root, "x86_64")
+        self.assertEqual(data["container_image"], "sha256:" + "b" * 64)
+
     def test_architecture_and_image_are_fail_closed(self):
         with self.assertRaisesRegex(RuntimeError, "architecture"):
             runner.load_contract(self.root, "arm")

@@ -22,7 +22,10 @@ Create one input directory for each architecture:
 
 Every referenced path is relative to its architecture directory. Symlinks are
 accepted only when their resolved target remains inside that directory. The
-container image must use a digest; mutable tags are rejected.
+container image must use a registry digest (`name@sha256:...`) or a local
+content ID (`sha256:...`); mutable tags are rejected. The runner overrides the
+image entrypoint with `sh`, so a preloaded self-hosted-runner image cannot
+start its registration process during the payload build.
 
 ```json
 {
