@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "purpose": "SVM integration x86_64 and ARM immutable LTP payload source",
+  "base": {
+    "branch": "hajime/ltp-mmu-native-fixes",
+    "commit": "1bb350a1cd55501173e33f1836a674494f2cb48b"
+  },
+  "branch_heads_audited": {
+    "fix-nommu": "659b6f7fff038c409c2c544bcbf5b3b5522680e2",
+    "hajime/kirk-runtime-fixes-review": "d6bdaaca533cd41feb2aea219efb85d0d36ce0d1",
+    "hajime/ltp-mmu-native-fixes": "1bb350a1cd55501173e33f1836a674494f2cb48b",
+    "hajime/nommu-runtime-upstream": "f1fe6fcf68e08eda248186107d77095f550669f5",
+    "hajime/nommu-uml-validation-kit": "b6a0614840cdf238e9785401394b7b925a74a466"
+  },
+  "fix_nommu_decisions": [
+    {
+      "commit": "42c36a5847a7be787b3f2e21ce2552bb90393cf9",
+      "decision": "replaced",
+      "reason": "The validated base already installs a direct x86_64 rt_sigreturn restorer without the obsolete sigaction discovery path."
+    },
+    {
+      "commit": "e1834cdcc28d847eae3f9c0190270d4b67dce0c6",
+      "decision": "replaced",
+      "reason": "The validated base allocates guarded buffers in do_test_setup and always refreshes the NOMMU temporary-directory allocation."
+    },
+    {
+      "commit": "86bffdd2d4b9992d41f72034c7d31e1a6bb66e11",
+      "decision": "selected",
+      "result_commit": "da92389ed752e58386e4c84dbf71acab263448bd",
+      "reason": "The void pointer array removes an invalid long-pointer assumption in madvise11 and was not present in the validated base."
+    },
+    {
+      "commit": "3d5412edc85e335f7bd3b007df09dc08b86974e0",
+      "decision": "replaced",
+      "reason": "The validated base uses the shared runtime tst_is_nommu helper and already skips old-API tests on NOMMU."
+    },
+    {
+      "commit": "da288628f6f4a80b6d92406437b553c2e27178d0",
+      "decision": "out_of_scope",
+      "reason": "This wrapper change is specific to RISC-V; the release payload targets x86_64 UML and ARM."
+    },
+    {
+      "commit": "621485936ec4bd6f4bdd6b311541d14c7856abab",
+      "decision": "out_of_scope",
+      "reason": "This weak fork declaration is specific to RISC-V NOMMU libc; the release payload targets x86_64 UML and ARM."
+    },
+    {
+      "commit": "659b6f7fff038c409c2c544bcbf5b3b5522680e2",
+      "decision": "replaced",
+      "reason": "The later validated f1fe6fcf runtime series provides the shared NOMMU detection and syscall adaptations."
+    }
+  ],
+  "acceptance": {
+    "architectures": [
+      "x86_64",
+      "arm"
+    ],
+    "allowed_runtime_results": [
+      "PASS",
+      "SKIP",
+      "CONF"
+    ],
+    "required_zero_counts": [
+      "failed",
+      "broken",
+      "warnings"
+    ]
+  }
+}
