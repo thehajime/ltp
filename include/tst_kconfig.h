@@ -11,12 +11,12 @@
 
 /**
  * TST_KCONFIG_INIT() - Initialization helper macro for struct
- *     tst_kconfig_var. Requires <string.h> for strlen().
- * @confname: Config variable name string.
+ *     tst_kconfig_var. The length is an integer constant expression.
+ * @confname: Config variable name string literal.
  */
 #define TST_KCONFIG_INIT(confname) { \
 	.id = confname, \
-	.id_len = strlen(confname) \
+	.id_len = sizeof(confname) - 1 \
 }
 
 /**
