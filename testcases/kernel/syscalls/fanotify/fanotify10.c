@@ -963,6 +963,10 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
 	.needs_root = 1,
+	.needs_kconfigs = (const char *const []) {
+		"CONFIG_FANOTIFY",
+		NULL
+	},
 	.forks_child = 1,
 	.resource_files = (const char *const []) {
 		TEST_APP,

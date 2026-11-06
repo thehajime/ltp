@@ -33,6 +33,16 @@ static void setup(void)
 	page_sz = SAFE_SYSCONF(_SC_PAGESIZE);
 	vma_size = MEMSIZE * page_sz;
 
+	if (tst_is_nommu()) {
+		void *probe = SAFE_MMAP(NULL, vma_size, PROT_NONE,
+			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+		/* Respect bounded software-MMU address windows and guest RAM. */
+		addr = (uintptr_t)probe;
+		SAFE_MUNMAP(probe, vma_size);
+		SAFE_FILE_PRINTF("/proc/sys/vm/max_map_count", "512");
+	}
+
 	maps = SAFE_MALLOC(MAP_MAX_COUNT * sizeof(char *));
 	for (int i = 0; i < MAP_MAX_COUNT; i++)
 		maps[i] = NULL;

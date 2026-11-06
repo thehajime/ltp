@@ -28,7 +28,9 @@ static void verify_ioctl_loop(void)
 		tst_res(TFAIL, "LOOP_CHANGE_FD succeeded unexpectedly");
 		return;
 	}
-	if (TST_ERR == EINVAL)
+	if (TST_ERR == EOPNOTSUPP)
+		tst_res(TCONF, "LOOP_CHANGE_FD is not supported");
+	else if (TST_ERR == EINVAL)
 		tst_res(TPASS | TTERRNO, "LOOP_CHANGE_FD failed as expected");
 	else
 		tst_res(TFAIL | TTERRNO, "LOOP_CHANGE_FD failed expected EINVAL got");

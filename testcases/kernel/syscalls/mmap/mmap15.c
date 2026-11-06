@@ -38,6 +38,8 @@ static void run(void)
 
 	if (TST_ERR == ENOMEM || TST_ERR == EINVAL)
 		tst_res(TPASS | TERRNO, "mmap() failed with expected errno");
+	else if (tst_is_nommu() && TST_ERR == ENODEV)
+		tst_res(TCONF | TERRNO, "NOMMU has no direct shared-file mapping");
 	else
 		tst_res(TFAIL | TERRNO, "mmap() failed with unexpected errno");
 

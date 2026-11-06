@@ -70,6 +70,10 @@ static void run(unsigned int i)
 	sprintf(fmt, "%08" PRIxPTR "-%%*x %%s", (uintptr_t)addr2);
 	SAFE_FILE_LINES_SCANF("/proc/self/maps", fmt, perms);
 
+	/* task_nommu uses S for explicitly shared mappings. */
+	if (tst_is_nommu() && strlen(perms) == 4 && perms[3] == 'S')
+		perms[3] = 's';
+
 	if (!strcmp(perms, tc->exp_perms)) {
 		tst_res(TPASS, "mapping permissions in /proc matched: %s", perms);
 	} else {

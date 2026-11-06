@@ -81,6 +81,10 @@ static void verify_ioctl_loop(unsigned int n)
 		tst_res(TPASS | TTERRNO, "Can not write data in RO mode");
 
 	TEST(ioctl(dev_fd, LOOP_CHANGE_FD, file_change_fd));
+	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP) {
+		tst_res(TCONF, "LOOP_CHANGE_FD is not supported");
+		goto detach;
+	}
 	if (TST_RET) {
 		tst_res(TFAIL | TTERRNO, "LOOP_CHANGE_FD failed");
 	} else {
@@ -99,6 +103,7 @@ static void verify_ioctl_loop(unsigned int n)
 		tst_res(TFAIL, "LOOP_CHANGE_FD succeeded");
 	}
 
+detach:
 	SAFE_CLOSE(file_fd);
 	tst_detach_device_by_fd(dev_path, &dev_fd);
 	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
