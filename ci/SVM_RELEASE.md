@@ -2,8 +2,9 @@
 
 The manual `SVM LTP release producer` workflow builds x86_64 and ARM payloads
 on the private self-hosted runner. It does not use Actions artifacts. Build
-outputs stay under `/nvme/svm/work/ltp-release/<run>-<attempt>` and the compiler
-caches stay under `/home/tazaki/.ccache/svm/ltp-release-<architecture>`.
+outputs stay under `/nvme/svm/work/ltp-release/<run>-<attempt>`. x86_64 reuses
+`/home/tazaki/.ccache/svm/alpine-userspace`; ARM reuses
+`/home/tazaki/.ccache/svm/arm-sdk`. Both caches retain the 10 GiB limit.
 
 The workflow is dispatch-only and accepts `publish=false` for a build-only
 validation. With `publish=true`, it creates one draft Release only after both

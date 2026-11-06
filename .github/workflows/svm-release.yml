@@ -26,7 +26,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [x86_64, arm]
+        include:
+          - architecture: x86_64
+            cache: alpine-userspace
+          - architecture: arm
+            cache: arm-sdk
     runs-on: [self-hosted, Linux, X64, svm-private, svm-arm-sdk]
     timeout-minutes: 180
     steps:
@@ -58,7 +62,7 @@ jobs:
             --source "$work/source/$SVM_ARCH/ltp.tar" \
             --input-root "$SVM_INPUT_BASE/$SVM_ARCH" \
             --output "$work/$SVM_ARCH" \
-            --ccache-dir "/home/tazaki/.ccache/svm/ltp-release-$SVM_ARCH" \
+            --ccache-dir "/home/tazaki/.ccache/svm/${{ matrix.cache }}" \
             --jobs 2
       - name: Record host-local result
         env:
