@@ -24,6 +24,7 @@
 #define _GNU_SOURCE
 
 #include "tst_test.h"
+#include "lapi/madvise.h"
 #include "lapi/syscalls.h"
 #include "lapi/pkey.h"
 
@@ -149,4 +150,3 @@ static struct tst_test test = {
 	.setup = setup,
 	.forks_child = 1,
 };
-
