@@ -59,10 +59,11 @@
   "integration_patch_decisions": [
     {
       "name": "ltp-nommu-full-syscall-validation.patch",
-      "sha256": "1b456c910520fe36f276fb505777a71d36bc774b10ddba37165c83204c9cfdab",
+      "sha256": "e3b15e1ec70951be75ece5a9dde68c7058c0a515f6f45e28987c6dbf83df1d60",
       "decision": "selected",
       "result_commits": [
-        "e1c241d69ae1f1c91139f3f2aed5dacd5366c4c7"
+        "e1c241d69ae1f1c91139f3f2aed5dacd5366c4c7",
+        "a9e03a044a0c9dc5c139ee99fbf7357739e3cb36"
       ]
     },
     {
