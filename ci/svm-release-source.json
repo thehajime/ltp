@@ -14,6 +14,12 @@
   },
   "fix_nommu_decisions": [
     {
+      "commit": "974df24a1986e3291f1efd1971b68701c998d887",
+      "decision": "selected",
+      "result_commit": "e1c241d69ae1f1c91139f3f2aed5dacd5366c4c7",
+      "reason": "The generic NOMMU and uClibc syscall adaptations are required by the ARM payload; the earlier RISC-V-only classification was too broad."
+    },
+    {
       "commit": "42c36a5847a7be787b3f2e21ce2552bb90393cf9",
       "decision": "replaced",
       "reason": "The validated base already installs a direct x86_64 rt_sigreturn restorer without the obsolete sigaction discovery path."
@@ -51,6 +57,14 @@
     }
   ],
   "integration_patch_decisions": [
+    {
+      "name": "ltp-nommu-full-syscall-validation.patch",
+      "sha256": "1b456c910520fe36f276fb505777a71d36bc774b10ddba37165c83204c9cfdab",
+      "decision": "selected",
+      "result_commits": [
+        "e1c241d69ae1f1c91139f3f2aed5dacd5366c4c7"
+      ]
+    },
     {
       "name": "ltp-madvise11-void-ptrs.patch",
       "sha256": "9e78bf0ea136914281ba0427fe06796d29a2a88844011aae598c964588d8b0fc",

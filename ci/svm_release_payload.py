@@ -90,9 +90,10 @@ def source_contract(source_manifest):
     if (data.get("schema_version") != 1 or
             data.get("base", {}).get("commit") !=
             "1bb350a1cd55501173e33f1836a674494f2cb48b" or
-            len(data.get("fix_nommu_decisions", [])) != 7 or
-            len(integration_patches) != 6 or
+            len(data.get("fix_nommu_decisions", [])) != 8 or
+            len(integration_patches) != 7 or
             {row.get("name") for row in integration_patches} != {
+                "ltp-nommu-full-syscall-validation.patch",
                 "ltp-madvise11-void-ptrs.patch",
                 "ltp-nommu-config-results.patch",
                 "ltp-musl-syscall-errors.patch",
