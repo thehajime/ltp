@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""Create and verify immutable SVM LTP release payloads."""
+
+import argparse
+import gzip
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import stat
+import tarfile
+import tempfile
+
+
+ARCHITECTURES = ("x86_64", "arm")
+SCHEMA = 1
+
+
+def digest(path):
+    value = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            value.update(block)
+    return value.hexdigest()
+
+
+def inventory(root):
+    result = {}
+    resolved_root = root.resolve()
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        mode = path.lstat().st_mode
+        if stat.S_ISDIR(mode):
+            result[relative] = {"type": "directory", "mode": stat.S_IMODE(mode)}
+        elif stat.S_ISREG(mode):
+            result[relative] = {"type": "file", "mode": stat.S_IMODE(mode),
+                                "size": path.stat().st_size, "sha256": digest(path)}
+        elif stat.S_ISLNK(mode):
+            target = os.readlink(path)
+            if os.path.isabs(target):
+                raise RuntimeError(f"absolute payload symlink: {relative}")
+            try:
+                destination = path.resolve(strict=True)
+            except (OSError, RuntimeError) as error:
+                raise RuntimeError(f"invalid payload symlink: {relative}") from error
+            if not destination.is_relative_to(resolved_root):
+                raise RuntimeError(f"escaping payload symlink: {relative}")
+            result[relative] = {"type": "link", "target": target}
+        else:
+            raise RuntimeError(f"unsupported payload entry: {relative}")
+    if not result or not any(row["type"] == "file" for row in result.values()):
+        raise RuntimeError("empty payload inventory")
+    return result
+
+
+def deterministic_archive(root, output):
+    with output.open("wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
+                def normalize(info):
+                    info.uid = info.gid = 0
+                    info.uname = info.gname = ""
+                    info.mtime = 0
+                    return info
+
+                archive.add(root, arcname="ltp", recursive=True, filter=normalize)
+
+
+def source_contract(source_manifest):
+    data = json.loads(source_manifest.read_text())
+    if (data.get("schema_version") != 1 or
+            data.get("base", {}).get("commit") !=
+            "1bb350a1cd55501173e33f1836a674494f2cb48b" or
+            len(data.get("fix_nommu_decisions", [])) != 7):
+        raise RuntimeError("unexpected source composition manifest")
+    return {"manifest_sha256": digest(source_manifest),
+            "base_commit": data["base"]["commit"],
+            "selected_commits": [row["result_commit"] for row in
+                                 data["fix_nommu_decisions"]
+                                 if row["decision"] == "selected"]}
+
+
+def create(args):
+    root = args.root.resolve()
+    output = args.output.resolve()
+    if root.is_symlink() or not root.is_dir() or output.exists():
+        raise RuntimeError("use a real install root and fresh output directory")
+    if (len(args.source_commit) != 40 or
+            not set(args.source_commit) <= set("0123456789abcdef")):
+        raise RuntimeError("source commit must be a full hexadecimal object name")
+    if not all(len(value) == 64 and set(value) <= set("0123456789abcdef")
+               for value in (args.libc_sha256, args.uapi_sha256)):
+        raise RuntimeError("libc and UAPI digests must be SHA-256 values")
+    output.mkdir(parents=True)
+    name = f"ltp-svm-{args.arch}.tar.gz"
+    archive = output / name
+    deterministic_archive(root, archive)
+    manifest = {
+        "schema": SCHEMA, "status": "PASS", "architecture": args.arch,
+        "source_commit": args.source_commit,
+        "source": source_contract(args.source_manifest.resolve()),
+        "compiler": args.compiler, "libc_sha256": args.libc_sha256,
+        "uapi_sha256": args.uapi_sha256, "files": inventory(root),
+        "archive": {"name": name, "sha256": digest(archive)},
+    }
+    manifest_path = output / f"{name}.manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    (output / f"{name}.sha256").write_text(
+        f"{manifest['archive']['sha256']}  {name}\n")
+    verify(archive, manifest_path)
+    return manifest
+
+
+def safe_extract(archive, destination):
+    with tarfile.open(archive, "r:gz") as stream:
+        members = stream.getmembers()
+        if (not members or members[0].name != "ltp" or
+                any(member.name.startswith("/") or ".." in Path(member.name).parts
+                    for member in members)):
+            raise RuntimeError("unsafe archive member")
+        stream.extractall(destination, filter="data")
+
+
+def verify(archive, manifest_path):
+    manifest = json.loads(manifest_path.read_text())
+    if (set(manifest) != {"schema", "status", "architecture", "source_commit",
+                          "source", "compiler", "libc_sha256", "uapi_sha256",
+                          "files", "archive"} or
+            manifest["schema"] != SCHEMA or manifest["status"] != "PASS" or
+            manifest["architecture"] not in ARCHITECTURES or
+            len(manifest["source_commit"]) != 40 or
+            not set(manifest["source_commit"]) <= set("0123456789abcdef") or
+            manifest["archive"] != {"name": archive.name, "sha256": digest(archive)} or
+            not manifest["compiler"] or
+            not all(len(manifest[name]) == 64 and
+                    set(manifest[name]) <= set("0123456789abcdef")
+                    for name in ("libc_sha256", "uapi_sha256"))):
+        raise RuntimeError("invalid release manifest")
+    with tempfile.TemporaryDirectory(prefix="svm-ltp-payload-") as directory:
+        destination = Path(directory)
+        safe_extract(archive, destination)
+        root = destination / "ltp"
+        if root.is_symlink() or not root.is_dir() or inventory(root) != manifest["files"]:
+            raise RuntimeError("release payload inventory mismatch")
+    return manifest
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="operation", required=True)
+    builder = subparsers.add_parser("create")
+    builder.add_argument("--root", type=Path, required=True)
+    builder.add_argument("--output", type=Path, required=True)
+    builder.add_argument("--arch", choices=ARCHITECTURES, required=True)
+    builder.add_argument("--source-commit", required=True)
+    builder.add_argument("--source-manifest", type=Path, required=True)
+    builder.add_argument("--compiler", required=True)
+    builder.add_argument("--libc-sha256", required=True)
+    builder.add_argument("--uapi-sha256", required=True)
+    checker = subparsers.add_parser("verify")
+    checker.add_argument("--archive", type=Path, required=True)
+    checker.add_argument("--manifest", type=Path, required=True)
+    args = parser.parse_args()
+    result = create(args) if args.operation == "create" else verify(
+        args.archive.resolve(), args.manifest.resolve())
+    print(json.dumps({"status": "PASS", "architecture": result["architecture"],
+                      "files": len(result["files"])}, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
