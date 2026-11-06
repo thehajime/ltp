@@ -48,6 +48,17 @@ class ContractTests(unittest.TestCase):
         data, _ = runner.load_contract(self.root, "x86_64")
         self.assertEqual(data["container_image"], "sha256:" + "b" * 64)
 
+    def test_compiler_symlink_keeps_invocation_name(self):
+        wrapper = self.root / "toolchain-wrapper"
+        wrapper.write_text("wrapper")
+        wrapper.chmod(0o755)
+        compiler = self.root / "target-gcc"
+        compiler.symlink_to("toolchain-wrapper")
+        self.contract["compiler"] = "target-gcc"
+        self.save()
+        _, files = runner.load_contract(self.root, "x86_64")
+        self.assertEqual(files["compiler"], compiler)
+
     def test_architecture_and_image_are_fail_closed(self):
         with self.assertRaisesRegex(RuntimeError, "architecture"):
             runner.load_contract(self.root, "arm")

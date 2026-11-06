@@ -26,10 +26,12 @@ def digest(path):
 
 
 def contained_file(root, relative, *, executable=False):
-    if not isinstance(relative, str) or not relative or relative.startswith("/"):
+    if (not isinstance(relative, str) or not relative or relative.startswith("/") or
+            ".." in Path(relative).parts):
         raise RuntimeError("contract paths must be non-empty and relative")
-    path = (root / relative).resolve(strict=True)
-    if not path.is_relative_to(root.resolve()) or not path.is_file():
+    path = root.resolve() / relative
+    resolved = path.resolve(strict=True)
+    if not resolved.is_relative_to(root.resolve()) or not resolved.is_file():
         raise RuntimeError(f"contract path escapes input root: {relative}")
     if executable and not os.access(path, os.X_OK):
         raise RuntimeError(f"contract compiler is not executable: {relative}")
