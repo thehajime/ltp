@@ -63,7 +63,7 @@ static void run(unsigned int n)
 			continue;
 
 		if (nt->sigev_notify == SIGEV_THREAD_ID)
-			evp._sigev_un._tid = getpid();
+			evp.sigev_notify_thread_id = getpid();
 
 		TEST(tst_syscall(__NR_timer_create, clock,
 				nt->sigev_notify ? &evp : NULL,

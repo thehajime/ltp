@@ -37,7 +37,7 @@ static void run(void)
 
 	evp.sigev_signo  = SIGALRM;
 	evp.sigev_notify = SIGEV_SIGNAL | RANDOM_UNUSED_NUMBER;
-	evp._sigev_un._tid = getpid();
+	evp.sigev_notify_thread_id = getpid();
 
 	TEST(tst_syscall(__NR_timer_create, clock, &evp, &created_timer_id));
 

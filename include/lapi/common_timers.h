@@ -12,6 +12,11 @@
 #include "lapi/syscalls.h"
 #include "lapi/posix_clocks.h"
 
+/* musl exports this name; older glibc exposes only its internal member. */
+#ifndef sigev_notify_thread_id
+#define sigev_notify_thread_id _sigev_un._tid
+#endif
+
 #ifndef NSEC_PER_SEC
 #define NSEC_PER_SEC (1000000000LL)
 #endif
