@@ -29,6 +29,7 @@ class ContractTests(unittest.TestCase):
             "host": "x86_64-alpine-linux-musl", "compiler": "compiler",
             "libc": "libc.so", "uapi": "version.h", "plugin": "plugin.so",
             "cppflags": ["-I/input/uapi/include"],
+            "toolchain_root": ".", "toolchain_mount": "/work/sysroot",
         }
         self.save()
 
@@ -38,7 +39,8 @@ class ContractTests(unittest.TestCase):
     def test_valid_contract(self):
         data, files = runner.load_contract(self.root, "x86_64")
         self.assertEqual(data, self.contract)
-        self.assertEqual(set(files), {"compiler", "libc", "uapi", "plugin"})
+        self.assertEqual(set(files), {"compiler", "libc", "uapi", "plugin",
+                                      "toolchain_root"})
 
     def test_architecture_and_image_are_fail_closed(self):
         with self.assertRaisesRegex(RuntimeError, "architecture"):
@@ -58,6 +60,14 @@ class ContractTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(RuntimeError, "cppflags"):
             runner.load_contract(self.root, "x86_64")
+
+    def test_reserved_toolchain_mount_is_rejected(self):
+        for mount in ("relative", "/", "/input", "/output/sdk"):
+            with self.subTest(mount=mount):
+                self.contract["toolchain_mount"] = mount
+                self.save()
+                with self.assertRaisesRegex(RuntimeError, "toolchain mount"):
+                    runner.load_contract(self.root, "x86_64")
 
 
 if __name__ == "__main__":

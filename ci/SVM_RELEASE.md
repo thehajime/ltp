@@ -33,7 +33,9 @@ container image must use a digest; mutable tags are rejected.
   "libc": "sysroot/lib/ld-musl-x86_64.so.1",
   "uapi": "uapi/include/linux/version.h",
   "cppflags": ["-I/input/uapi/include"],
-  "plugin": "plugin/svm_plugin.so"
+  "plugin": "plugin/svm_plugin.so",
+  "toolchain_root": "sysroot",
+  "toolchain_mount": "/work/sysroot"
 }
 ```
 
@@ -41,7 +43,9 @@ The ARM contract uses `"architecture": "arm"`, the exact ARM configure host
 tuple, compiler, libc and UAPI paths from the tested ARM SDK. The workflow
 fails before building if a file is missing, escapes the input directory, the
 compiler is not executable, the architecture differs, or the image is not
-digest-pinned. The contract must not contain credentials or private source.
+digest-pinned. `toolchain_mount` records absolute paths embedded in the tested
+compiler specs; the runner rejects its own reserved mount points. The contract
+must not contain credentials or private source.
 
 ## Acceptance boundary
 

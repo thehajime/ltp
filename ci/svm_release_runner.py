@@ -15,6 +15,8 @@ import sys
 ARCHITECTURES = ("x86_64", "arm")
 SAFE_VALUE = re.compile(r"[A-Za-z0-9_+.,:/=@%-]+")
 IMAGE = re.compile(r"[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}")
+CONTAINER_PATH = re.compile(r"/[A-Za-z0-9_.+/-]+")
+RESERVED_MOUNTS = ("/input", "/source", "/output", "/repository", "/ccache")
 
 
 def digest(path):
@@ -33,11 +35,21 @@ def contained_file(root, relative, *, executable=False):
     return path
 
 
+def contained_directory(root, relative):
+    if not isinstance(relative, str) or not relative or relative.startswith("/"):
+        raise RuntimeError("contract paths must be non-empty and relative")
+    path = (root / relative).resolve(strict=True)
+    if not path.is_relative_to(root.resolve()) or not path.is_dir():
+        raise RuntimeError(f"contract directory escapes input root: {relative}")
+    return path
+
+
 def load_contract(root, architecture):
     path = root / "contract.json"
     data = json.loads(path.read_text())
     required = {"schema", "architecture", "container_image", "host",
-                "compiler", "libc", "uapi", "cppflags", "plugin"}
+                "compiler", "libc", "uapi", "cppflags", "plugin",
+                "toolchain_root", "toolchain_mount"}
     if set(data) != required or data["schema"] != 1:
         raise RuntimeError("unexpected producer contract schema")
     if data["architecture"] != architecture or architecture not in ARCHITECTURES:
@@ -51,12 +63,18 @@ def load_contract(root, architecture):
             not all(isinstance(item, str) and SAFE_VALUE.fullmatch(item)
                     for item in data["cppflags"])):
         raise RuntimeError("cppflags must be a list of safe single arguments")
+    mount = data["toolchain_mount"]
+    if (not isinstance(mount, str) or not CONTAINER_PATH.fullmatch(mount) or
+            mount == "/" or any(mount == item or mount.startswith(item + "/")
+                                for item in RESERVED_MOUNTS)):
+        raise RuntimeError("invalid or reserved toolchain mount")
     files = {
         "compiler": contained_file(root, data["compiler"], executable=True),
         "libc": contained_file(root, data["libc"]),
         "uapi": contained_file(root, data["uapi"]),
         "plugin": contained_file(root, data["plugin"]),
     }
+    files["toolchain_root"] = contained_directory(root, data["toolchain_root"])
     return data, files
 
 
@@ -82,6 +100,7 @@ def run(args):
         "--volume", f"{source.parent}:/source:ro",
         "--volume", f"{output}:/output",
         "--volume", f"{cache}:/ccache",
+        "--volume", f"{files['toolchain_root']}:{data['toolchain_mount']}:ro",
     ]
     environment = {
         "SVM_ARCH": args.architecture,
