@@ -58,7 +58,9 @@ must not contain credentials or private source.
 ## Acceptance boundary
 
 A successful producer run proves source composition, toolchain/libc/UAPI
-identity, deterministic file inventory and archive integrity. T20 also needs a
-source-free consumer run and PASS/SKIP/CONF-only runtime results with zero
-failed, broken or warning results. Release creation alone does not complete
-T20.
+identity, deterministic file inventory and archive integrity. It also requires
+the exact integrated 1,552-label syscall selection and checks every ELF for the
+architecture-specific SVM ABI note and interpreter (x86_64 era 2/ABI 208;
+ARM era 2/ABI 48). T20 also needs a source-free consumer run and
+PASS/SKIP/CONF-only runtime results with zero failed, broken or warning results.
+Release creation alone does not complete T20.

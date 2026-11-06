@@ -10,12 +10,22 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import struct
 import tarfile
 import tempfile
 
 
 ARCHITECTURES = ("x86_64", "arm")
 SCHEMA = 1
+SYSCALLS_SHA256 = "4fea279e0f356321b4dd8e53b1de7b912b7d86397532742ed769624cb215ece3"
+SYSCALL_LABELS = 1552
+
+SVM_ABI = {
+    "x86_64": {"elf_class": 2, "machine": 62, "era": 2, "abi": 208,
+               "interpreter": b"/svm-loader.so\0"},
+    "arm": {"elf_class": 1, "machine": 40, "era": 2, "abi": 48,
+            "interpreter": b"/lib/ld-uClibc.so.0\0"},
+}
 
 
 def is_hex_digest(value, length):
@@ -65,6 +75,88 @@ def inventory(root, normalize_modes=False):
     if not result or not any(row["type"] == "file" for row in result.values()):
         raise RuntimeError("empty payload inventory")
     return result
+
+
+def verify_svm_elf(path, architecture):
+    """Require the integrated loader ABI and interpreter for every target ELF."""
+    expected = SVM_ABI[architecture]
+    with path.open("rb") as stream:
+        header = stream.read(64)
+        if (len(header) < 20 or header[:4] != b"\x7fELF" or header[5] != 1 or
+                header[6] != 1 or header[4] != expected["elf_class"]):
+            raise RuntimeError(f"ELF class/encoding mismatch: {path.name}")
+        if struct.unpack_from("<H", header, 16)[0] not in (2, 3):
+            raise RuntimeError(f"ELF type mismatch: {path.name}")
+        if struct.unpack_from("<H", header, 18)[0] != expected["machine"]:
+            raise RuntimeError(f"ELF machine mismatch: {path.name}")
+        if expected["elf_class"] == 2:
+            phoff = struct.unpack_from("<Q", header, 32)[0]
+            phentsize, phnum = struct.unpack_from("<HH", header, 54)
+            phdr_format, min_header = "<IIQQQQQQ", 64
+        else:
+            phoff = struct.unpack_from("<I", header, 28)[0]
+            phentsize, phnum = struct.unpack_from("<HH", header, 42)
+            phdr_format, min_header = "<IIIIIIII", 52
+        size = path.stat().st_size
+        if (len(header) < min_header or phentsize != struct.calcsize(phdr_format) or
+                not 0 < phnum <= 128 or phoff < min_header or
+                phoff + phentsize * phnum > size):
+            raise RuntimeError(f"Invalid ELF program headers: {path.name}")
+        stream.seek(phoff)
+        program_headers = stream.read(phentsize * phnum)
+        notes, interpreters = [], []
+        for index in range(phnum):
+            values = struct.unpack_from(phdr_format, program_headers,
+                                        index * phentsize)
+            if expected["elf_class"] == 2:
+                kind, offset, length = values[0], values[2], values[5]
+            else:
+                kind, offset, length = values[0], values[1], values[4]
+            if kind not in (3, 4):
+                continue
+            if length > 1 << 20 or offset + length > size:
+                raise RuntimeError(f"Invalid ELF segment: {path.name}")
+            stream.seek(offset)
+            data = stream.read(length)
+            if kind == 3:
+                interpreters.append(data)
+                continue
+            position = 0
+            while position + 12 <= len(data):
+                name_size, desc_size, note_type = struct.unpack_from("<III", data, position)
+                name_start = position + 12
+                desc_start = (name_start + name_size + 3) & ~3
+                end = desc_start + desc_size
+                if end > len(data):
+                    raise RuntimeError(f"Invalid ELF note: {path.name}")
+                if data[name_start:name_start + name_size] == b"SVM\0" and note_type == 1:
+                    notes.append(data[desc_start:end])
+                position = (end + 3) & ~3
+        abi_note = struct.pack("<II", expected["era"], expected["abi"])
+        if notes != [abi_note] or interpreters != [expected["interpreter"]]:
+            raise RuntimeError(f"SVM ABI/interpreter mismatch: {path.name}")
+
+
+def verify_runtime_contract(root, architecture):
+    selection = root / "runtest/syscalls"
+    if (not selection.is_file() or digest(selection) != SYSCALLS_SHA256):
+        raise RuntimeError("SVM syscall selection checksum mismatch")
+    rows = [line for line in selection.read_text().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")]
+    if len(rows) != SYSCALL_LABELS:
+        raise RuntimeError("SVM syscall selection count mismatch")
+    elf_count = 0
+    for path in root.rglob("*"):
+        if not path.is_file() or path.is_symlink():
+            continue
+        with path.open("rb") as stream:
+            if stream.read(4) != b"\x7fELF":
+                continue
+        verify_svm_elf(path, architecture)
+        elf_count += 1
+    if not elf_count:
+        raise RuntimeError("SVM ELF executables are missing")
+    return elf_count
 
 
 def deterministic_archive(root, output):
@@ -187,6 +279,7 @@ def verify(archive, manifest_path):
         root = destination / "ltp"
         if root.is_symlink() or not root.is_dir() or inventory(root) != manifest["files"]:
             raise RuntimeError("release payload inventory mismatch")
+        verify_runtime_contract(root, manifest["architecture"])
     return manifest
 
 
