@@ -21,7 +21,8 @@ class PayloadTests(unittest.TestCase):
         (self.root / "testcases/bin").mkdir(parents=True)
         self.binary = self.root / "testcases/bin/getpid01"
         self.binary.write_bytes(b"fixture")
-        self.binary.chmod(0o755)
+        self.binary.chmod(0o775)
+        (self.root / "testcases/bin").chmod(0o775)
         (self.root / "bin").mkdir()
         (self.root / "bin/getpid01").symlink_to("../testcases/bin/getpid01")
         self.output = self.directory / "output"
@@ -40,6 +41,8 @@ class PayloadTests(unittest.TestCase):
 
     def test_round_trip_and_deterministic_archive(self):
         self.assertEqual(payload.verify(self.archive, self.manifest_path), self.manifest)
+        self.assertEqual(self.manifest["files"]["testcases/bin/getpid01"]["mode"],
+                         0o755)
         other = self.directory / "other.tar.gz"
         payload.deterministic_archive(self.root, other)
         self.assertEqual(payload.digest(self.archive), payload.digest(other))

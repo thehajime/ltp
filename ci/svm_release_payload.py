@@ -31,16 +31,23 @@ def digest(path):
     return value.hexdigest()
 
 
-def inventory(root):
+def release_mode(mode, directory=False):
+    if directory or mode & 0o111:
+        return 0o755
+    return 0o644
+
+
+def inventory(root, normalize_modes=False):
     result = {}
     resolved_root = root.resolve()
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
         mode = path.lstat().st_mode
         if stat.S_ISDIR(mode):
-            result[relative] = {"type": "directory", "mode": stat.S_IMODE(mode)}
+            result[relative] = {"type": "directory"}
         elif stat.S_ISREG(mode):
-            result[relative] = {"type": "file", "mode": stat.S_IMODE(mode),
+            value = release_mode(mode) if normalize_modes else stat.S_IMODE(mode)
+            result[relative] = {"type": "file", "mode": value,
                                 "size": path.stat().st_size, "sha256": digest(path)}
         elif stat.S_ISLNK(mode):
             target = os.readlink(path)
@@ -68,6 +75,10 @@ def deterministic_archive(root, output):
                     info.uid = info.gid = 0
                     info.uname = info.gname = ""
                     info.mtime = 0
+                    if info.isdir():
+                        info.mode = release_mode(info.mode, directory=True)
+                    elif info.isfile():
+                        info.mode = release_mode(info.mode)
                     return info
 
                 archive.add(root, arcname="ltp", recursive=True, filter=normalize)
@@ -124,7 +135,8 @@ def create(args):
         "source_commit": args.source_commit,
         "source": source_contract(args.source_manifest.resolve()),
         "compiler": args.compiler, "libc_sha256": args.libc_sha256,
-        "uapi_sha256": args.uapi_sha256, "files": inventory(root),
+        "uapi_sha256": args.uapi_sha256,
+        "files": inventory(root, normalize_modes=True),
         "archive": {"name": name, "sha256": digest(archive)},
     }
     manifest_path = output / f"{name}.manifest.json"
