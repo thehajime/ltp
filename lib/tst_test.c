@@ -144,6 +144,7 @@ extern unsigned int tst_max_futexes;
 
 static int ipc_fd;
 static int ipc_nommu_heap;
+static int ipc_nommu_mapping;
 static char ipc_path[1064];
 
 static char shm_path[1024];
@@ -163,11 +164,21 @@ static void setup_ipc(void)
 		if (tst_test->needs_checkpoints || tst_test->child_needs_reinit)
 			tst_brk(TCONF, "NOMMU does not support shared test IPC");
 
-		ipc = calloc(1, size);
-		if (!ipc)
-			tst_brk(TBROK | TERRNO, "calloc() for test IPC");
-
-		ipc_nommu_heap = 1;
+		/* Private clone children need counters outside their copied heap. */
+		ipc = mmap(NULL, size, PROT_READ | PROT_WRITE,
+			   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+		if (ipc == MAP_FAILED) {
+			if (errno != EINVAL && errno != EOPNOTSUPP && errno != ENOSYS) {
+				ipc = NULL;
+				tst_brk(TBROK | TERRNO, "mmap() for shared test IPC");
+			}
+			ipc = calloc(1, size);
+			if (!ipc)
+				tst_brk(TBROK | TERRNO, "calloc() for test IPC");
+			ipc_nommu_heap = 1;
+		} else {
+			ipc_nommu_mapping = 1;
+		}
 	} else {
 		if (access("/dev/shm", F_OK) == 0) {
 			snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
@@ -221,12 +232,15 @@ static void cleanup_ipc(void)
 {
 	size_t size = getpagesize();
 
-	if (ipc_nommu_heap) {
-		/* The NOMMU test child shares this heap region with its parent. */
+	if (ipc_nommu_heap || ipc_nommu_mapping) {
+		/* A CLONE_VM test child must not release its parent's IPC. */
 		if (context && getpid() != context->lib_pid)
 			return;
 
-		free(ipc);
+		if (ipc_nommu_mapping)
+			SAFE_MUNMAP(ipc, size);
+		else
+			free(ipc);
 		ipc = NULL;
 		context = NULL;
 		results = NULL;

@@ -127,6 +127,8 @@ static void test_flag(int clone_flag, int ns_flag, int (*fn) (void *arg))
 
 	SAFE_WAITPID(ret, &status, 0);
 	free(child_stack);
+	if (!WIFEXITED(status) || WEXITSTATUS(status))
+		tst_res(TFAIL, "namespace child %s", tst_strstatus(status));
 }
 
 void test_all(void)
@@ -138,7 +140,10 @@ void test_all(void)
 	} else
 		tst_res(TCONF, "CLONE_NEWUTS is not supported");
 
-	if (ns_ipc_fd != -1) {
+	if (tst_is_nommu()) {
+		tst_res(TCONF, "IPC namespace reassociation requires shmat, "
+			"unsupported on NOMMU");
+	} else if (ns_ipc_fd != -1) {
 		tst_res(TINFO, "test_newipc");
 		test_flag(CLONE_NEWIPC, CLONE_NEWIPC, do_child_newipc);
 		test_flag(CLONE_NEWIPC, 0, do_child_newipc);

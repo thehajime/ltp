@@ -56,7 +56,15 @@ static void run(unsigned int i)
 	flag = (tc->flags & MAP_PRIVATE) ? MAP_SHARED : MAP_PRIVATE;
 	addr1 = SAFE_MMAP(NULL, pagesize * 2, PROT_NONE, MAP_ANONYMOUS | flag, -1, 0);
 
-	addr2 = SAFE_MMAP(addr1 + pagesize, pagesize, tc->prot, tc->flags | MAP_FIXED, -1, 0);
+	addr2 = mmap(addr1 + pagesize, pagesize, tc->prot, tc->flags | MAP_FIXED, -1, 0);
+	if (addr2 == MAP_FAILED) {
+		if (tst_is_nommu() && (errno == EOPNOTSUPP || errno == EINVAL)) {
+			SAFE_MUNMAP(addr1, pagesize * 2);
+			tst_brk(TCONF, "NOMMU backend does not support partial "
+				"MAP_FIXED across private/shared mappings");
+		}
+		tst_brk(TBROK | TERRNO, "mmap MAP_FIXED");
+	}
 
 	/* A /proc/self/maps address is at least 8 hex (left zero padded) */
 	sprintf(fmt, "%08" PRIxPTR "-%%*x %%s", (uintptr_t)addr2);
