@@ -1,0 +1,113 @@
+name: SVM LTP release producer
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Immutable release tag to create after both builds pass
+        required: true
+        type: string
+      publish:
+        description: Publish the verified x86_64 and ARM assets
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: svm-ltp-release-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/svm-integration-7.4'
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86_64, arm]
+    runs-on: [self-hosted, Linux, X64, svm-private, svm-arm-sdk]
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify packager and runner contracts
+        run: |
+          python3 ci/test-svm-release-payload.py -v
+          python3 ci/test-svm-release-runner.py -v
+      - name: Archive the exact public source
+        env:
+          SVM_ARCH: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          work=/nvme/svm/work/ltp-release/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          mkdir -p "$work/source/$SVM_ARCH"
+          git archive --format=tar --prefix=ltp/ HEAD > "$work/source/$SVM_ARCH/ltp.tar"
+      - name: Build and seal architecture payload
+        env:
+          SVM_ARCH: ${{ matrix.architecture }}
+          SVM_INPUT_BASE: /nvme/svm/inputs/ltp-release
+        run: |
+          set -euo pipefail
+          work=/nvme/svm/work/ltp-release/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          python3 ci/svm_release_runner.py \
+            --architecture "$SVM_ARCH" --repository "$GITHUB_WORKSPACE" \
+            --source "$work/source/$SVM_ARCH/ltp.tar" \
+            --input-root "$SVM_INPUT_BASE/$SVM_ARCH" \
+            --output "$work/$SVM_ARCH" \
+            --ccache-dir "/home/tazaki/.ccache/svm/ltp-release-$SVM_ARCH" \
+            --jobs 2
+      - name: Record host-local result
+        env:
+          SVM_ARCH: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          work=/nvme/svm/work/ltp-release/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          python3 - "$work/$SVM_ARCH/build-summary.json" <<'PY'
+          import json, pathlib, sys
+          assert json.loads(pathlib.Path(sys.argv[1]).read_text()) == {
+              "status": "PASS", "scope": "syscalls-release-build"}
+          PY
+          cd "$work/$SVM_ARCH/release"
+          sha256sum -c "ltp-svm-$SVM_ARCH.tar.gz.sha256"
+
+  publish:
+    if: inputs.publish
+    needs: build
+    runs-on: [self-hosted, Linux, X64, svm-private, svm-arm-sdk]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Publish both verified assets as one immutable Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          case "$RELEASE_TAG" in
+            svm-ltp-v7.4-rc1-[0-9]*) ;;
+            *) echo "invalid immutable release tag" >&2; exit 2 ;;
+          esac
+          ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1
+          work=/nvme/svm/work/ltp-release/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          assets=()
+          for arch in x86_64 arm; do
+            release="$work/$arch/release"
+            python3 "$GITHUB_WORKSPACE/ci/svm_release_payload.py" verify \
+              --archive "$release/ltp-svm-$arch.tar.gz" \
+              --manifest "$release/ltp-svm-$arch.tar.gz.manifest.json"
+            assets+=("$release/ltp-svm-$arch.tar.gz")
+            assets+=("$release/ltp-svm-$arch.tar.gz.manifest.json")
+            assets+=("$release/ltp-svm-$arch.tar.gz.sha256")
+          done
+          gh release create "$RELEASE_TAG" "${assets[@]}" \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft \
+            --title "SVM LTP v7.4-rc1 payloads $RELEASE_TAG" \
+            --notes "Sealed x86_64 and ARM payloads from $GITHUB_SHA"
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
