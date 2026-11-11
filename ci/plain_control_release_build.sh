@@ -21,7 +21,7 @@ if ! command -v gcc >/dev/null 2>&1; then
 	apk add --no-cache alpine-sdk ccache autoconf automake m4 bison flex \
 		findutils linux-headers perl python3 acl-dev clang curl e2fsprogs-extra \
 		git jq keyutils-dev libaio-dev libcap-dev libselinux-dev libsepol-dev \
-		libtirpc-dev musl-dev numactl-dev openssl-dev patch pkgconf
+		libtirpc-dev musl-dev numactl-dev openssl-dev patch pigz pkgconf
 fi
 
 command -v ccache >/dev/null 2>&1 || {

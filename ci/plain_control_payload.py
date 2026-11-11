@@ -5,6 +5,8 @@
 import argparse
 import json
 from pathlib import Path
+import subprocess
+import tarfile
 import struct
 import tempfile
 
@@ -42,6 +44,43 @@ EXCLUSIONS = [
     {"test": "timer_create03", "file": "testcases/kernel/syscalls/timer_create/timer_create03.c",
      "reason": "Alpine CI excludes this test because musl does not expose the required sigevent fields"},
 ]
+
+
+def deterministic_archive(root, output):
+    """Create a deterministic tar.gz using parallel gzip level 9."""
+    try:
+        raw = output.open("wb")
+        compressor = subprocess.Popen(["pigz", "-9", "-n", "-c"],
+                                      stdin=subprocess.PIPE, stdout=raw)
+    except OSError as error:
+        raise RuntimeError("pigz is required to package the plain payload") from error
+
+    try:
+        with tarfile.open(fileobj=compressor.stdin, mode="w|",
+                          format=tarfile.PAX_FORMAT) as archive:
+            def normalize(info):
+                info.uid = info.gid = 0
+                info.uname = info.gname = ""
+                info.mtime = 0
+                if info.isdir():
+                    info.mode = common.release_mode(info.mode, directory=True)
+                elif info.isfile():
+                    info.mode = common.release_mode(info.mode)
+                return info
+
+            archive.add(root, arcname="ltp", recursive=True, filter=normalize)
+        compressor.stdin.close()
+        status = compressor.wait()
+        raw.close()
+        if status:
+            raise RuntimeError(f"pigz exited with status {status}")
+    except BaseException:
+        if compressor.poll() is None:
+            compressor.kill()
+            compressor.wait()
+        raw.close()
+        output.unlink(missing_ok=True)
+        raise
 
 
 def verify_plain_elf(path, allow_static_exec=False):
@@ -142,7 +181,7 @@ def create(args):
     archive = output / name
     if archive.exists() or (output / f"{name}.manifest.json").exists():
         raise RuntimeError(f"refusing to overwrite existing variant {name}")
-    common.deterministic_archive(root, archive, compresslevel=9)
+    deterministic_archive(root, archive)
     manifest = {
         "schema": 1,
         "status": "PASS",

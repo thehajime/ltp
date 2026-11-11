@@ -18,7 +18,8 @@ ci/plain_control_release_build.sh /path/to/ltp-source.tar /path/to/output
 ```
 
 The producer emits `ltp-plain-x86_64.tar.gz`, a JSON manifest, and a SHA-256
-sidecar. It uses gzip compression level 9, matching the SVM release packager.
+sidecar. It uses `pigz -9`, the same gzip compression level as the SVM release
+packager.
 Filesystem backing storage is created on the test system rather than stored in
 the archive. Run the included `plain-control-setup.sh` before filesystem tests;
 it creates a 2 GiB sparse `tmp/ltp-loop.img` in the LTP root.
