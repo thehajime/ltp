@@ -127,8 +127,12 @@ static void setup(void)
 	blk_size = st.st_blksize;
 	alloc_units = page_size > blk_size ? page_size : blk_size;
 
-	/* Minimum 512-byte blocks for 1 page + small tolerance for filesystem metadata */
-	max_header_blocks = (alloc_units / 512) * 2;
+	/*
+	 * Allow a few allocation units for the swap header and filesystem
+	 * metadata updates. Some filesystems need more than one page to update
+	 * extent/indirect metadata when the swap area is discarded.
+	 */
+	max_header_blocks = (alloc_units / 512) * 4;
 }
 
 static void verify_swapon(unsigned int n)

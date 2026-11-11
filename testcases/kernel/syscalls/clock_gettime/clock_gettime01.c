@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "tst_cpu.h"
 #include "time64_variants.h"
 #include "tst_timer.h"
 #include "tst_safe_clocks.h"
@@ -75,6 +76,10 @@ static struct time64_variants variants[] = {
 static void setup(void)
 {
 	long unsigned utime;
+
+	/* UML does not account process user time reliably in /proc/self/stat. */
+	if (tst_is_virt(VIRT_UML))
+		tst_brk(TCONF, "UML does not provide the user-time accounting required by this test");
 
 	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 

@@ -15,6 +15,9 @@ if ! command -v gcc >/dev/null 2>&1; then
 	command -v apk >/dev/null 2>&1 || {
 		echo "Alpine package manager or preinstalled GCC is required" >&2; exit 2;
 	}
+	# TLS interception in the managed build environment breaks APK's TLS
+	# handshake; APK package signatures are still verified over HTTP.
+	sed -i 's#^https://#http://#' /etc/apk/repositories
 	apk add --no-cache alpine-sdk ccache autoconf automake m4 bison flex \
 		findutils linux-headers perl python3 acl-dev clang curl e2fsprogs-extra \
 		git jq keyutils-dev libaio-dev libcap-dev libselinux-dev libsepol-dev \
@@ -33,6 +36,7 @@ esac
 [ "${#PLAIN_UAPI_SHA256}" -eq 64 ]
 
 mkdir -p "$CCACHE_DIR" "$output/source" "$output/install"
+output_abs=$(cd "$output" && pwd)
 ccache --set-config max_size=10G
 ccache --set-config compiler_check=content
 export CCACHE_DIR CCACHE_BASEDIR=/ CCACHE_COMPILERCHECK=content CCACHE_UMASK=002
@@ -76,16 +80,39 @@ mkdir -p "$output/install/opt/ltp/runtest"
 cp runtest/syscalls "$output/install/opt/ltp/runtest/syscalls"
 mkdir -p "$output/install/opt/ltp/tmp"
 chmod 777 "$output/install/opt/ltp/tmp"
-truncate -s 512M "$output/install/opt/ltp/tmp/ltp-loop.img"
+truncate -s 2G "$output/install/opt/ltp/tmp/ltp-loop.img"
 chmod 666 "$output/install/opt/ltp/tmp/ltp-loop.img"
 
 python3 ci/test_plain_control_payload.py -v > "$output/payload-tests.log" 2>&1
 
 python3 ci/plain_control_payload.py create \
 	--root "$output/install/opt/ltp" --output "$output/release" \
+	--variant nommu \
 	--source-commit "$PLAIN_SOURCE_COMMIT" \
 	--source-manifest ci/svm-release-source.json --compiler "$compiler" \
 	--libc-sha256 "$PLAIN_LIBC_SHA256" --uapi-sha256 "$PLAIN_UAPI_SHA256" \
-	> "$output/payload.log"
-printf '%s\n' '{"status":"PASS","scope":"plain-control-syscalls-release-build"}' \
+	> "$output/payload-nommu.log"
+
+# NOMMU requires static PIE. The MMU/native brk tests use brk(2) to inspect
+# the process break and must be non-PIE; package that pair as a separate
+# runtime variant while keeping every other binary byte-identical.
+mkdir -p "$output/mmu-native/opt"
+cp -a "$output/install/opt/ltp" "$output/mmu-native/opt/ltp"
+make -C testcases/kernel/syscalls/brk clean > "$output/brk-nonpie-clean.log" 2>&1
+make -C testcases/kernel/syscalls/brk -j"$PLAIN_BUILD_JOBS" brk01 brk02 \
+	CC='ccache gcc' HOSTCC='ccache gcc' \
+	CFLAGS='-O2 -g -fno-pie -Wformat -Werror=format-security -Werror=implicit-function-declaration -Werror=return-type -fno-common' \
+	LDFLAGS="-static -no-pie -L$output_abs/source/lib" \
+	> "$output/brk-nonpie-build.log" 2>&1
+cp testcases/kernel/syscalls/brk/brk01 testcases/kernel/syscalls/brk/brk02 \
+	"$output/mmu-native/opt/ltp/testcases/bin/"
+python3 ci/plain_control_payload.py create \
+	--root "$output/mmu-native/opt/ltp" --output "$output/release" \
+	--variant mmu-native \
+	--source-commit "$PLAIN_SOURCE_COMMIT" \
+	--source-manifest ci/svm-release-source.json --compiler "$compiler" \
+	--libc-sha256 "$PLAIN_LIBC_SHA256" --uapi-sha256 "$PLAIN_UAPI_SHA256" \
+	> "$output/payload-mmu-native.log"
+
+printf '%s\n' '{"status":"PASS","scope":"plain-control-syscalls-release-build","variants":["nommu","mmu-native"]}' \
 	> "$output/build-summary.json"

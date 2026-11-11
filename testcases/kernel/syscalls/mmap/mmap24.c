@@ -24,6 +24,7 @@
  */
 
 #include "tst_test.h"
+#include "tst_cpu.h"
 #include "lapi/mmap.h"
 
 #define ADDR_LIMIT 0x80000000UL
@@ -32,6 +33,12 @@
 
 static void *addrs[MAX_CHUNKS];
 static size_t num_chunks;
+
+static void setup(void)
+{
+	if (tst_is_virt(VIRT_UML))
+		tst_brk(TCONF, "UML does not implement the host MAP_32BIT address limit");
+}
 
 static void cleanup(void)
 {
@@ -103,6 +110,7 @@ out:
 }
 
 static struct tst_test test = {
+	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = run,
 	.supported_archs = (const char *const []){

@@ -41,6 +41,7 @@
 #include <sys/user.h>
 #include <signal.h>
 #include "tst_test.h"
+#include "tst_cpu.h"
 #include "tst_safe_stdio.h"
 
 static pid_t child_pid;
@@ -119,6 +120,9 @@ static void ptrace_try_kern_addr(unsigned long kern_addr)
 
 static void run(void)
 {
+	if (tst_is_virt(VIRT_UML))
+		tst_brk(TCONF, "UML does not expose guest kernel addresses to ptrace()");
+
 	ptrace_try_kern_addr(KERN_ADDR_MIN);
 	ptrace_try_kern_addr(KERN_ADDR_MAX);
 	ptrace_try_kern_addr(KERN_ADDR_MIN + (KERN_ADDR_MAX - KERN_ADDR_MIN)/2);

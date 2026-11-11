@@ -73,6 +73,7 @@ class PlainControlPayloadTests(unittest.TestCase):
         output = self.work / "release"
         args = argparse.Namespace(
             root=root, output=output,
+            variant="nommu",
             source_commit="04d4de72361eb757133e5ecc735e6f4d1f45da9e",
             source_manifest=Path(__file__).resolve().parents[1] / "ci/svm-release-source.json",
             compiler="test gcc", libc_sha256="0" * 64, uapi_sha256="1" * 64,
@@ -86,6 +87,29 @@ class PlainControlPayloadTests(unittest.TestCase):
         archive.write_bytes(archive.read_bytes() + b"tampered")
         with self.assertRaisesRegex(RuntimeError, "invalid plain-control release manifest"):
             payload.verify(archive, manifest)
+
+    def test_mmu_native_variant_requires_non_pie_brk(self):
+        root = self.work / "mmu-native-root"
+        (root / "runtest").mkdir(parents=True)
+        (root / "testcases/bin").mkdir(parents=True)
+        shutil.copy2(Path(__file__).resolve().parents[1] / "runtest/syscalls",
+                     root / "runtest/syscalls")
+        shutil.copy2(self.static_pie, root / "testcases/bin/probe")
+        for test in ("brk01", "brk02"):
+            shutil.copy2(self.static_exec, root / f"testcases/bin/{test}")
+        output = self.work / "release-mmu-native"
+        args = argparse.Namespace(
+            root=root, output=output, variant="mmu-native",
+            source_commit="04d4de72361eb757133e5ecc735e6f4d1f45da9e",
+            source_manifest=Path(__file__).resolve().parents[1] / "ci/svm-release-source.json",
+            compiler="test gcc", libc_sha256="0" * 64, uapi_sha256="1" * 64,
+        )
+        result = payload.create(args)
+        archive = output / result["archive"]["name"]
+        manifest = output / f"{archive.name}.manifest.json"
+        payload.verify(archive, manifest)
+        self.assertEqual(result["supported_runtime_profiles"],
+                         ["native-x86_64", "uml-mmu-plain"])
 
     def test_changed_selection_is_rejected(self):
         root = self.work / "bad-selection"
