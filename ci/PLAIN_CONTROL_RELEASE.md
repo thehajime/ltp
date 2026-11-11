@@ -1,11 +1,12 @@
-# Plain x86_64 UML control payload
+# Plain x86_64 LTP control payload
 
-This producer creates plain x86_64 payloads for the native baseline and plain
-MMU/NOMMU UML controls. It is independent of the SVM ABI payloads. NOMMU uses
-Alpine/musl static PIE (`ET_DYN`). MMU/native uses the same static PIE inventory
-except `brk01` and `brk02`, which are static non-PIE (`ET_EXEC`) because these
-tests inspect the process break. Both variants have no `PT_INTERP` or SVM ELF
-note, and bind the same 1,552-label `runtest/syscalls` inventory to the archive.
+This producer creates one plain x86_64 payload for native, MMU UML and NOMMU
+UML. The LTP library detects NOMMU at runtime by reading `/proc/meminfo`; no
+NOMMU build-time switch is needed. The payload contains static PIE executables
+except `brk01` and `brk02`, which are static non-PIE (`ET_EXEC`) because they
+test `brk(2)`. Both tests set `.needs_mmu = 1`, so the test harness reports
+`TCONF` on NOMMU. The archive has no `PT_INTERP` or SVM ELF note and binds the
+1,552-label `runtest/syscalls` selection to its manifest.
 
 Build from a clean checkout of the reconciled source using Alpine 3.20.3. The
 source archive must have a top-level `ltp/` directory. Set
@@ -16,25 +17,24 @@ source archive must have a top-level `ltp/` directory. Set
 ci/plain_control_release_build.sh /path/to/ltp-source.tar /path/to/output
 ```
 
-The builder stages a 2 GiB loop image at `opt/ltp/tmp/ltp-loop.img` so the
-filesystem tests can probe all guest-supported filesystems. It preserves all
-syscall selection labels. The three source files excluded by the existing
-Alpine CI rule (`fmtmsg01`, `timer_create01`, and `timer_create03`) remain in the
-selection and have their musl-specific reason recorded in the manifest.
-The `runtime_skip_pattern` is exactly those three labels, because their source
-files are intentionally absent under the Alpine CI rule; do not broaden it.
+The producer emits `ltp-plain-x86_64.tar.gz`, a JSON manifest, and a SHA-256
+sidecar. It uses gzip compression level 9, matching the SVM release packager.
+Filesystem backing storage is created on the test system rather than stored in
+the archive. Run the included `plain-control-setup.sh` before filesystem tests;
+it creates a 2 GiB sparse `tmp/ltp-loop.img` in the LTP root.
 
-The NOMMU manifest supports `uml-nommu-plain`; the MMU/native manifest supports
-`native-x86_64` and `uml-mmu-plain`. These declarations are compatibility
-contracts; publication requires runtime validation for each profile, with no
-FAIL, BROK, or WARN results. The verifier checks every payload file's
-content/mode/link inventory, archive hash, syscall selection, and per-file ELF
-ABI. It rejects SVM-marked, dynamically interpreted, wrong-architecture, or
-unexpected ELF types.
+The three source files excluded by the existing Alpine CI rule (`fmtmsg01`,
+`timer_create01`, and `timer_create03`) remain in the selection and have their
+musl-specific reason recorded in the manifest. The `runtime_skip_pattern` is
+exactly those three labels, because their source files are intentionally absent
+under the Alpine CI rule; do not broaden it.
 
-The producer emits `ltp-plain-x86_64-nommu.tar.gz` and
-`ltp-plain-x86_64-mmu-native.tar.gz`, each with a JSON manifest and SHA-256
-sidecar.
+The manifest supports `native-x86_64`, `uml-mmu-plain`, and `uml-nommu-plain`.
+These declarations are compatibility contracts; publication requires runtime
+validation for all three profiles, with no FAIL, BROK, or WARN results. The
+verifier checks every payload file's content/mode/link inventory, archive
+hash, syscall selection, and per-file ELF ABI. It rejects SVM-marked,
+dynamically interpreted, wrong-architecture, or unexpected ELF types.
 
 For UML runtime validation, set `LTP_TIMEOUT_MUL=10` and give the runner a
 per-test timeout above the LTP test's own runtime limit. Some syscall tests
@@ -47,4 +47,4 @@ are reported as TCONF; leave it unset on native x86_64. Leave
 filesystem is exercised.
 
 The SVM Release remains the artifact for SVM profiles and ARM. This plain
-payload is only the x86_64 control artifact.
+payload is the x86_64 control artifact.

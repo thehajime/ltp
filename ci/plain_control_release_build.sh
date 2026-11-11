@@ -78,26 +78,12 @@ make -C testcases/kernel/syscalls install DESTDIR="$output/install" \
 	> "$output/syscalls-install.log" 2>&1
 mkdir -p "$output/install/opt/ltp/runtest"
 cp runtest/syscalls "$output/install/opt/ltp/runtest/syscalls"
-mkdir -p "$output/install/opt/ltp/tmp"
-chmod 777 "$output/install/opt/ltp/tmp"
-truncate -s 2G "$output/install/opt/ltp/tmp/ltp-loop.img"
-chmod 666 "$output/install/opt/ltp/tmp/ltp-loop.img"
+install -m 0755 ci/plain_control_runtime_setup.sh \
+	"$output/install/opt/ltp/plain-control-setup.sh"
 
-python3 ci/test_plain_control_payload.py -v > "$output/payload-tests.log" 2>&1
-
-python3 ci/plain_control_payload.py create \
-	--root "$output/install/opt/ltp" --output "$output/release" \
-	--variant nommu \
-	--source-commit "$PLAIN_SOURCE_COMMIT" \
-	--source-manifest ci/svm-release-source.json --compiler "$compiler" \
-	--libc-sha256 "$PLAIN_LIBC_SHA256" --uapi-sha256 "$PLAIN_UAPI_SHA256" \
-	> "$output/payload-nommu.log"
-
-# NOMMU requires static PIE. The MMU/native brk tests use brk(2) to inspect
-# the process break and must be non-PIE; package that pair as a separate
-# runtime variant while keeping every other binary byte-identical.
-mkdir -p "$output/mmu-native/opt"
-cp -a "$output/install/opt/ltp" "$output/mmu-native/opt/ltp"
+# The payload uses one runtime-detected binary set for MMU, NOMMU and native
+# x86_64. The two brk tests need static non-PIE executables and are skipped on
+# NOMMU by their .needs_mmu attribute after the shared test harness starts.
 make -C testcases/kernel/syscalls/brk clean > "$output/brk-nonpie-clean.log" 2>&1
 make -C testcases/kernel/syscalls/brk -j"$PLAIN_BUILD_JOBS" brk01 brk02 \
 	CC='ccache gcc' HOSTCC='ccache gcc' \
@@ -105,14 +91,17 @@ make -C testcases/kernel/syscalls/brk -j"$PLAIN_BUILD_JOBS" brk01 brk02 \
 	LDFLAGS="-static -no-pie -L$output_abs/source/lib" \
 	> "$output/brk-nonpie-build.log" 2>&1
 cp testcases/kernel/syscalls/brk/brk01 testcases/kernel/syscalls/brk/brk02 \
-	"$output/mmu-native/opt/ltp/testcases/bin/"
+	"$output/install/opt/ltp/testcases/bin/"
+
+python3 ci/test_plain_control_payload.py -v > "$output/payload-tests.log" 2>&1
+
 python3 ci/plain_control_payload.py create \
-	--root "$output/mmu-native/opt/ltp" --output "$output/release" \
-	--variant mmu-native \
+	--root "$output/install/opt/ltp" --output "$output/release" \
+	--variant control \
 	--source-commit "$PLAIN_SOURCE_COMMIT" \
 	--source-manifest ci/svm-release-source.json --compiler "$compiler" \
 	--libc-sha256 "$PLAIN_LIBC_SHA256" --uapi-sha256 "$PLAIN_UAPI_SHA256" \
-	> "$output/payload-mmu-native.log"
+	> "$output/payload-control.log"
 
-printf '%s\n' '{"status":"PASS","scope":"plain-control-syscalls-release-build","variants":["nommu","mmu-native"]}' \
+printf '%s\n' '{"status":"PASS","scope":"plain-control-syscalls-release-build","variants":["control"]}' \
 	> "$output/build-summary.json"

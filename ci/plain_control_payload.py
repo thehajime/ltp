@@ -15,19 +15,10 @@ ARCH = "x86_64"
 SELECTION_SHA256 = "4fea279e0f356321b4dd8e53b1de7b912b7d86397532742ed769624cb215ece3"
 SELECTION_LABELS = 1552
 VARIANTS = {
-    "nommu": {
-        "name": "plain-x86_64-nommu",
-        "archive": "ltp-plain-x86_64-nommu.tar.gz",
-        "profiles": ["uml-nommu-plain"],
-        "et_exec_files": [],
-        "build_flags": {"compile": ["-O2", "-g", "-static-pie"],
-                         "link": ["-static-pie"]},
-        "elf_types": {"ET_DYN"},
-    },
-    "mmu-native": {
-        "name": "plain-x86_64-mmu-native",
-        "archive": "ltp-plain-x86_64-mmu-native.tar.gz",
-        "profiles": ["native-x86_64", "uml-mmu-plain"],
+    "control": {
+        "name": "plain-x86_64-control",
+        "archive": "ltp-plain-x86_64.tar.gz",
+        "profiles": ["uml-nommu-plain", "uml-mmu-plain", "native-x86_64"],
         "et_exec_files": ["testcases/bin/brk01", "testcases/bin/brk02"],
         "build_flags": {
             "compile": ["-O2", "-g", "-static-pie"],
@@ -96,7 +87,7 @@ def verify_plain_elf(path, allow_static_exec=False):
         return "ET_EXEC" if elf_type == 2 else "ET_DYN"
 
 
-def verify_runtime_contract(root, variant="nommu"):
+def verify_runtime_contract(root, variant="control"):
     config = VARIANTS[variant]
     selection = root / "runtest/syscalls"
     if not selection.is_file() or common.digest(selection) != SELECTION_SHA256:
@@ -118,7 +109,7 @@ def verify_runtime_contract(root, variant="nommu"):
             if stream.read(4) != b"\x7fELF":
                 continue
         relative = path.relative_to(root).as_posix()
-        elf_type = verify_plain_elf(path, allow_static_exec=variant == "mmu-native")
+        elf_type = verify_plain_elf(path, allow_static_exec=True)
         if elf_type not in config["elf_types"]:
             raise RuntimeError(f"ELF type {elf_type} is not allowed for {variant}: {path}")
         if (elf_type == "ET_EXEC") != (relative in config["et_exec_files"]):
@@ -151,7 +142,7 @@ def create(args):
     archive = output / name
     if archive.exists() or (output / f"{name}.manifest.json").exists():
         raise RuntimeError(f"refusing to overwrite existing variant {name}")
-    common.deterministic_archive(root, archive, compresslevel=1)
+    common.deterministic_archive(root, archive, compresslevel=9)
     manifest = {
         "schema": 1,
         "status": "PASS",
@@ -167,7 +158,7 @@ def create(args):
         "build_flags": config["build_flags"],
         "elf_abi": {"class": "ELF64", "machine": "x86_64",
                     "type_counts": elf_types,
-                    "static_pie": args.variant == "nommu",
+                    "static_pie": False,
                     "static_non_pie_files": config["et_exec_files"],
                     "interpreter": None, "svm_note": False,
                     "checked_elf_files": elf_count},
@@ -231,7 +222,7 @@ def verify(archive, manifest_path):
             elf_abi.get("class") != "ELF64" or
             elf_abi.get("machine") != "x86_64" or
             not isinstance(elf_abi.get("type_counts"), dict) or
-            elf_abi.get("static_pie") is not (variant == "nommu") or
+            elf_abi.get("static_pie") is not False or
             elf_abi.get("static_non_pie_files") != config["et_exec_files"] or
             elf_abi.get("interpreter") is not None or
             elf_abi.get("svm_note") is not False or
@@ -258,7 +249,7 @@ def main():
     builder = subparsers.add_parser("create")
     builder.add_argument("--root", type=Path, required=True)
     builder.add_argument("--output", type=Path, required=True)
-    builder.add_argument("--variant", choices=VARIANTS, default="nommu")
+    builder.add_argument("--variant", choices=VARIANTS, default="control")
     builder.add_argument("--source-commit", required=True)
     builder.add_argument("--source-manifest", type=Path, required=True)
     builder.add_argument("--compiler", required=True)
