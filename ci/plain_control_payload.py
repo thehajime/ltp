@@ -104,7 +104,7 @@ def create(args):
     output.mkdir(parents=True)
     name = "ltp-plain-x86_64-control.tar.gz"
     archive = output / name
-    common.deterministic_archive(root, archive)
+    common.deterministic_archive(root, archive, compresslevel=1)
     manifest = {
         "schema": 1,
         "status": "PASS",

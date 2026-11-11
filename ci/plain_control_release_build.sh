@@ -74,6 +74,12 @@ make -C testcases/kernel/syscalls install DESTDIR="$output/install" \
 	> "$output/syscalls-install.log" 2>&1
 mkdir -p "$output/install/opt/ltp/runtest"
 cp runtest/syscalls "$output/install/opt/ltp/runtest/syscalls"
+mkdir -p "$output/install/opt/ltp/tmp"
+chmod 777 "$output/install/opt/ltp/tmp"
+truncate -s 512M "$output/install/opt/ltp/tmp/ltp-loop.img"
+chmod 666 "$output/install/opt/ltp/tmp/ltp-loop.img"
+
+python3 ci/test_plain_control_payload.py -v > "$output/payload-tests.log" 2>&1
 
 python3 ci/plain_control_payload.py create \
 	--root "$output/install/opt/ltp" --output "$output/release" \
