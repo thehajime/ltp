@@ -80,6 +80,7 @@ class PlainControlPayloadTests(unittest.TestCase):
         result = payload.create(args)
         archive = output / result["archive"]["name"]
         manifest = output / f"{archive.name}.manifest.json"
+        self.assertEqual(result["runtime_skip_pattern"], payload.RUNTIME_SKIP_PATTERN)
         payload.verify(archive, manifest)
 
         archive.write_bytes(archive.read_bytes() + b"tampered")

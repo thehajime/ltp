@@ -40,6 +40,8 @@ static void setup(void)
 		/* Respect bounded software-MMU address windows and guest RAM. */
 		addr = (uintptr_t)probe;
 		SAFE_MUNMAP(probe, vma_size);
+		if (access("/proc/sys/vm/max_map_count", W_OK))
+			tst_brk(TCONF, "NOMMU requires writable /proc/sys/vm/max_map_count");
 		SAFE_FILE_PRINTF("/proc/sys/vm/max_map_count", "512");
 	}
 

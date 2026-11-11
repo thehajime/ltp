@@ -20,6 +20,8 @@ filesystem tests can probe all guest-supported filesystems. It preserves all
 syscall selection labels. The three source files excluded by the existing
 Alpine CI rule (`fmtmsg01`, `timer_create01`, and `timer_create03`) remain in the
 selection and have their musl-specific reason recorded in the manifest.
+The `runtime_skip_pattern` is exactly those three labels, because their source
+files are intentionally absent under the Alpine CI rule; do not broaden it.
 
 The manifest declares support for `native-x86_64`, `uml-mmu-plain`, and
 `uml-nommu-plain`. This declaration is a compatibility contract; publication

@@ -15,6 +15,7 @@ ARCH = "x86_64"
 SELECTION_SHA256 = "4fea279e0f356321b4dd8e53b1de7b912b7d86397532742ed769624cb215ece3"
 SELECTION_LABELS = 1552
 PROFILES = ["native-x86_64", "uml-mmu-plain", "uml-nommu-plain"]
+RUNTIME_SKIP_PATTERN = "^(fmtmsg01|timer_create01|timer_create03)$"
 EXCLUSIONS = [
     {"test": "fmtmsg01", "file": "testcases/kernel/syscalls/fmtmsg/fmtmsg01.c",
      "reason": "Alpine CI excludes this test because musl lacks fmtmsg()"},
@@ -125,6 +126,7 @@ def create(args):
                     "checked_elf_files": elf_count},
         "supported_runtime_profiles": PROFILES,
         "justified_musl_exclusions": EXCLUSIONS,
+        "runtime_skip_pattern": RUNTIME_SKIP_PATTERN,
         "files": common.inventory(root, normalize_modes=True),
         "archive": {"name": name, "sha256": common.digest(archive)},
     }
@@ -141,7 +143,8 @@ def verify(archive, manifest_path):
     expected = {"schema", "status", "variant", "architecture", "source_commit",
                 "source", "selection", "compiler", "libc", "uapi_sha256",
                 "build_flags", "elf_abi", "supported_runtime_profiles",
-                "justified_musl_exclusions", "files", "archive"}
+                "justified_musl_exclusions", "runtime_skip_pattern",
+                "files", "archive"}
     source = manifest.get("source", {})
     elf_abi = manifest.get("elf_abi", {})
     libc = manifest.get("libc", {})
@@ -171,6 +174,7 @@ def verify(archive, manifest_path):
                                         "link": ["-static-pie"]} or
             manifest["supported_runtime_profiles"] != PROFILES or
             manifest["justified_musl_exclusions"] != EXCLUSIONS or
+            manifest["runtime_skip_pattern"] != RUNTIME_SKIP_PATTERN or
             set(elf_abi) != {"class", "machine", "type", "static_pie",
                              "interpreter", "svm_note", "checked_elf_files"} or
             elf_abi.get("class") != "ELF64" or
