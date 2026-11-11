@@ -2,11 +2,14 @@
 
 This producer creates one plain x86_64 payload for native, MMU UML and NOMMU
 UML. The LTP library detects NOMMU at runtime by reading `/proc/meminfo`; no
-NOMMU build-time switch is needed. The payload contains static PIE executables
-except `brk01` and `brk02`, which are static non-PIE (`ET_EXEC`) because they
-test `brk(2)`. Both tests set `.needs_mmu = 1`, so the test harness reports
-`TCONF` on NOMMU. The archive has no `PT_INTERP` or SVM ELF note and binds the
-1,552-label `runtest/syscalls` selection to its manifest.
+NOMMU build-time switch is needed. The payload's `brk01` and `brk02` are static
+non-PIE (`ET_EXEC`) because they test `brk(2)`. It also carries static PIE
+fallback copies of those two tests: NOMMU kernels reject `ET_EXEC` before the
+LTP harness can apply `.needs_mmu`, so `plain-control-setup.sh` selects the PIE
+copies when `/proc/meminfo` contains `MmapCopy`. The harness then reports
+`TCONF` as expected. All other executables are static PIE. The archive has no
+`PT_INTERP` or SVM ELF note and binds the 1,552-label `runtest/syscalls`
+selection to its manifest.
 
 Build from a clean checkout of the reconciled source using Alpine 3.20.3. The
 source archive must have a top-level `ltp/` directory. Set
@@ -21,8 +24,9 @@ The producer emits `ltp-plain-x86_64.tar.gz`, a JSON manifest, and a SHA-256
 sidecar. It uses `pigz -9`, the same gzip compression level as the SVM release
 packager.
 Filesystem backing storage is created on the test system rather than stored in
-the archive. Run the included `plain-control-setup.sh` before filesystem tests;
-it creates a 2 GiB sparse `tmp/ltp-loop.img` in the LTP root.
+the archive. Run the included `plain-control-setup.sh` before the tests; it
+creates a 2 GiB sparse `tmp/ltp-loop.img` in the LTP root and selects the
+appropriate `brk01`/`brk02` pair for the running kernel.
 
 The three source files excluded by the existing Alpine CI rule (`fmtmsg01`,
 `timer_create01`, and `timer_create03`) remain in the selection and have their

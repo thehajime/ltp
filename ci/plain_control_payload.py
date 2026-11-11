@@ -4,10 +4,11 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
+import struct
 import subprocess
 import tarfile
-import struct
 import tempfile
 
 import svm_release_payload as common
@@ -21,7 +22,15 @@ VARIANTS = {
         "name": "plain-x86_64-control",
         "archive": "ltp-plain-x86_64.tar.gz",
         "profiles": ["uml-nommu-plain", "uml-mmu-plain", "native-x86_64"],
-        "et_exec_files": ["testcases/bin/brk01", "testcases/bin/brk02"],
+        "et_exec_files": [
+            "testcases/bin/brk01", "testcases/bin/brk02",
+            "libexec/plain-control/brk/mmu/brk01",
+            "libexec/plain-control/brk/mmu/brk02",
+        ],
+        "nommu_pie_files": [
+            "libexec/plain-control/brk/nommu/brk01",
+            "libexec/plain-control/brk/nommu/brk02",
+        ],
         "build_flags": {
             "compile": ["-O2", "-g", "-static-pie"],
             "link": ["-static-pie"],
@@ -30,6 +39,14 @@ VARIANTS = {
                     "compile": ["-fno-pie"], "link": ["-static", "-no-pie"]},
                 "testcases/bin/brk02": {
                     "compile": ["-fno-pie"], "link": ["-static", "-no-pie"]},
+            },
+            "nommu_fallbacks": {
+                "libexec/plain-control/brk/nommu/brk01": {
+                    "compile": ["-O2", "-g", "-static-pie"],
+                    "link": ["-static-pie"]},
+                "libexec/plain-control/brk/nommu/brk02": {
+                    "compile": ["-O2", "-g", "-static-pie"],
+                    "link": ["-static-pie"]},
             },
         },
         "elf_types": {"ET_DYN", "ET_EXEC"},
@@ -137,10 +154,18 @@ def verify_runtime_contract(root, variant="control"):
         raise RuntimeError("plain-control syscall selection count mismatch")
     if not {row["test"] for row in EXCLUSIONS} <= set(labels):
         raise RuntimeError("a documented musl exclusion is absent from selection")
+    setup = root / "plain-control-setup.sh"
+    if not setup.is_file() or not (setup.stat().st_mode & 0o111):
+        raise RuntimeError("plain-control runtime setup script is missing")
+    if (root / "tmp/ltp-loop.img").exists():
+        raise RuntimeError("loop image must be created at runtime, not packaged")
+    if (root / "kirk").exists() or (root / "libkirk").exists():
+        raise RuntimeError("Kirk runner must not be included in the LTP payload")
 
     elf_count = 0
     types = {"ET_DYN": 0, "ET_EXEC": 0}
     seen_exec = set()
+    seen_nommu_pie = set()
     for path in root.rglob("*"):
         if not path.is_file() or path.is_symlink():
             continue
@@ -155,12 +180,18 @@ def verify_runtime_contract(root, variant="control"):
             raise RuntimeError(f"unexpected non-PIE ELF type for {relative}")
         if elf_type == "ET_EXEC":
             seen_exec.add(relative)
+        if relative in config["nommu_pie_files"]:
+            if elf_type != "ET_DYN":
+                raise RuntimeError(f"NOMMU fallback is not PIE: {relative}")
+            seen_nommu_pie.add(relative)
         types[elf_type] += 1
         elf_count += 1
     if not elf_count:
         raise RuntimeError("plain-control ELF executables are missing")
     if seen_exec != set(config["et_exec_files"]):
         raise RuntimeError(f"required static ET_EXEC files missing for {variant}")
+    if seen_nommu_pie != set(config["nommu_pie_files"]):
+        raise RuntimeError("required NOMMU brk PIE fallback files are missing")
     return labels, elf_count, types
 
 
@@ -199,6 +230,7 @@ def create(args):
                     "type_counts": elf_types,
                     "static_pie": False,
                     "static_non_pie_files": config["et_exec_files"],
+                    "nommu_pie_files": config["nommu_pie_files"],
                     "interpreter": None, "svm_note": False,
                     "checked_elf_files": elf_count},
         "supported_runtime_profiles": config["profiles"],
@@ -256,13 +288,14 @@ def verify(archive, manifest_path):
             manifest["justified_musl_exclusions"] != EXCLUSIONS or
             manifest["runtime_skip_pattern"] != RUNTIME_SKIP_PATTERN or
             set(elf_abi) != {"class", "machine", "type_counts", "static_pie",
-                             "static_non_pie_files", "interpreter", "svm_note",
-                             "checked_elf_files"} or
+                             "static_non_pie_files", "nommu_pie_files",
+                             "interpreter", "svm_note", "checked_elf_files"} or
             elf_abi.get("class") != "ELF64" or
             elf_abi.get("machine") != "x86_64" or
             not isinstance(elf_abi.get("type_counts"), dict) or
             elf_abi.get("static_pie") is not False or
             elf_abi.get("static_non_pie_files") != config["et_exec_files"] or
+            elf_abi.get("nommu_pie_files") != config["nommu_pie_files"] or
             elf_abi.get("interpreter") is not None or
             elf_abi.get("svm_note") is not False or
             not isinstance(elf_abi.get("checked_elf_files"), int) or

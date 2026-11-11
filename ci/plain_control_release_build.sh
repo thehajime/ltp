@@ -81,6 +81,16 @@ cp runtest/syscalls "$output/install/opt/ltp/runtest/syscalls"
 install -m 0755 ci/plain_control_runtime_setup.sh \
 	"$output/install/opt/ltp/plain-control-setup.sh"
 
+# Keep both brk ELF variants in one payload. NOMMU kernels reject ET_EXEC
+# before the LTP harness can apply .needs_mmu, so the runtime setup selects
+# the static PIE fallbacks when /proc/meminfo reports MmapCopy.
+mkdir -p "$output/install/opt/ltp/libexec/plain-control/brk/nommu" \
+	"$output/install/opt/ltp/libexec/plain-control/brk/mmu"
+for test in brk01 brk02; do
+	cp "$output/install/opt/ltp/testcases/bin/$test" \
+		"$output/install/opt/ltp/libexec/plain-control/brk/nommu/$test"
+done
+
 # The payload uses one runtime-detected binary set for MMU, NOMMU and native
 # x86_64. The two brk tests need static non-PIE executables and are skipped on
 # NOMMU by their .needs_mmu attribute after the shared test harness starts.
@@ -92,6 +102,10 @@ make -C testcases/kernel/syscalls/brk -j"$PLAIN_BUILD_JOBS" brk01 brk02 \
 	> "$output/brk-nonpie-build.log" 2>&1
 cp testcases/kernel/syscalls/brk/brk01 testcases/kernel/syscalls/brk/brk02 \
 	"$output/install/opt/ltp/testcases/bin/"
+for test in brk01 brk02; do
+	cp "$output/install/opt/ltp/testcases/bin/$test" \
+		"$output/install/opt/ltp/libexec/plain-control/brk/mmu/$test"
+done
 
 python3 ci/test_plain_control_payload.py -v > "$output/payload-tests.log" 2>&1
 

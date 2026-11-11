@@ -48,6 +48,19 @@ class PlainControlPayloadTests(unittest.TestCase):
         if hasattr(cls, "temp"):
             cls.temp.cleanup()
 
+    def populate_control_helpers(self, root):
+        nommu = root / "libexec/plain-control/brk/nommu"
+        mmu = root / "libexec/plain-control/brk/mmu"
+        nommu.mkdir(parents=True)
+        mmu.mkdir(parents=True)
+        for test in ("brk01", "brk02"):
+            shutil.copy2(self.static_exec, root / f"testcases/bin/{test}")
+            shutil.copy2(self.static_pie, nommu / test)
+            shutil.copy2(self.static_exec, mmu / test)
+        setup = root / "plain-control-setup.sh"
+        setup.write_text("#!/bin/sh\nexit 0\n")
+        setup.chmod(0o755)
+
     def test_static_pie_without_svm_note_is_accepted(self):
         payload.verify_plain_elf(self.static_pie)
 
@@ -70,8 +83,7 @@ class PlainControlPayloadTests(unittest.TestCase):
         shutil.copy2(Path(__file__).resolve().parents[1] / "runtest/syscalls",
                      root / "runtest/syscalls")
         shutil.copy2(self.static_pie, root / "testcases/bin/probe")
-        for test in ("brk01", "brk02"):
-            shutil.copy2(self.static_exec, root / f"testcases/bin/{test}")
+        self.populate_control_helpers(root)
         output = self.work / "release"
         args = argparse.Namespace(
             root=root, output=output,
@@ -97,8 +109,7 @@ class PlainControlPayloadTests(unittest.TestCase):
         shutil.copy2(Path(__file__).resolve().parents[1] / "runtest/syscalls",
                      root / "runtest/syscalls")
         shutil.copy2(self.static_pie, root / "testcases/bin/probe")
-        for test in ("brk01", "brk02"):
-            shutil.copy2(self.static_exec, root / f"testcases/bin/{test}")
+        self.populate_control_helpers(root)
         output = self.work / "release-control"
         args = argparse.Namespace(
             root=root, output=output, variant="control",
