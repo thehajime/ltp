@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Create the disposable loop backing file on the test system, not in the archive.
-set -eu
+set -e
 
 ltp_root=${LTPROOT:-/opt/ltp}
 tmpdir=$ltp_root/tmp
