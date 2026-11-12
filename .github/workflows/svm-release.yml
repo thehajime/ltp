@@ -1,9 +1,6 @@
 name: SVM LTP release producer
 
 on:
-  push:
-    branches:
-      - hajime/svm-arm-extras
   workflow_dispatch:
     inputs:
       tag:
@@ -25,12 +22,15 @@ concurrency:
 
 jobs:
   build:
-    if: (github.ref == 'refs/heads/svm-integration-7.4' ||
-         github.ref == 'refs/heads/hajime/svm-arm-extras')
+    if: github.ref == 'refs/heads/svm-integration-7.4' || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(github.event_name == 'push' && '[{"architecture":"arm","cache":"arm-sdk"}]' || '[{"architecture":"x86_64","cache":"alpine-userspace"},{"architecture":"arm","cache":"arm-sdk"}]') }}
+        include:
+          - architecture: x86_64
+            cache: alpine-userspace
+          - architecture: arm
+            cache: arm-sdk
     runs-on: [self-hosted, Linux, X64, svm-private, svm-arm-sdk]
     timeout-minutes: 180
     steps:
@@ -77,14 +77,6 @@ jobs:
           PY
           cd "$work/$SVM_ARCH/release"
           sha256sum -c "ltp-svm-$SVM_ARCH.tar.gz.sha256"
-      - name: Export the ARM candidate for guest validation
-        if: github.event_name == 'push' && matrix.architecture == 'arm'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: ltp-svm-arm-candidate
-          path: /nvme/svm/work/ltp-release/${{ github.run_id }}-${{ github.run_attempt }}/arm/release/ltp-svm-arm.tar.gz*
-          if-no-files-found: error
-          retention-days: 1
 
   publish:
     if: inputs.publish
