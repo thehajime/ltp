@@ -102,6 +102,23 @@ make -C testcases/lib install DESTDIR="$svm_output/install" HOSTCC='ccache gcc' 
 make -C testcases/kernel/syscalls install DESTDIR="$svm_output/install" \
 	HOSTCC='ccache gcc' > "$svm_output/syscalls-install.log" 2>&1
 mkdir -p "$svm_output/install/opt/ltp/runtest"
+if [ "$SVM_ARCH" = arm ]; then
+	make -C libs/newipc -j"$SVM_BUILD_JOBS" HOSTCC='ccache gcc' \
+		> "$svm_output/newipc-build.log" 2>&1
+	arm_extra_runfile="$svm_output/install/opt/ltp/runtest/arm-extra"
+	: > "$arm_extra_runfile"
+	while IFS='|' read -r directory target selection; do
+		[ -n "$directory" ] || continue
+		log=$(printf '%s' "$target" | tr / -)
+		make -C "testcases/$directory" MAKE_TARGETS="$target" \
+			-j"$SVM_BUILD_JOBS" HOSTCC='ccache gcc' \
+			> "$svm_output/arm-extra-$log-build.log" 2>&1
+		make -C "testcases/$directory" MAKE_TARGETS="$target" install \
+			DESTDIR="$svm_output/install" HOSTCC='ccache gcc' \
+			> "$svm_output/arm-extra-$log-install.log" 2>&1
+		printf '%s\n' "$selection" >> "$arm_extra_runfile"
+	done < ci/svm-arm-extra-tests
+fi
 cp runtest/syscalls "$svm_output/install/opt/ltp/runtest/syscalls"
 
 python3 ci/svm_release_payload.py create \

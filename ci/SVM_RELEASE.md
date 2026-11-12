@@ -1,8 +1,11 @@
 # SVM LTP release producer
 
 The manual `SVM LTP release producer` workflow builds x86_64 and ARM payloads
-on the private self-hosted runner. It does not use Actions artifacts. Build
-outputs stay under `/nvme/svm/work/ltp-release/<run>-<attempt>`. x86_64 reuses
+on the private self-hosted runner. Its outputs stay under
+`/nvme/svm/work/ltp-release/<run>-<attempt>` and it does not use Actions
+artifacts. A push to the isolated `hajime/svm-arm-extras` validation branch
+exports only its ARM candidate files as a one-day artifact for guest validation;
+that validation build does not publish or replace release assets. x86_64 reuses
 `/home/tazaki/.ccache/svm/alpine-userspace`; ARM reuses
 `/home/tazaki/.ccache/svm/arm-sdk`. Both caches retain the 10 GiB limit.
 
@@ -64,3 +67,15 @@ architecture-specific SVM ABI note and interpreter (x86_64 era 2/ABI 208;
 ARM era 2/ABI 48). T20 also needs a source-free consumer run and
 PASS/SKIP/CONF-only runtime results with zero failed, broken or warning results.
 Release creation alone does not complete T20.
+
+## ARM supplemental binaries
+
+The ARM payload also includes these nine maintained binaries, which are outside
+`runtest/syscalls`:
+`fptest01`, `mem02`, `page01`, `page02`, `pth_str01`, `pth_str02`, `shmt02`,
+`stack_space`, and `utsname01`. The `runtest/arm-extra` selection lists only
+these binaries for supplemental ARM guest checks. The packager requires all
+nine paths under `testcases/bin`, checks the exact selection, and checks their
+ARM SVM ABI along with the syscall payload.
+The removed `kill07`, `munmap02`, and `symlink01` tests are intentionally not
+restored: upstream removed or consolidated those cases.

@@ -170,6 +170,46 @@ class PayloadTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "selection checksum"):
             payload.verify_runtime_contract(self.root, "x86_64")
 
+    def test_arm_payload_requires_and_manifests_nine_extra_binaries(self):
+        self.assertEqual(tuple(Path(name).name for name in payload.ARM_EXTRA_BINARIES),
+                         ("fptest01", "mem02", "page01", "page02", "pth_str01",
+                          "pth_str02", "shmt02", "stack_space", "utsname01"))
+        root = self.directory / "arm-root"
+        (root / "runtest").mkdir(parents=True)
+        (root / "testcases/bin").mkdir(parents=True)
+        selection = root / "runtest/syscalls"
+        selection.write_text("first getpid01\nsecond getpid01 -i 2\n")
+        (root / "runtest/arm-extra").write_text(payload.ARM_EXTRA_RUNFILE)
+        names = payload.ARM_EXTRA_BINARIES
+        for name in names:
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(note_elf("arm"))
+            path.chmod(0o755)
+
+        with patch.object(payload, "SYSCALLS_SHA256",
+                          hashlib.sha256(selection.read_bytes()).hexdigest()), \
+                patch.object(payload, "SYSCALL_LABELS", 2):
+            self.assertEqual(payload.verify_runtime_contract(root, "arm"),
+                             len(names))
+            (root / names[-1]).unlink()
+            with self.assertRaisesRegex(RuntimeError,
+                                        "required ARM binaries are missing"):
+                payload.verify_runtime_contract(root, "arm")
+            restored = root / names[-1]
+            restored.write_bytes(note_elf("arm"))
+            restored.chmod(0o755)
+
+            output = self.directory / "arm-output"
+            args = argparse.Namespace(
+                root=root, output=output, arch="arm",
+                source_commit="b" * 40,
+                source_manifest=Path(__file__).with_name("svm-release-source.json"),
+                compiler="fixture ARM gcc", libc_sha256="c" * 64,
+                uapi_sha256="d" * 64)
+            manifest = payload.create(args)
+            self.assertEqual(set(names) - set(manifest["files"]), set())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,9 @@
+misc/math/fptests|fptest01|fptest01 fptest01
+kernel/mem/mem|mem02|mem02 mem02
+kernel/mem/page|page01|page01 page01
+kernel/mem/page|page02|page02 page02
+kernel/sched/pthreads|pth_str01|pth_str01 pth_str01
+kernel/sched/pthreads|pth_str02|pth_str02 pth_str02 -n1000
+kernel/mem/shmt|shmt02|shmt02 shmt02
+kernel/mem/vmtests|stack_space|stack_space stack_space
+kernel/containers/utsname|utsname01|utsname01 utsname01
