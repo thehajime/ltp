@@ -1,0 +1,6 @@
+# NOMMU plain ARM uClibc does not provide fork(). The LTP API redirects
+# ordinary NOMMU process creation to vfork()/clone(), so these tests remain
+# runnable. fork13/14 explicitly test fork-specific resource semantics and
+# are skipped by the existing plain NOMMU runtime skip-list.
+^fork13$
+^fork14$
