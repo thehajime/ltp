@@ -55,7 +55,11 @@ while IFS='|' read -r directory target selection; do
 		> "$output/logs/extra-$log-install.log" 2>&1
 done < ci/svm-arm-extra-tests
 install -D -m 0644 runtest/syscalls "$root/runtest/syscalls"
-install -m 0644 ci/svm-arm-extra-tests "$root/runtest/arm-extra"
+ : > "$root/runtest/arm-extra"
+while IFS='|' read -r directory target selection; do
+	[ -n "$directory" ] || continue
+	printf '%s\n' "$selection" >> "$root/runtest/arm-extra"
+done < ci/svm-arm-extra-tests
 install -m 0644 ci/plain-arm-nommu-fork-skip "$root/runtest/plain-arm-nommu-fork-skip"
 install -D -m 0644 ci/plain_arm_nommu_fork.c \
 	"$root/share/plain-arm-nommu-fork-wrapper.c"
