@@ -20,6 +20,24 @@ SCHEMA = 1
 SYSCALLS_SHA256 = "4fea279e0f356321b4dd8e53b1de7b912b7d86397532742ed769624cb215ece3"
 SYSCALL_LABELS = 1552
 
+
+def arm_extra_tests():
+    plan = Path(__file__).with_name("svm-arm-extra-tests")
+    rows = []
+    for line in plan.read_text().splitlines():
+        directory, target, selection = line.split("|", 2)
+        rows.append((directory, target, selection))
+    if len(rows) != 9 or len({row[1] for row in rows}) != 9:
+        raise RuntimeError("invalid ARM supplemental binary plan")
+    return tuple(rows)
+
+
+ARM_EXTRA_TESTS = arm_extra_tests()
+ARM_EXTRA_BINARIES = tuple(f"testcases/bin/{target}"
+                           for _, target, _ in ARM_EXTRA_TESTS)
+ARM_EXTRA_RUNFILE = "".join(selection + "\n"
+                            for _, _, selection in ARM_EXTRA_TESTS)
+
 SVM_ABI = {
     "x86_64": {"elf_class": 2, "machine": 62, "era": 2, "abi": 208,
                "interpreter": b"/svm-loader.so\0"},
@@ -145,6 +163,17 @@ def verify_runtime_contract(root, architecture):
             if line.strip() and not line.lstrip().startswith("#")]
     if len(rows) != SYSCALL_LABELS:
         raise RuntimeError("SVM syscall selection count mismatch")
+    if architecture == "arm":
+        missing = [name for name in ARM_EXTRA_BINARIES
+                   if not (root / name).is_file() or (root / name).is_symlink()
+                   or not (stat.S_IMODE((root / name).lstat().st_mode) & 0o111)]
+        if missing:
+            raise RuntimeError("required ARM binaries are missing: " +
+                               ", ".join(missing))
+        extra_selection = root / "runtest/arm-extra"
+        if (not extra_selection.is_file() or
+                extra_selection.read_text() != ARM_EXTRA_RUNFILE):
+            raise RuntimeError("ARM supplemental test selection mismatch")
     elf_count = 0
     for path in root.rglob("*"):
         if not path.is_file() or path.is_symlink():
