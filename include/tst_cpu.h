@@ -24,6 +24,7 @@ const char *tst_cpu_vendor(void);
 #define VIRT_IBMZ_LPAR	4	/* ibm system z lpar */
 #define VIRT_IBMZ_ZVM	5	/* ibm system z zvm */
 #define VIRT_HYPERV	6	/* Microsoft Hyper-V */
+#define VIRT_UML	7	/* User-mode Linux */
 #define VIRT_OTHER	0xffff	/* unrecognized hypervisor */
 
 int tst_is_virt(int virt_type);

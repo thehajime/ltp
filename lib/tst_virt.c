@@ -152,6 +152,9 @@ cmp:
 	if (!strncmp("microsoft", virt_type, 9))
 		return VIRT_HYPERV;
 
+	if (!strncmp("uml", virt_type, 3))
+		return VIRT_UML;
+
 	return VIRT_OTHER;
 }
 
@@ -178,6 +181,7 @@ int tst_is_virt(int virt_type)
 	case VIRT_IBMZ_ZVM:
 		return is_ibmz(virt_type);
 	case VIRT_HYPERV:
+	case VIRT_UML:
 	case VIRT_OTHER:
 		return 0;
 	}

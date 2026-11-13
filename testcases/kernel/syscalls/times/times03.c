@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include "tst_test.h"
+#include "tst_cpu.h"
 
 static volatile int timeout;
 
@@ -190,6 +191,10 @@ static void do_test(void)
 
 static void setup(void)
 {
+	/* UML does not account process user time reliably in times(2). */
+	if (tst_is_virt(VIRT_UML))
+		tst_brk(TCONF, "UML does not provide the user-time accounting required by this test");
+
 	SAFE_SIGNAL(SIGALRM, sighandler);
 }
 

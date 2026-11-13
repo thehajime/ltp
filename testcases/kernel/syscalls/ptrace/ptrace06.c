@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <sys/ptrace.h>
 #include "tst_test.h"
+#include "tst_cpu.h"
 
 /* this should be sizeof(struct user), but that info is only found
  * in the kernel asm/user.h which is not exported to userspace.
@@ -212,7 +213,14 @@ static void run(void)
 
 }
 
+static void setup(void)
+{
+	if (tst_is_virt(VIRT_UML))
+		tst_brk(TCONF, "UML uses a different kernel user-register layout");
+}
+
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = run,
 	.forks_child = 1,
 	.needs_mmu = 1,

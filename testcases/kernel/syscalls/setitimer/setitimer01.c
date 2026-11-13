@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include "tst_test.h"
+#include "tst_cpu.h"
 #include "lapi/syscalls.h"
 #include "tst_safe_clocks.h"
 #include "tst_timer.h"
@@ -56,6 +57,11 @@ static void verify_setitimer(unsigned int i)
 	int status;
 	long margin;
 	struct tcase *tc = &tcases[i];
+
+	if (tst_is_virt(VIRT_UML) && tc->which != ITIMER_REAL) {
+		tst_res(TCONF, "UML does not deliver %s reliably", tc->des);
+		return;
+	}
 
 	tst_res(TINFO, "tc->which = %s", tc->des);
 

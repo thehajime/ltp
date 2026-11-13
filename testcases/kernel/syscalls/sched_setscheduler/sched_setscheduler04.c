@@ -13,6 +13,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sched.h>
 #include <linux/sched.h>
 
@@ -43,25 +44,37 @@ static void test_reset_on_fork(unsigned int i)
 	tst_res(TINFO, "Testing %s variant %s policy", tv->desc, tc->desc);
 
 	struct sched_param param = { .sched_priority = 10 };
+	int status;
 
-	tv->sched_setscheduler(getpid(), tc->policy | SCHED_RESET_ON_FORK, &param);
+	if (tv->sched_setscheduler(getpid(), tc->policy | SCHED_RESET_ON_FORK,
+				   &param) == -1) {
+		tst_res(TFAIL | TERRNO, "sched_setscheduler() failed");
+		return;
+	}
 
 	pid_t pid = SAFE_FORK();
 
-	if (pid) {
-		if (sched_getscheduler(pid) == SCHED_NORMAL)
-			tst_res(TPASS, "Policy reset to SCHED_NORMAL");
-		else
-			tst_res(TFAIL, "Policy NOT reset to SCHED_NORMAL");
-
-		sched_getparam(pid, &param);
-
-		/* kernel will return sched_priority 0 if task is not RT Policy */
-		if (param.sched_priority == 0)
-			tst_res(TPASS, "Priority set to 0");
-		else
-			tst_res(TFAIL, "Priority not set to 0");
+	if (!pid) {
+		SAFE_KILL(getpid(), SIGSTOP);
+		return;
 	}
+
+	SAFE_WAITPID(pid, &status, WUNTRACED);
+	if (tv->sched_getscheduler(pid) == SCHED_NORMAL)
+		tst_res(TPASS, "Policy reset to SCHED_NORMAL");
+	else
+		tst_res(TFAIL, "Policy NOT reset to SCHED_NORMAL");
+
+	memset(&param, 0, sizeof(param));
+	if (tv->sched_getparam(pid, &param))
+		tst_res(TFAIL | TERRNO, "sched_getparam() failed");
+	else if (param.sched_priority == 0)
+		tst_res(TPASS, "Priority set to 0");
+	else
+		tst_res(TFAIL, "Priority not set to 0");
+
+	SAFE_KILL(pid, SIGCONT);
+	SAFE_WAITPID(pid, &status, 0);
 }
 
 static struct tst_test test = {

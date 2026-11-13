@@ -188,9 +188,10 @@ def verify_runtime_contract(root, architecture):
     return elf_count
 
 
-def deterministic_archive(root, output):
+def deterministic_archive(root, output, compresslevel=9):
     with output.open("wb") as raw:
-        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0,
+                           compresslevel=compresslevel) as compressed:
             with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
                 def normalize(info):
                     info.uid = info.gid = 0
