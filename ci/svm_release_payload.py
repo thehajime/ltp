@@ -249,6 +249,12 @@ def create(args):
     if not all(is_hex_digest(value, 64)
                for value in (args.libc_sha256, args.uapi_sha256)):
         raise RuntimeError("libc and UAPI digests must be SHA-256 values")
+    profile = getattr(args, "profile", None)
+    runner_source_sha256 = getattr(args, "runner_source_sha256", None)
+    if profile:
+        if (profile != "arm-svm-private-fork" or args.arch != "arm" or
+                not is_hex_digest(runner_source_sha256, 64)):
+            raise RuntimeError("invalid ARM SVM private-fork runner provenance")
     output.mkdir(parents=True)
     name = f"ltp-svm-{args.arch}.tar.gz"
     archive = output / name
@@ -262,6 +268,12 @@ def create(args):
         "files": inventory(root, normalize_modes=True),
         "archive": {"name": name, "sha256": digest(archive)},
     }
+    if profile:
+        probe = root / "testcases/bin/svm-fork-waitpid"
+        if not probe.is_file() or probe.is_symlink() or not (probe.stat().st_mode & 0o111):
+            raise RuntimeError("ARM SVM private-fork ABI probe is missing")
+        manifest["profile"] = profile
+        manifest["runner_source_sha256"] = runner_source_sha256
     manifest_path = output / f"{name}.manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     (output / f"{name}.sha256").write_text(
@@ -283,9 +295,12 @@ def safe_extract(archive, destination):
 def verify(archive, manifest_path):
     manifest = json.loads(manifest_path.read_text())
     source = manifest.get("source", {})
-    if (set(manifest) != {"schema", "status", "architecture", "source_commit",
-                          "source", "compiler", "libc_sha256", "uapi_sha256",
-                          "files", "archive"} or
+    base_keys = {"schema", "status", "architecture", "source_commit", "source",
+                 "compiler", "libc_sha256", "uapi_sha256", "files", "archive"}
+    profile_keys = {"profile", "runner_source_sha256"}
+    args_profile = manifest.get("profile")
+    expected_keys = base_keys | (profile_keys if args_profile else set())
+    if (set(manifest) != expected_keys or
             manifest["schema"] != SCHEMA or manifest["status"] != "PASS" or
             manifest["architecture"] not in ARCHITECTURES or
             not is_hex_digest(manifest["source_commit"], 40) or
@@ -301,7 +316,11 @@ def verify(archive, manifest_path):
             manifest["archive"] != {"name": archive.name, "sha256": digest(archive)} or
             not manifest["compiler"] or
             not all(is_hex_digest(manifest[name], 64)
-                    for name in ("libc_sha256", "uapi_sha256"))):
+                    for name in ("libc_sha256", "uapi_sha256")) or
+            (args_profile is not None and
+             (args_profile != "arm-svm-private-fork" or
+              manifest["architecture"] != "arm" or
+              not is_hex_digest(manifest.get("runner_source_sha256"), 64)))):
         raise RuntimeError("invalid release manifest")
     with tempfile.TemporaryDirectory(prefix="svm-ltp-payload-") as directory:
         destination = Path(directory)
@@ -310,6 +329,10 @@ def verify(archive, manifest_path):
         if root.is_symlink() or not root.is_dir() or inventory(root) != manifest["files"]:
             raise RuntimeError("release payload inventory mismatch")
         verify_runtime_contract(root, manifest["architecture"])
+        if args_profile == "arm-svm-private-fork":
+            probe = root / "testcases/bin/svm-fork-waitpid"
+            if not probe.is_file() or probe.is_symlink() or not (probe.stat().st_mode & 0o111):
+                raise RuntimeError("ARM SVM private-fork ABI probe is missing")
     return manifest
 
 
@@ -325,6 +348,8 @@ def main():
     builder.add_argument("--compiler", required=True)
     builder.add_argument("--libc-sha256", required=True)
     builder.add_argument("--uapi-sha256", required=True)
+    builder.add_argument("--profile", choices=("arm-svm-private-fork",))
+    builder.add_argument("--runner-source-sha256")
     checker = subparsers.add_parser("verify")
     checker.add_argument("--archive", type=Path, required=True)
     checker.add_argument("--manifest", type=Path, required=True)

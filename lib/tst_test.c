@@ -2039,12 +2039,17 @@ static void fork_testrun(void)
 	alarm(context->overall_time);
 	show_failure_hints = 1;
 	if (tst_is_nommu()) {
+#ifdef LTP_SVM_PRIVATE_FORK
+		/* SVM ABI era 2 rejects shared-TCB NOMMU clone runners. */
+		test_pid = fork();
+#else
 		nommu_stack = ltp_alloc_stack(NOMMU_CHILD_STACK_SIZE);
 		if (!nommu_stack)
 			tst_brk(TBROK | TERRNO, "Failed to allocate NOMMU child stack");
 
 		test_pid = ltp_clone(CLONE_VM | SIGCHLD, nommu_testrun, NULL,
 				     NOMMU_CHILD_STACK_SIZE, nommu_stack);
+#endif
 	} else {
 		test_pid = fork();
 	}

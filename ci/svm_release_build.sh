@@ -78,6 +78,12 @@ printf '%s\n' "$compiler" > "$svm_output/compiler.log"
 export CC="ccache $SVM_CC" CFLAGS='-O2 -g'
 export CPPFLAGS="${SVM_CPPFLAGS:-}"
 export SVM_PLUGIN="${SVM_PLUGIN:-}"
+if [ "${SVM_ARM_PRIVATE_FORK:-0}" = 1 ]; then
+	[ "$SVM_ARCH" = arm ] || {
+		echo "the private-fork runner profile is ARM-only" >&2; exit 2;
+	}
+	export CPPFLAGS="$CPPFLAGS -DLTP_SVM_PRIVATE_FORK=1"
+fi
 ./configure --build=x86_64-pc-linux-gnu --host="$SVM_HOST" --prefix=/opt/ltp \
 	> "$svm_output/configure.log" 2>&1
 grep -Fq 'checking whether we are cross compiling... yes' "$svm_output/configure.log"
@@ -121,11 +127,27 @@ if [ "$SVM_ARCH" = arm ]; then
 fi
 cp runtest/syscalls "$svm_output/install/opt/ltp/runtest/syscalls"
 
+profile_args=
+if [ "${SVM_ARM_PRIVATE_FORK:-0}" = 1 ]; then
+	sysroot=$(sh -c "$SVM_CC -print-sysroot")
+	[ -f "$sysroot/usr/lib/libsvm-id.a" ] || {
+		echo "Buildroot SVM runtime libsvm-id.a is missing from $sysroot" >&2; exit 2;
+	}
+	mkdir -p "$svm_output/install/opt/ltp/testcases/bin"
+	# Match the Buildroot SVM test profile: compiler plugin, era-2 note,
+	# matching uClibc sysroot, and the installed SVM runtime support archive.
+	$CC $CPPFLAGS $CFLAGS -Wl,-dynamic-linker,/lib/ld-uClibc.so.0 \
+		ci/svm-arm-fork-waitpid.c -L"$sysroot/usr/lib" -lsvm-id \
+		-o "$svm_output/install/opt/ltp/testcases/bin/svm-fork-waitpid"
+	profile_args="--profile arm-svm-private-fork --runner-source-sha256 $(sha256sum lib/tst_test.c | cut -d ' ' -f1)"
+fi
+
 python3 ci/svm_release_payload.py create \
 	--root "$svm_output/install/opt/ltp" --output "$svm_output/release" \
 	--arch "$SVM_ARCH" --source-commit "$SVM_SOURCE_COMMIT" \
 	--source-manifest ci/svm-release-source.json --compiler "$compiler" \
 	--libc-sha256 "$SVM_LIBC_SHA256" --uapi-sha256 "$SVM_UAPI_SHA256" \
+	$profile_args \
 	> "$svm_output/payload.log"
 printf '%s\n' '{"status":"PASS","scope":"syscalls-release-build"}' \
 	> "$svm_output/build-summary.json"

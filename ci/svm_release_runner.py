@@ -89,6 +89,9 @@ def run(args):
     if not source.is_file() or output.exists():
         raise RuntimeError("source must be a file and output must be fresh")
     data, files = load_contract(root, args.architecture)
+    if args.profile and (args.profile != "arm-svm-private-fork" or
+                         args.architecture != "arm"):
+        raise RuntimeError("the private-fork runner profile is ARM-only")
     output.mkdir(parents=True)
     cache.mkdir(parents=True, exist_ok=True)
     source_commit = subprocess.check_output(
@@ -118,6 +121,7 @@ def run(args):
         "SVM_BUILD_UID": str(os.getuid()),
         "SVM_BUILD_GID": str(os.getgid()),
         "SVM_BUILD_JOBS": str(args.jobs),
+        "SVM_ARM_PRIVATE_FORK": "1" if args.profile else "0",
         "CCACHE_DIR": "/ccache",
     }
     for name, value in environment.items():
@@ -135,12 +139,13 @@ def run(args):
         raise RuntimeError("producer did not emit the accepted build summary")
     return {"status": "PASS", "architecture": args.architecture,
             "source_commit": source_commit, "output": str(output),
-            "container_image": data["container_image"]}
+            "container_image": data["container_image"], "profile": args.profile}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--architecture", choices=ARCHITECTURES, required=True)
+    parser.add_argument("--profile", choices=("arm-svm-private-fork",))
     parser.add_argument("--repository", type=Path, default=Path.cwd())
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--input-root", type=Path, required=True)

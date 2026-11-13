@@ -77,7 +77,8 @@ class PayloadTests(unittest.TestCase):
             root=self.root, output=self.output, arch="x86_64",
             source_commit="b" * 40, source_manifest=source,
             compiler="fixture gcc", libc_sha256="c" * 64,
-            uapi_sha256="d" * 64)
+            uapi_sha256="d" * 64, profile=None,
+            runner_source_sha256=None)
         self.manifest = payload.create(args)
         self.archive = self.output / self.manifest["archive"]["name"]
         self.manifest_path = self.archive.with_name(self.archive.name + ".manifest.json")
@@ -206,9 +207,44 @@ class PayloadTests(unittest.TestCase):
                 source_commit="b" * 40,
                 source_manifest=Path(__file__).with_name("svm-release-source.json"),
                 compiler="fixture ARM gcc", libc_sha256="c" * 64,
-                uapi_sha256="d" * 64)
+                uapi_sha256="d" * 64, profile=None,
+                runner_source_sha256=None)
             manifest = payload.create(args)
             self.assertEqual(set(names) - set(manifest["files"]), set())
+
+    def test_private_fork_profile_records_runner_source_and_probe(self):
+        root = self.directory / "arm-private-fork-root"
+        (root / "runtest").mkdir(parents=True)
+        (root / "testcases/bin").mkdir(parents=True)
+        selection = root / "runtest/syscalls"
+        selection.write_text("first getpid01\nsecond getpid01 -i 2\n")
+        (root / "runtest/arm-extra").write_text(payload.ARM_EXTRA_RUNFILE)
+        for name in payload.ARM_EXTRA_BINARIES:
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(note_elf("arm"))
+            path.chmod(0o755)
+        probe = root / "testcases/bin/svm-fork-waitpid"
+        probe.write_bytes(note_elf("arm"))
+        probe.chmod(0o755)
+        output = self.directory / "arm-private-fork-output"
+        runner_sha = "e" * 64
+        args = argparse.Namespace(
+            root=root, output=output, arch="arm", source_commit="b" * 40,
+            source_manifest=Path(__file__).with_name("svm-release-source.json"),
+            compiler="fixture ARM SVM gcc", libc_sha256="c" * 64,
+            uapi_sha256="d" * 64, profile="arm-svm-private-fork",
+            runner_source_sha256=runner_sha)
+        with patch.object(payload, "SYSCALLS_SHA256",
+                          hashlib.sha256(selection.read_bytes()).hexdigest()), \
+                patch.object(payload, "SYSCALL_LABELS", 2):
+            manifest = payload.create(args)
+            archive = output / manifest["archive"]["name"]
+            manifest_path = archive.with_name(archive.name + ".manifest.json")
+            self.assertEqual(manifest["profile"], "arm-svm-private-fork")
+            self.assertEqual(manifest["runner_source_sha256"], runner_sha)
+            self.assertIn("testcases/bin/svm-fork-waitpid", manifest["files"])
+            self.assertEqual(payload.verify(archive, manifest_path), manifest)
 
 
 if __name__ == "__main__":
